@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(uuid())
+  email       String   @unique
+  name        String
+  password    String
+  avatarUrl   String?
+  isPremium   Boolean  @default(false)
+  
+  // Subscription plan details { name: string, expiresAt: string }
+  plan        Json?
+  
+  // Editor and notification preferences
+  preferences Json?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  submissions Submission[]
+  roadmaps    UserRoadmap[]
+  aiUsage     AiUsage[]
+}
+
+model Course {
+  id            String   @id @default(uuid())
+  slug          String   @unique // e.g. "c_go"
+  category      String   // 'language', 'cs', 'interview'
+  title         String
+  description   String
+  icon          String
+  estimatedTime String
+  
+  modules       Module[]
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Module {
+  id          String   @id @default(uuid())
+  courseId    String
+  title       String
+  description String
+  section     String?  // 'core', 'frameworks', etc.
+  order       Int
+  
+  course      Course   @relation(fields: [courseId], references: [id])
+  topics      Topic[]
+}
+
+model Topic {
+  id            String   @id @default(uuid())
+  moduleId      String
+  title         String
+  description   String
+  difficulty    String   // 'easy', 'medium', 'hard'
+  estimatedTime String
+  order         Int
+  
+  module        Module   @relation(fields: [moduleId], references: [id])
+  tasks         Task[]
+}
+
+model Task {
+  id            String   @id @default(uuid())
+  topicId       String?  // Optional for backward compatibility, but required for structured courses
+  slug          String   @unique
+  title         String
+  description   String
+  difficulty    String
+  tags          String[]
+  isPremium     Boolean  @default(false)
+  initialCode   String
+  solutionCode  String?
+  hints         String[]
+  estimatedTime String
+  youtubeUrl    String?
+  order         Int      @default(0)
+
+  topic         Topic?   @relation(fields: [topicId], references: [id])
+  submissions   Submission[]
+}
+
+model Submission {
+  id        String   @id @default(uuid())
+  userId    String
+  taskId    String
+  status    String
+  score     Int
+  runtime   String
+  code      String
+  message   String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+  task Task @relation(fields: [taskId], references: [id])
+}
+
+model UserRoadmap {
+  id            String   @id @default(uuid())
+  userId        String
+  role          String
+  level         String
+  title         String
+  totalProgress Int      @default(0)
+  phases        Json
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model AiUsage {
+  id        String   @id @default(uuid())
+  userId    String
+  date      String   // Format: YYYY-MM-DD
+  count     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, date])
+}

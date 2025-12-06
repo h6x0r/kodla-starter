@@ -4,7 +4,7 @@ services:
   db:
     image: postgres:15-alpine
     container_name: kodla_postgres
-    restart: always
+    restart: unless-stopped
     ports:
       - "5432:5432"
     environment:
@@ -13,6 +13,42 @@ services:
       POSTGRES_DB: kodla_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kodla_user -d kodla_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://kodla_user:kodla_secure_password@db:5432/kodla_db?schema=public
+      JWT_SECRET: ${JWT_SECRET:-super_secret_jwt_key_kodla_v1}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      PORT: 8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    command: >
+      sh -c "until npx prisma migrate deploy; do echo 'Waiting for Postgres...'; sleep 5; done && node dist/main"
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      args:
+        REACT_APP_API_URL: ${REACT_APP_API_URL:-http://localhost:8080}
+        GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+    restart: unless-stopped
 
 volumes:
   postgres_data:

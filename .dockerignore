@@ -1,0 +1,22 @@
+# General artifacts
+node_modules
+dist
+build
+.turbo
+.cache
+
+# Local config
+.env
+.env.*
+!.env.example
+
+# Git metadata
+.git
+.gitignore
+
+# Backend artifacts we don't need when building the frontend image
+server/node_modules
+server/dist
+server/.env
+server/.env.*
+server/env.txt
