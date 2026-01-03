@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { Prisma } from '@prisma/client';
 import { SubmissionsService } from './submissions.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CodeExecutionService } from '../queue/code-execution.service';
@@ -9,6 +10,14 @@ import { SecurityValidationService } from '../security/security-validation.servi
 import { TestParserService } from './test-parser.service';
 import { ResultFormatterService } from './result-formatter.service';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
+
+// Helper to create Prisma errors for testing
+function createPrismaError(code: string): Prisma.PrismaClientKnownRequestError {
+  return new Prisma.PrismaClientKnownRequestError('Unique constraint violation', {
+    code,
+    clientVersion: '5.0.0',
+  });
+}
 
 describe('SubmissionsService', () => {
   let service: SubmissionsService;
@@ -303,7 +312,7 @@ describe('SubmissionsService', () => {
         mockCodeExecutionService.executeSyncWithTests.mockResolvedValue(mockExecutionResult);
         mockPrismaService.submission.create.mockResolvedValue(mockSubmission);
         // Simulate unique constraint violation (P2002) - task already completed
-        mockPrismaService.taskCompletion.create.mockRejectedValue({ code: 'P2002' });
+        mockPrismaService.taskCompletion.create.mockRejectedValue(createPrismaError('P2002'));
 
         const result = await service.create('user-123', 'task-123', 'code', 'go');
 
@@ -317,6 +326,7 @@ describe('SubmissionsService', () => {
         mockCodeExecutionService.executeSyncWithTests.mockResolvedValue(mockExecutionResult);
         mockPrismaService.submission.create.mockResolvedValue(mockSubmission);
         mockPrismaService.submission.count.mockResolvedValue(0);
+        mockPrismaService.taskCompletion.create.mockResolvedValue({ id: 'tc-1' }); // Reset from previous test
         mockGamificationService.awardTaskXp.mockResolvedValue({
           xpEarned: 10,
           totalXp: 10,

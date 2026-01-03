@@ -37,6 +37,7 @@ describe('UserCoursesService', () => {
     },
     course: {
       findUnique: jest.fn(),
+      findMany: jest.fn(),
     },
   };
 
@@ -64,7 +65,7 @@ describe('UserCoursesService', () => {
   describe('getUserCourses()', () => {
     it('should return user courses with details', async () => {
       mockPrismaService.userCourse.findMany.mockResolvedValue([mockUserCourse]);
-      mockPrismaService.course.findUnique.mockResolvedValue(mockCourse);
+      mockPrismaService.course.findMany.mockResolvedValue([mockCourse]);
 
       const result = await service.getUserCourses('user-123');
 
@@ -87,7 +88,7 @@ describe('UserCoursesService', () => {
 
     it('should filter out courses that no longer exist', async () => {
       mockPrismaService.userCourse.findMany.mockResolvedValue([mockUserCourse]);
-      mockPrismaService.course.findUnique.mockResolvedValue(null);
+      mockPrismaService.course.findMany.mockResolvedValue([]); // Course not found
 
       const result = await service.getUserCourses('user-123');
 
@@ -95,6 +96,8 @@ describe('UserCoursesService', () => {
     });
 
     it('should order by lastAccessedAt desc', async () => {
+      mockPrismaService.userCourse.findMany.mockResolvedValue([]);
+
       await service.getUserCourses('user-123');
 
       expect(mockPrismaService.userCourse.findMany).toHaveBeenCalledWith({
