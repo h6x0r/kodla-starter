@@ -30,9 +30,6 @@ if result != 5 {
 - Error message should be descriptive
 - Use correct assertion method (Fatal vs Error)`,
 	initialCode: `package math_test
-
-import "testing"
-
 // TODO: Implement Divide function that returns error on division by zero
 func Divide(a, b float64) (float64, error) {
 	var zero float64
@@ -40,14 +37,13 @@ func Divide(a, b float64) (float64, error) {
 }
 
 // TODO: Write TestDivide with success and error cases
-func TestDivide(t *testing.T) {
+func TestDivide(t *T) {
 	// TODO: Implement
 }`,
 	solutionCode: `package math_test
 
 import (
 	"errors"
-	"testing"
 )
 
 func Divide(a, b float64) (float64, error) {
@@ -57,7 +53,7 @@ func Divide(a, b float64) (float64, error) {
 	return a / b, nil  // Return result
 }
 
-func TestDivide(t *testing.T) {
+func TestDivide(t *T) {
 	// Test successful division
 	result, err := Divide(10, 2)
 	if err != nil {  // Fatal: error here makes result invalid
@@ -88,11 +84,10 @@ func TestDivide(t *testing.T) {
 
 import (
 	"errors"
-	"testing"
 )
 
 // Test1: Successful division
-func Test1(t *testing.T) {
+func Test1(t *T) {
 	result, err := Divide(10, 2)
 	if err != nil {
 		t.Fatalf("Divide(10, 2) unexpected error: %v", err)
@@ -103,7 +98,7 @@ func Test1(t *testing.T) {
 }
 
 // Test2: Division by zero returns error
-func Test2(t *testing.T) {
+func Test2(t *T) {
 	_, err := Divide(10, 0)
 	if err == nil {
 		t.Fatal("Divide(10, 0) expected error, got nil")
@@ -111,7 +106,7 @@ func Test2(t *testing.T) {
 }
 
 // Test3: Negative dividend
-func Test3(t *testing.T) {
+func Test3(t *T) {
 	result, err := Divide(-10, 2)
 	if err != nil {
 		t.Fatalf("Divide(-10, 2) unexpected error: %v", err)
@@ -122,7 +117,7 @@ func Test3(t *testing.T) {
 }
 
 // Test4: Negative divisor
-func Test4(t *testing.T) {
+func Test4(t *T) {
 	result, err := Divide(10, -2)
 	if err != nil {
 		t.Fatalf("Divide(10, -2) unexpected error: %v", err)
@@ -133,7 +128,7 @@ func Test4(t *testing.T) {
 }
 
 // Test5: Both negative
-func Test5(t *testing.T) {
+func Test5(t *T) {
 	result, err := Divide(-10, -2)
 	if err != nil {
 		t.Fatalf("Divide(-10, -2) unexpected error: %v", err)
@@ -144,7 +139,7 @@ func Test5(t *testing.T) {
 }
 
 // Test6: Zero dividend
-func Test6(t *testing.T) {
+func Test6(t *T) {
 	result, err := Divide(0, 5)
 	if err != nil {
 		t.Fatalf("Divide(0, 5) unexpected error: %v", err)
@@ -155,7 +150,7 @@ func Test6(t *testing.T) {
 }
 
 // Test7: Fractional result
-func Test7(t *testing.T) {
+func Test7(t *T) {
 	result, err := Divide(5, 2)
 	if err != nil {
 		t.Fatalf("Divide(5, 2) unexpected error: %v", err)
@@ -166,7 +161,7 @@ func Test7(t *testing.T) {
 }
 
 // Test8: Large numbers
-func Test8(t *testing.T) {
+func Test8(t *T) {
 	result, err := Divide(1000000, 1000)
 	if err != nil {
 		t.Fatalf("Divide(1000000, 1000) unexpected error: %v", err)
@@ -177,7 +172,7 @@ func Test8(t *testing.T) {
 }
 
 // Test9: Division by one
-func Test9(t *testing.T) {
+func Test9(t *T) {
 	result, err := Divide(42, 1)
 	if err != nil {
 		t.Fatalf("Divide(42, 1) unexpected error: %v", err)
@@ -188,7 +183,7 @@ func Test9(t *testing.T) {
 }
 
 // Test10: Same number division
-func Test10(t *testing.T) {
+func Test10(t *T) {
 	result, err := Divide(7, 7)
 	if err != nil {
 		t.Fatalf("Divide(7, 7) unexpected error: %v", err)
@@ -304,7 +299,6 @@ return 0, fmt.Errorf("недостаточно средств: баланс=%d, 
 
 import (
 	"errors"
-	"testing"
 )
 
 func Divide(a, b float64) (float64, error) {
@@ -314,7 +308,7 @@ func Divide(a, b float64) (float64, error) {
 	return a / b, nil  // Возврат результата
 }
 
-func TestDivide(t *testing.T) {
+func TestDivide(t *T) {
 	// Тестируем успешное деление
 	result, err := Divide(10, 2)
 	if err != nil {  // Fatal: ошибка здесь делает результат недействительным
@@ -406,7 +400,6 @@ AWS S3 nosozlik bo'lganda, to'g'ri xato boshqaruviga ega xizmatlar gracefully de
 
 import (
 	"errors"
-	"testing"
 )
 
 func Divide(a, b float64) (float64, error) {
@@ -416,7 +409,7 @@ func Divide(a, b float64) (float64, error) {
 	return a / b, nil  // Natijani qaytarish
 }
 
-func TestDivide(t *testing.T) {
+func TestDivide(t *T) {
 	// Muvaffaqiyatli bo'linishni tekshirish
 	result, err := Divide(10, 2)
 	if err != nil {  // Fatal: bu yerda xato natijani noto'g'ri qiladi

@@ -17,7 +17,7 @@ export const task: Task = {
 
 **Example:**
 \`\`\`go
-func BenchmarkFibonacci(b *testing.B) {
+func BenchmarkFibonacci(b *B) {
     for i := 0; i < b.N; i++ {
         Fibonacci(20)
     }
@@ -29,22 +29,16 @@ func BenchmarkFibonacci(b *testing.B) {
 - Must use b.N for iterations
 - Test at least 2 different inputs`,
 	initialCode: `package bench_test
-
-import "testing"
-
 // TODO: Implement Fibonacci
 func Fibonacci(n int) int {
 	return 0 // TODO: Implement
 }
 
 // TODO: Write BenchmarkFibonacci
-func BenchmarkFibonacci(b *testing.B) {
+func BenchmarkFibonacci(b *B) {
 	// TODO: Implement
 }`,
 	solutionCode: `package bench_test
-
-import "testing"
-
 func Fibonacci(n int) int {
 	if n <= 1 {	// Base case
 		return n
@@ -52,24 +46,21 @@ func Fibonacci(n int) int {
 	return Fibonacci(n-1) + Fibonacci(n-2)	// Recursive
 }
 
-func BenchmarkFibonacci(b *testing.B) {
+func BenchmarkFibonacci(b *B) {
 	// Benchmark with n=10
 	for i := 0; i < b.N; i++ {	// b.N iterations
 		Fibonacci(10)
 	}
 }
 
-func BenchmarkFibonacci20(b *testing.B) {
+func BenchmarkFibonacci20(b *B) {
 	// Benchmark with n=20
 	for i := 0; i < b.N; i++ {
 		Fibonacci(20)
 	}
 }`,
 	testCode: `package bench_test
-
-import "testing"
-
-func TestFibonacciZero(t *testing.T) {
+func TestFibonacciZero(t *T) {
 	result := Fibonacci(0)
 	expected := 0
 	if result != expected {
@@ -77,7 +68,7 @@ func TestFibonacciZero(t *testing.T) {
 	}
 }
 
-func TestFibonacciOne(t *testing.T) {
+func TestFibonacciOne(t *T) {
 	result := Fibonacci(1)
 	expected := 1
 	if result != expected {
@@ -85,7 +76,7 @@ func TestFibonacciOne(t *testing.T) {
 	}
 }
 
-func TestFibonacciTwo(t *testing.T) {
+func TestFibonacciTwo(t *T) {
 	result := Fibonacci(2)
 	expected := 1
 	if result != expected {
@@ -93,7 +84,7 @@ func TestFibonacciTwo(t *testing.T) {
 	}
 }
 
-func TestFibonacciThree(t *testing.T) {
+func TestFibonacciThree(t *T) {
 	result := Fibonacci(3)
 	expected := 2
 	if result != expected {
@@ -101,7 +92,7 @@ func TestFibonacciThree(t *testing.T) {
 	}
 }
 
-func TestFibonacciFour(t *testing.T) {
+func TestFibonacciFour(t *T) {
 	result := Fibonacci(4)
 	expected := 3
 	if result != expected {
@@ -109,7 +100,7 @@ func TestFibonacciFour(t *testing.T) {
 	}
 }
 
-func TestFibonacciFive(t *testing.T) {
+func TestFibonacciFive(t *T) {
 	result := Fibonacci(5)
 	expected := 5
 	if result != expected {
@@ -117,7 +108,7 @@ func TestFibonacciFive(t *testing.T) {
 	}
 }
 
-func TestFibonacciSix(t *testing.T) {
+func TestFibonacciSix(t *T) {
 	result := Fibonacci(6)
 	expected := 8
 	if result != expected {
@@ -125,7 +116,7 @@ func TestFibonacciSix(t *testing.T) {
 	}
 }
 
-func TestFibonacciSeven(t *testing.T) {
+func TestFibonacciSeven(t *T) {
 	result := Fibonacci(7)
 	expected := 13
 	if result != expected {
@@ -133,7 +124,7 @@ func TestFibonacciSeven(t *testing.T) {
 	}
 }
 
-func TestFibonacciTen(t *testing.T) {
+func TestFibonacciTen(t *T) {
 	result := Fibonacci(10)
 	expected := 55
 	if result != expected {
@@ -141,14 +132,14 @@ func TestFibonacciTen(t *testing.T) {
 	}
 }
 
-func TestFibonacciTwenty(t *testing.T) {
+func TestFibonacciTwenty(t *T) {
 	result := Fibonacci(20)
 	expected := 6765
 	if result != expected {
 		t.Errorf("expected %d, got %d", expected, result)
 	}
 }`,
-			hint1: `Benchmark function signature: func BenchmarkXxx(b *testing.B). Use b.N loop.`,
+			hint1: `Benchmark function signature: func BenchmarkXxx(b *B). Use b.N loop.`,
 			hint2: `Run: go test -bench=. to see ns/op (nanoseconds per operation).`,
 			whyItMatters: `Benchmarks measure performance, identify bottlenecks, and track optimization impact.`,
 			order: 0,
@@ -156,13 +147,10 @@ func TestFibonacciTwenty(t *testing.T) {
 		ru: {
 			title: 'Базовый бенчмарк',
 			description: `Напишите базовый бенчмарк используя **b.N цикл** для измерения производительности функции.`,
-			hint1: `Сигнатура: func BenchmarkXxx(b *testing.B). Используйте b.N цикл.`,
+			hint1: `Сигнатура: func BenchmarkXxx(b *B). Используйте b.N цикл.`,
 			hint2: `Запуск: go test -bench=. для просмотра ns/op.`,
 			whyItMatters: `Бенчмарки измеряют производительность и отслеживают оптимизации.`,
 			solutionCode: `package bench_test
-
-import "testing"
-
 func Fibonacci(n int) int {
 	if n <= 1 {	// Базовый случай
 		return n
@@ -170,14 +158,14 @@ func Fibonacci(n int) int {
 	return Fibonacci(n-1) + Fibonacci(n-2)	// Рекурсия
 }
 
-func BenchmarkFibonacci(b *testing.B) {
+func BenchmarkFibonacci(b *B) {
 	// Бенчмарк с n=10
 	for i := 0; i < b.N; i++ {	// b.N итераций
 		Fibonacci(10)
 	}
 }
 
-func BenchmarkFibonacci20(b *testing.B) {
+func BenchmarkFibonacci20(b *B) {
 	// Бенчмарк с n=20
 	for i := 0; i < b.N; i++ {
 		Fibonacci(20)
@@ -187,13 +175,10 @@ func BenchmarkFibonacci20(b *testing.B) {
 		uz: {
 			title: `Asosiy benchmark`,
 			description: `Funksiya ishlashini o'lchash uchun **b.N tsikli** dan foydalangan holda asosiy benchmark yozing.`,
-			hint1: `Signatura: func BenchmarkXxx(b *testing.B). b.N tsiklidan foydalaning.`,
+			hint1: `Signatura: func BenchmarkXxx(b *B). b.N tsiklidan foydalaning.`,
 			hint2: `Ishga tushirish: ns/op ni ko'rish uchun go test -bench=.`,
 			whyItMatters: `Benchmarklar ishlashni o'lchaydi va optimizatsiyalarni kuzatadi.`,
 			solutionCode: `package bench_test
-
-import "testing"
-
 func Fibonacci(n int) int {
 	if n <= 1 {	// Asosiy holat
 		return n
@@ -201,14 +186,14 @@ func Fibonacci(n int) int {
 	return Fibonacci(n-1) + Fibonacci(n-2)	// Rekursiv
 }
 
-func BenchmarkFibonacci(b *testing.B) {
+func BenchmarkFibonacci(b *B) {
 	// n=10 bilan benchmark
 	for i := 0; i < b.N; i++ {	// b.N iteratsiyalar
 		Fibonacci(10)
 	}
 }
 
-func BenchmarkFibonacci20(b *testing.B) {
+func BenchmarkFibonacci20(b *B) {
 	// n=20 bilan benchmark
 	for i := 0; i < b.N; i++ {
 		Fibonacci(20)

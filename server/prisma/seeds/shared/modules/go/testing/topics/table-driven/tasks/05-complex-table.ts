@@ -41,7 +41,6 @@ tests := []struct {
 
 import (
 	"strings"
-	"testing"
 )
 
 type User struct {
@@ -61,14 +60,13 @@ func ValidateUser(u User) ValidationResult {
 }
 
 // TODO: Write complex table-driven test
-func TestValidateUser(t *testing.T) {
+func TestValidateUser(t *T) {
 	// TODO: Implement
 }`,
 	solutionCode: `package validator_test
 
 import (
 	"strings"
-	"testing"
 )
 
 type User struct {
@@ -117,7 +115,7 @@ func contains(slice []string, item string) bool {
 }
 
 // Helper function to assert validation result
-func assertValidation(t *testing.T, got ValidationResult, wantValid bool, wantErrs []string) {
+func assertValidation(t *T, got ValidationResult, wantValid bool, wantErrs []string) {
 	t.Helper()
 
 	// Check validity
@@ -139,7 +137,7 @@ func assertValidation(t *testing.T, got ValidationResult, wantValid bool, wantEr
 	}
 }
 
-func TestValidateUser(t *testing.T) {
+func TestValidateUser(t *T) {
 	tests := []struct {
 		name      string
 		user      User
@@ -243,7 +241,7 @@ func TestValidateUser(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *T) {
 			got := ValidateUser(tt.user)
 			assertValidation(t, got, tt.wantValid, tt.wantErrs)
 		})
@@ -255,11 +253,10 @@ func TestValidateUser(t *testing.T) {
 
 import (
 	"strings"
-	"testing"
 )
 
 // Test1: Valid user passes all validations
-func Test1(t *testing.T) {
+func Test1(t *T) {
 	user := User{Name: "John Doe", Email: "john@example.com", Age: 25}
 	result := ValidateUser(user)
 	if !result.Valid {
@@ -271,7 +268,7 @@ func Test1(t *testing.T) {
 }
 
 // Test2: Empty name fails validation
-func Test2(t *testing.T) {
+func Test2(t *T) {
 	user := User{Name: "", Email: "john@example.com", Age: 25}
 	result := ValidateUser(user)
 	if result.Valid {
@@ -290,7 +287,7 @@ func Test2(t *testing.T) {
 }
 
 // Test3: Invalid email format fails
-func Test3(t *testing.T) {
+func Test3(t *T) {
 	user := User{Name: "John", Email: "invalid", Age: 25}
 	result := ValidateUser(user)
 	if result.Valid {
@@ -309,7 +306,7 @@ func Test3(t *testing.T) {
 }
 
 // Test4: Negative age fails validation
-func Test4(t *testing.T) {
+func Test4(t *T) {
 	user := User{Name: "John", Email: "john@example.com", Age: -1}
 	result := ValidateUser(user)
 	if result.Valid {
@@ -328,7 +325,7 @@ func Test4(t *testing.T) {
 }
 
 // Test5: Age over 150 fails validation
-func Test5(t *testing.T) {
+func Test5(t *T) {
 	user := User{Name: "John", Email: "john@example.com", Age: 200}
 	result := ValidateUser(user)
 	if result.Valid {
@@ -337,7 +334,7 @@ func Test5(t *testing.T) {
 }
 
 // Test6: Multiple validation errors collected
-func Test6(t *testing.T) {
+func Test6(t *T) {
 	user := User{Name: "", Email: "invalid", Age: -5}
 	result := ValidateUser(user)
 	if result.Valid {
@@ -349,7 +346,7 @@ func Test6(t *testing.T) {
 }
 
 // Test7: Edge case - age 0 is valid
-func Test7(t *testing.T) {
+func Test7(t *T) {
 	user := User{Name: "Baby", Email: "baby@example.com", Age: 0}
 	result := ValidateUser(user)
 	if !result.Valid {
@@ -358,7 +355,7 @@ func Test7(t *testing.T) {
 }
 
 // Test8: Edge case - age 150 is valid
-func Test8(t *testing.T) {
+func Test8(t *T) {
 	user := User{Name: "Elder", Email: "elder@example.com", Age: 150}
 	result := ValidateUser(user)
 	if !result.Valid {
@@ -367,7 +364,7 @@ func Test8(t *testing.T) {
 }
 
 // Test9: Table-driven with complex assertions
-func Test9(t *testing.T) {
+func Test9(t *T) {
 	tests := []struct {
 		name      string
 		user      User
@@ -379,7 +376,7 @@ func Test9(t *testing.T) {
 		{"all invalid", User{"", "bad", -1}, false, 3},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *T) {
 			result := ValidateUser(tt.user)
 			if result.Valid != tt.wantValid {
 				t.Errorf("Valid = %v, want %v", result.Valid, tt.wantValid)
@@ -392,7 +389,7 @@ func Test9(t *testing.T) {
 }
 
 // Test10: ValidationResult struct correctness
-func Test10(t *testing.T) {
+func Test10(t *T) {
 	validUser := User{Name: "Test", Email: "test@test.com", Age: 30}
 	result := ValidateUser(validUser)
 
@@ -756,7 +753,6 @@ tests := []struct {
 
 import (
 	"strings"
-	"testing"
 )
 
 type User struct {
@@ -805,7 +801,7 @@ func contains(slice []string, item string) bool {
 }
 
 // Вспомогательная функция для проверки результата валидации
-func assertValidation(t *testing.T, got ValidationResult, wantValid bool, wantErrs []string) {
+func assertValidation(t *T, got ValidationResult, wantValid bool, wantErrs []string) {
 	t.Helper()
 
 	// Проверить валидность
@@ -827,7 +823,7 @@ func assertValidation(t *testing.T, got ValidationResult, wantValid bool, wantEr
 	}
 }
 
-func TestValidateUser(t *testing.T) {
+func TestValidateUser(t *T) {
 	tests := []struct {
 		name      string
 		user      User
@@ -931,7 +927,7 @@ func TestValidateUser(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *T) {
 			got := ValidateUser(tt.user)
 			assertValidation(t, got, tt.wantValid, tt.wantErrs)
 		})
@@ -1127,7 +1123,6 @@ Google'da murakkab jadval testlari tekshirish mantiqi uchun standart bo'lib, bar
 
 import (
 	"strings"
-	"testing"
 )
 
 type User struct {
@@ -1176,7 +1171,7 @@ func contains(slice []string, item string) bool {
 }
 
 // Tekshirish natijasini tekshirish uchun helper funksiya
-func assertValidation(t *testing.T, got ValidationResult, wantValid bool, wantErrs []string) {
+func assertValidation(t *T, got ValidationResult, wantValid bool, wantErrs []string) {
 	t.Helper()
 
 	// To'g'riligini tekshirish
@@ -1198,7 +1193,7 @@ func assertValidation(t *testing.T, got ValidationResult, wantValid bool, wantEr
 	}
 }
 
-func TestValidateUser(t *testing.T) {
+func TestValidateUser(t *T) {
 	tests := []struct {
 		name      string
 		user      User
@@ -1302,7 +1297,7 @@ func TestValidateUser(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *T) {
 			got := ValidateUser(tt.user)
 			assertValidation(t, got, tt.wantValid, tt.wantErrs)
 		})

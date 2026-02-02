@@ -115,19 +115,17 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       # Security Configuration
-      # TODO: RE-ENABLE after E2E testing - temporarily disabled for bulk testing
-      ENABLE_IP_BAN: ${ENABLE_IP_BAN:-false}
-      SUSPICIOUS_ACTIVITY_LOG: ${SUSPICIOUS_ACTIVITY_LOG:-false}
-      MALICIOUS_CODE_CHECK: ${MALICIOUS_CODE_CHECK:-false}
-      IP_BAN_THRESHOLD: ${IP_BAN_THRESHOLD:-9999}
-      IP_BAN_DURATION_HOURS: ${IP_BAN_DURATION_HOURS:-1}
-      # Rate Limiting - TODO: RE-ENABLE after E2E testing (was 10/10/5 SECONDS for run, 3/5 requests/min for auth)
-      # NOTE: RUN limits are in SECONDS between runs, not requests per minute!
-      RATE_LIMIT_RUN_FREE: ${RATE_LIMIT_RUN_FREE:-0}
-      RATE_LIMIT_RUN_AUTH: ${RATE_LIMIT_RUN_AUTH:-0}
-      RATE_LIMIT_RUN_PREMIUM: ${RATE_LIMIT_RUN_PREMIUM:-0}
-      RATE_LIMIT_REGISTER: ${RATE_LIMIT_REGISTER:-9999}
-      RATE_LIMIT_LOGIN: ${RATE_LIMIT_LOGIN:-9999}
+      ENABLE_IP_BAN: ${ENABLE_IP_BAN:-true}
+      SUSPICIOUS_ACTIVITY_LOG: ${SUSPICIOUS_ACTIVITY_LOG:-true}
+      MALICIOUS_CODE_CHECK: ${MALICIOUS_CODE_CHECK:-true}
+      IP_BAN_THRESHOLD: ${IP_BAN_THRESHOLD:-10}
+      IP_BAN_DURATION_HOURS: ${IP_BAN_DURATION_HOURS:-24}
+      # Rate Limiting (RUN limits are in SECONDS between runs, AUTH limits are requests/min)
+      RATE_LIMIT_RUN_FREE: ${RATE_LIMIT_RUN_FREE:-10}
+      RATE_LIMIT_RUN_AUTH: ${RATE_LIMIT_RUN_AUTH:-10}
+      RATE_LIMIT_RUN_PREMIUM: ${RATE_LIMIT_RUN_PREMIUM:-5}
+      RATE_LIMIT_REGISTER: ${RATE_LIMIT_REGISTER:-3}
+      RATE_LIMIT_LOGIN: ${RATE_LIMIT_LOGIN:-5}
     ports:
       - "8080:8080"
     depends_on:

@@ -880,6 +880,77 @@ func (t *T) Fatal(args ...interface{}) {
 
 func (t *T) Logf(format string, args ...interface{}) {}
 func (t *T) Log(args ...interface{}) {}
+func (t *T) Helper() {} // no-op for test helpers
+func (t *T) Parallel() {} // no-op - tests run sequentially in sandbox
+func (t *T) Cleanup(f func()) { defer f() } // register cleanup function
+func (t *T) Run(name string, f func(*T)) bool {
+    subT := &T{name: t.name + "/" + name}
+    defer func() {
+        if r := recover(); r != nil {
+            subT.failed = true
+            if subT.errorMsg == "" {
+                subT.errorMsg = fmt.Sprintf("%v", r)
+            }
+        }
+        if subT.failed {
+            t.failed = true
+            t.errorMsg = subT.errorMsg
+        }
+    }()
+    f(subT)
+    return !subT.failed
+}
+
+// Mock testing.B for benchmarks (simplified - runs once instead of N times)
+type B struct {
+    N int
+    failed bool
+    name string
+}
+
+func (b *B) ResetTimer() {}
+func (b *B) StopTimer() {}
+func (b *B) StartTimer() {}
+func (b *B) ReportAllocs() {}
+func (b *B) SetBytes(n int64) {}
+func (b *B) SetParallelism(p int) {}
+func (b *B) Run(name string, f func(*B)) bool {
+    subB := &B{N: 1, name: b.name + "/" + name}
+    f(subB)
+    return !subB.failed
+}
+func (b *B) RunParallel(body func(*PB)) {
+    pb := &PB{done: false}
+    body(pb)
+}
+
+// Mock testing.PB for parallel benchmarks
+type PB struct {
+    done bool
+    count int
+}
+
+func (pb *PB) Next() bool {
+    if pb.count >= 1 {
+        return false
+    }
+    pb.count++
+    return true
+}
+
+// Mock testing.M for TestMain
+type M struct {
+    exitCode int
+}
+
+func (m *M) Run() int {
+    // In our sandbox, tests are run by the framework after TestMain
+    // This is a simplified mock that just returns 0
+    return 0
+}
+
+// Global testDir variable for TestMain tasks
+var testDir string
 
 // Solution code
 ${cleanSolution}

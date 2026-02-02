@@ -38,7 +38,6 @@ func (m *MockUserStore) GetUser(id int) (User, error) {
 
 import (
 	"errors"
-	"testing"
 )
 
 type User struct {
@@ -75,14 +74,13 @@ func (m *MockUserStore) GetUser(id int) (User, error) {
 }
 
 // TODO: Write tests using mock
-func TestUserService_GetUserName(t *testing.T) {
+func TestUserService_GetUserName(t *T) {
 	// TODO: Implement
 }`,
 	solutionCode: `package mocking_test
 
 import (
 	"errors"
-	"testing"
 )
 
 type User struct {
@@ -121,8 +119,8 @@ func (m *MockUserStore) GetUser(id int) (User, error) {
 	return User{}, errors.New("GetUserFunc not set")
 }
 
-func TestUserService_GetUserName(t *testing.T) {
-	t.Run("success", func(t *testing.T) {
+func TestUserService_GetUserName(t *T) {
+	t.Run("success", func(t *T) {
 		// Configure mock to return user
 		mock := &MockUserStore{
 			GetUserFunc: func(id int) (User, error) {
@@ -142,7 +140,7 @@ func TestUserService_GetUserName(t *testing.T) {
 		}
 	})
 
-	t.Run("store error", func(t *testing.T) {
+	t.Run("store error", func(t *T) {
 		// Configure mock to return error
 		mock := &MockUserStore{
 			GetUserFunc: func(id int) (User, error) {
@@ -162,7 +160,7 @@ func TestUserService_GetUserName(t *testing.T) {
 		}
 	})
 
-	t.Run("user not found", func(t *testing.T) {
+	t.Run("user not found", func(t *T) {
 		// Configure mock to return not found error
 		mock := &MockUserStore{
 			GetUserFunc: func(id int) (User, error) {
@@ -185,10 +183,9 @@ func TestUserService_GetUserName(t *testing.T) {
 
 import (
 	"errors"
-	"testing"
 )
 
-func Test1(t *testing.T) {
+func Test1(t *T) {
 	mock := &MockUserStore{
 		GetUserFunc: func(id int) (User, error) {
 			return User{ID: 1, Name: "Alice"}, nil
@@ -201,7 +198,7 @@ func Test1(t *testing.T) {
 	}
 }
 
-func Test2(t *testing.T) {
+func Test2(t *T) {
 	mock := &MockUserStore{
 		GetUserFunc: func(id int) (User, error) {
 			return User{}, errors.New("not found")
@@ -214,7 +211,7 @@ func Test2(t *testing.T) {
 	}
 }
 
-func Test3(t *testing.T) {
+func Test3(t *T) {
 	calledWith := 0
 	mock := &MockUserStore{
 		GetUserFunc: func(id int) (User, error) {
@@ -229,7 +226,7 @@ func Test3(t *testing.T) {
 	}
 }
 
-func Test4(t *testing.T) {
+func Test4(t *T) {
 	mock := &MockUserStore{
 		GetUserFunc: func(id int) (User, error) {
 			return User{ID: id, Name: ""}, nil
@@ -242,7 +239,7 @@ func Test4(t *testing.T) {
 	}
 }
 
-func Test5(t *testing.T) {
+func Test5(t *T) {
 	mock := &MockUserStore{
 		GetUserFunc: func(id int) (User, error) {
 			return User{}, errors.New("database timeout")
@@ -255,7 +252,7 @@ func Test5(t *testing.T) {
 	}
 }
 
-func Test6(t *testing.T) {
+func Test6(t *T) {
 	callCount := 0
 	mock := &MockUserStore{
 		GetUserFunc: func(id int) (User, error) {
@@ -272,7 +269,7 @@ func Test6(t *testing.T) {
 	}
 }
 
-func Test7(t *testing.T) {
+func Test7(t *T) {
 	mock := &MockUserStore{}
 	service := NewUserService(mock)
 	_, err := service.GetUserName(1)
@@ -281,7 +278,7 @@ func Test7(t *testing.T) {
 	}
 }
 
-func Test8(t *testing.T) {
+func Test8(t *T) {
 	mock := &MockUserStore{
 		GetUserFunc: func(id int) (User, error) {
 			return User{ID: -1, Name: "Negative"}, nil
@@ -294,7 +291,7 @@ func Test8(t *testing.T) {
 	}
 }
 
-func Test9(t *testing.T) {
+func Test9(t *T) {
 	mock := &MockUserStore{
 		GetUserFunc: func(id int) (User, error) {
 			return User{ID: 0, Name: "Zero"}, nil
@@ -307,7 +304,7 @@ func Test9(t *testing.T) {
 	}
 }
 
-func Test10(t *testing.T) {
+func Test10(t *T) {
 	mock := &MockUserStore{
 		GetUserFunc: func(id int) (User, error) {
 			return User{ID: id, Name: "Long Name With Spaces"}, nil
@@ -670,7 +667,6 @@ func TestUserService(t *testing.T) {
 
 import (
 	"errors"
-	"testing"
 )
 
 type User struct {
@@ -709,8 +705,8 @@ func (m *MockUserStore) GetUser(id int) (User, error) {
 	return User{}, errors.New("GetUserFunc not set")
 }
 
-func TestUserService_GetUserName(t *testing.T) {
-	t.Run("успех", func(t *testing.T) {
+func TestUserService_GetUserName(t *T) {
+	t.Run("успех", func(t *T) {
 		// Настроить mock для возврата пользователя
 		mock := &MockUserStore{
 			GetUserFunc: func(id int) (User, error) {
@@ -730,7 +726,7 @@ func TestUserService_GetUserName(t *testing.T) {
 		}
 	})
 
-	t.Run("ошибка хранилища", func(t *testing.T) {
+	t.Run("ошибка хранилища", func(t *T) {
 		// Настроить mock для возврата ошибки
 		mock := &MockUserStore{
 			GetUserFunc: func(id int) (User, error) {
@@ -750,7 +746,7 @@ func TestUserService_GetUserName(t *testing.T) {
 		}
 	})
 
-	t.Run("пользователь не найден", func(t *testing.T) {
+	t.Run("пользователь не найден", func(t *T) {
 		// Настроить mock для возврата ошибки не найдено
 		mock := &MockUserStore{
 			GetUserFunc: func(id int) (User, error) {
@@ -956,7 +952,6 @@ func TestUserService(t *testing.T) {
 
 import (
 	"errors"
-	"testing"
 )
 
 type User struct {
@@ -995,8 +990,8 @@ func (m *MockUserStore) GetUser(id int) (User, error) {
 	return User{}, errors.New("GetUserFunc not set")
 }
 
-func TestUserService_GetUserName(t *testing.T) {
-	t.Run("muvaffaqiyat", func(t *testing.T) {
+func TestUserService_GetUserName(t *T) {
+	t.Run("muvaffaqiyat", func(t *T) {
 		// Foydalanuvchini qaytarish uchun mock ni sozlash
 		mock := &MockUserStore{
 			GetUserFunc: func(id int) (User, error) {
@@ -1016,7 +1011,7 @@ func TestUserService_GetUserName(t *testing.T) {
 		}
 	})
 
-	t.Run("saqlash xatosi", func(t *testing.T) {
+	t.Run("saqlash xatosi", func(t *T) {
 		// Xatoni qaytarish uchun mock ni sozlash
 		mock := &MockUserStore{
 			GetUserFunc: func(id int) (User, error) {
@@ -1036,7 +1031,7 @@ func TestUserService_GetUserName(t *testing.T) {
 		}
 	})
 
-	t.Run("foydalanuvchi topilmadi", func(t *testing.T) {
+	t.Run("foydalanuvchi topilmadi", func(t *T) {
 		// Topilmadi xatosini qaytarish uchun mock ni sozlash
 		mock := &MockUserStore{
 			GetUserFunc: func(id int) (User, error) {

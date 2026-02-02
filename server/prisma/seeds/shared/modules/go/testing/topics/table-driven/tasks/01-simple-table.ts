@@ -37,27 +37,21 @@ for _, tt := range tests {
 - Test at least 5 different cases
 - Include edge cases (0, negative numbers)`,
 	initialCode: `package tabletest_test
-
-import "testing"
-
 // TODO: Implement IsEven function
 func IsEven(n int) bool {
 	return false // TODO: Implement
 }
 
 // TODO: Write table-driven test for IsEven
-func TestIsEven(t *testing.T) {
+func TestIsEven(t *T) {
 	// TODO: Implement
 }`,
 	solutionCode: `package tabletest_test
-
-import "testing"
-
 func IsEven(n int) bool {
 	return n%2 == 0  // Check if divisible by 2
 }
 
-func TestIsEven(t *testing.T) {
+func TestIsEven(t *T) {
 	// Define test table
 	tests := []struct {
 		input int
@@ -83,64 +77,61 @@ func TestIsEven(t *testing.T) {
 			hint1: `Define a slice of anonymous structs: []struct{ input int; want bool }{ ... }`,
 			hint2: `Use range to iterate: for _, tt := range tests { ... }. The convention is to name the variable 'tt'.`,
 			testCode: `package tabletest_test
-
-import "testing"
-
-func Test1(t *testing.T) {
+func Test1(t *T) {
 	if !IsEven(0) {
 		t.Error("0 should be even")
 	}
 }
 
-func Test2(t *testing.T) {
+func Test2(t *T) {
 	if !IsEven(2) {
 		t.Error("2 should be even")
 	}
 }
 
-func Test3(t *testing.T) {
+func Test3(t *T) {
 	if IsEven(3) {
 		t.Error("3 should be odd")
 	}
 }
 
-func Test4(t *testing.T) {
+func Test4(t *T) {
 	if !IsEven(-4) {
 		t.Error("-4 should be even")
 	}
 }
 
-func Test5(t *testing.T) {
+func Test5(t *T) {
 	if IsEven(-5) {
 		t.Error("-5 should be odd")
 	}
 }
 
-func Test6(t *testing.T) {
+func Test6(t *T) {
 	if !IsEven(100) {
 		t.Error("100 should be even")
 	}
 }
 
-func Test7(t *testing.T) {
+func Test7(t *T) {
 	if IsEven(999) {
 		t.Error("999 should be odd")
 	}
 }
 
-func Test8(t *testing.T) {
+func Test8(t *T) {
 	if IsEven(1) {
 		t.Error("1 should be odd")
 	}
 }
 
-func Test9(t *testing.T) {
+func Test9(t *T) {
 	if !IsEven(-2) {
 		t.Error("-2 should be even")
 	}
 }
 
-func Test10(t *testing.T) {
+func Test10(t *T) {
 	if !IsEven(1000000) {
 		t.Error("1000000 should be even")
 	}
@@ -350,14 +341,11 @@ func TestAtoi(t *testing.T) {
 **Распознавание паттерна:**
 Если вы обнаруживаете, что копируете-вставляете тестовый код и меняете значения, используйте табличные тесты вместо этого.`,
 			solutionCode: `package tabletest_test
-
-import "testing"
-
 func IsEven(n int) bool {
 	return n%2 == 0  // Проверить делимость на 2
 }
 
-func TestIsEven(t *testing.T) {
+func TestIsEven(t *T) {
 	// Определить таблицу тестов
 	tests := []struct {
 		input int
@@ -496,14 +484,11 @@ func TestAtoi(t *testing.T) {
 **Pattern tanib olish:**
 Agar o'zingizni test kodini nusxalayotgan va qiymatlarni o'zgartirganingizni topsangiz, uning o'rniga jadval testlaridan foydalaning.`,
 			solutionCode: `package tabletest_test
-
-import "testing"
-
 func IsEven(n int) bool {
 	return n%2 == 0  // 2 ga bo'linishni tekshirish
 }
 
-func TestIsEven(t *testing.T) {
+func TestIsEven(t *T) {
 	// Test jadvalini aniqlash
 	tests := []struct {
 		input int

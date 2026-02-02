@@ -11,7 +11,7 @@ export const task: Task = {
 **Requirements:**
 1. Implement JSON and XML encoding functions
 2. Create sub-benchmarks for different data sizes
-3. Use b.Run(name, func(b *testing.B) {...})
+3. Use b.Run(name, func(b *B) {...})
 4. Test small, medium, large datasets
 5. Run specific sub-benchmark with -bench=
 
@@ -23,7 +23,6 @@ export const task: Task = {
 
 import (
 	"encoding/json"
-	"testing"
 )
 
 type Data struct {
@@ -31,23 +30,22 @@ type Data struct {
 }
 
 // TODO: Write sub-benchmarks
-func BenchmarkJSON(b *testing.B) {
+func BenchmarkJSON(b *B) {
 	// TODO: Implement
 }`,
 	solutionCode: `package subbench_test
 
 import (
 	"encoding/json"
-	"testing"
 )
 
 type Data struct {
 	Values []int
 }
 
-func BenchmarkJSON(b *testing.B) {
+func BenchmarkJSON(b *B) {
 	// Small dataset
-	b.Run("small", func(b *testing.B) {
+	b.Run("small", func(b *B) {
 		data := Data{Values: make([]int, 10)}
 		b.ResetTimer()  // Reset timer after setup
 
@@ -57,7 +55,7 @@ func BenchmarkJSON(b *testing.B) {
 	})
 
 	// Medium dataset
-	b.Run("medium", func(b *testing.B) {
+	b.Run("medium", func(b *B) {
 		data := Data{Values: make([]int, 1000)}
 		b.ResetTimer()
 
@@ -67,7 +65,7 @@ func BenchmarkJSON(b *testing.B) {
 	})
 
 	// Large dataset
-	b.Run("large", func(b *testing.B) {
+	b.Run("large", func(b *B) {
 		data := Data{Values: make([]int, 100000)}
 		b.ResetTimer()
 
@@ -82,10 +80,9 @@ func BenchmarkJSON(b *testing.B) {
 
 import (
 	"encoding/json"
-	"testing"
 )
 
-func Test1(t *testing.T) {
+func Test1(t *T) {
 	data := Data{Values: []int{1, 2, 3}}
 	bytes, err := json.Marshal(data)
 	if err != nil {
@@ -96,7 +93,7 @@ func Test1(t *testing.T) {
 	}
 }
 
-func Test2(t *testing.T) {
+func Test2(t *T) {
 	data := Data{Values: []int{}}
 	bytes, _ := json.Marshal(data)
 	expected := ` + "`" + `{"Values":[]}` + "`" + `
@@ -204,16 +201,15 @@ func Test10(t *testing.T) {
 
 import (
 	"encoding/json"
-	"testing"
 )
 
 type Data struct {
 	Values []int
 }
 
-func BenchmarkJSON(b *testing.B) {
+func BenchmarkJSON(b *B) {
 	// Маленький набор данных
-	b.Run("small", func(b *testing.B) {
+	b.Run("small", func(b *B) {
 		data := Data{Values: make([]int, 10)}
 		b.ResetTimer()  // Сбросить таймер после настройки
 
@@ -223,7 +219,7 @@ func BenchmarkJSON(b *testing.B) {
 	})
 
 	// Средний набор данных
-	b.Run("medium", func(b *testing.B) {
+	b.Run("medium", func(b *B) {
 		data := Data{Values: make([]int, 1000)}
 		b.ResetTimer()
 
@@ -233,7 +229,7 @@ func BenchmarkJSON(b *testing.B) {
 	})
 
 	// Большой набор данных
-	b.Run("large", func(b *testing.B) {
+	b.Run("large", func(b *B) {
 		data := Data{Values: make([]int, 100000)}
 		b.ResetTimer()
 
@@ -250,7 +246,7 @@ func BenchmarkJSON(b *testing.B) {
 **Talablar:**
 1. JSON va XML practixsh funksiyalarini amalga oshiring
 2. Turli o'lchamlar uchun sub-benchmarklar yarating
-3. b.Run(name, func(b *testing.B) {...}) dan foydalaning
+3. b.Run(name, func(b *B) {...}) dan foydalaning
 4. Kichik, o'rtacha, katta to'plamlarni test qiling
 5. -bench= bilan muayyan sub-benchmark ishga tushiring
 
@@ -265,16 +261,15 @@ func BenchmarkJSON(b *testing.B) {
 
 import (
 	"encoding/json"
-	"testing"
 )
 
 type Data struct {
 	Values []int
 }
 
-func BenchmarkJSON(b *testing.B) {
+func BenchmarkJSON(b *B) {
 	// Kichik ma'lumotlar to'plami
-	b.Run("small", func(b *testing.B) {
+	b.Run("small", func(b *B) {
 		data := Data{Values: make([]int, 10)}
 		b.ResetTimer()  // Sozlashdan keyin timerni qayta o'rnatish
 
@@ -284,7 +279,7 @@ func BenchmarkJSON(b *testing.B) {
 	})
 
 	// O'rtacha ma'lumotlar to'plami
-	b.Run("medium", func(b *testing.B) {
+	b.Run("medium", func(b *B) {
 		data := Data{Values: make([]int, 1000)}
 		b.ResetTimer()
 
@@ -294,7 +289,7 @@ func BenchmarkJSON(b *testing.B) {
 	})
 
 	// Katta ma'lumotlar to'plami
-	b.Run("large", func(b *testing.B) {
+	b.Run("large", func(b *B) {
 		data := Data{Values: make([]int, 100000)}
 		b.ResetTimer()
 

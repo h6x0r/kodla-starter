@@ -33,11 +33,8 @@ func TestSomething(t *testing.T) {
 - Error messages should include both actual and expected values
 - Helper should be reusable across tests`,
 	initialCode: `package testhelper_test
-
-import "testing"
-
 // TODO: Implement assertEqual helper with t.Helper()
-func assertEqual(t *testing.T, got, want int) {
+func assertEqual(t *T, got, want int) {
 	// TODO: Implement
 }
 
@@ -50,14 +47,11 @@ func Multiply(a, b int) int {
 }
 
 // TODO: Use assertEqual helper in tests
-func TestMath(t *testing.T) {
+func TestMath(t *T) {
 	// TODO: Implement
 }`,
 	solutionCode: `package testhelper_test
-
-import "testing"
-
-func assertEqual(t *testing.T, got, want int) {
+func assertEqual(t *T, got, want int) {
 	t.Helper()  // Mark as helper: errors report caller's line number
 	if got != want {
 		t.Errorf("got %d, want %d", got, want)  // Report failure
@@ -72,7 +66,7 @@ func Multiply(a, b int) int {
 	return a * b
 }
 
-func TestMath(t *testing.T) {
+func TestMath(t *T) {
 	// Test addition with helper
 	assertEqual(t, Add(2, 3), 5)
 	assertEqual(t, Add(-1, 1), 0)
@@ -86,17 +80,14 @@ func TestMath(t *testing.T) {
 			hint1: `Call t.Helper() as the first line in your helper function to get correct error line numbers.`,
 			hint2: `Helper functions reduce duplication and make tests more readable. Extract common assertion logic.`,
 			testCode: `package testhelper_test
-
-import "testing"
-
 // Test1: assertEqual works for equal values
-func Test1(t *testing.T) {
+func Test1(t *T) {
 	// Should not fail
 	assertEqual(t, 5, 5)
 }
 
 // Test2: Add function basic test
-func Test2(t *testing.T) {
+func Test2(t *T) {
 	result := Add(2, 3)
 	if result != 5 {
 		t.Errorf("Add(2, 3) = %d; want 5", result)
@@ -104,7 +95,7 @@ func Test2(t *testing.T) {
 }
 
 // Test3: Multiply function basic test
-func Test3(t *testing.T) {
+func Test3(t *T) {
 	result := Multiply(3, 4)
 	if result != 12 {
 		t.Errorf("Multiply(3, 4) = %d; want 12", result)
@@ -112,45 +103,45 @@ func Test3(t *testing.T) {
 }
 
 // Test4: Add with zero
-func Test4(t *testing.T) {
+func Test4(t *T) {
 	assertEqual(t, Add(5, 0), 5)
 	assertEqual(t, Add(0, 5), 5)
 }
 
 // Test5: Multiply with zero
-func Test5(t *testing.T) {
+func Test5(t *T) {
 	assertEqual(t, Multiply(5, 0), 0)
 	assertEqual(t, Multiply(0, 5), 0)
 }
 
 // Test6: Add negative numbers
-func Test6(t *testing.T) {
+func Test6(t *T) {
 	assertEqual(t, Add(-1, 1), 0)
 	assertEqual(t, Add(-5, -5), -10)
 }
 
 // Test7: Multiply negative numbers
-func Test7(t *testing.T) {
+func Test7(t *T) {
 	assertEqual(t, Multiply(-2, 3), -6)
 	assertEqual(t, Multiply(-2, -3), 6)
 }
 
 // Test8: Multiple assertions with helper
-func Test8(t *testing.T) {
+func Test8(t *T) {
 	assertEqual(t, Add(1, 1), 2)
 	assertEqual(t, Add(2, 2), 4)
 	assertEqual(t, Add(3, 3), 6)
 }
 
 // Test9: Multiple multiply assertions
-func Test9(t *testing.T) {
+func Test9(t *T) {
 	assertEqual(t, Multiply(1, 1), 1)
 	assertEqual(t, Multiply(2, 2), 4)
 	assertEqual(t, Multiply(3, 3), 9)
 }
 
 // Test10: Combined operations
-func Test10(t *testing.T) {
+func Test10(t *T) {
 	sum := Add(3, 4)
 	product := Multiply(3, 4)
 	assertEqual(t, sum, 7)
@@ -320,10 +311,7 @@ func assertError(t *testing.T, err error, want string) {
 
 В Google тестовые хелперы необходимы: их библиотеки тестирования имеют сотни хелперов для общих паттернов, делая тесты более поддерживаемыми между командами.`,
 			solutionCode: `package testhelper_test
-
-import "testing"
-
-func assertEqual(t *testing.T, got, want int) {
+func assertEqual(t *T, got, want int) {
 	t.Helper()  // Отметить как хелпер: ошибки указывают на номер строки вызывающего кода
 	if got != want {
 		t.Errorf("got %d, want %d", got, want)  // Сообщить о сбое
@@ -338,7 +326,7 @@ func Multiply(a, b int) int {
 	return a * b
 }
 
-func TestMath(t *testing.T) {
+func TestMath(t *T) {
 	// Тестируем сложение с хелпером
 	assertEqual(t, Add(2, 3), 5)
 	assertEqual(t, Add(-1, 1), 0)
@@ -444,10 +432,7 @@ func assertError(t *testing.T, err error, want string) {
 
 Google da test helperlari zarur: ularning test kutubxonalari umumiy patternlar uchun yuzlab helperlarni o'z ichiga oladi, bu jamoalar o'rtasida testlarni yanada qo'llab-quvvatlanishini osonlashtiradi.`,
 			solutionCode: `package testhelper_test
-
-import "testing"
-
-func assertEqual(t *testing.T, got, want int) {
+func assertEqual(t *T, got, want int) {
 	t.Helper()  // Helper sifatida belgilash: xatolar chaqiruvchining qator raqamini xabar qiladi
 	if got != want {
 		t.Errorf("got %d, want %d", got, want)  // Xato haqida xabar berish
@@ -462,7 +447,7 @@ func Multiply(a, b int) int {
 	return a * b
 }
 
-func TestMath(t *testing.T) {
+func TestMath(t *T) {
 	// Helper bilan qo'shishni tekshirish
 	assertEqual(t, Add(2, 3), 5)
 	assertEqual(t, Add(-1, 1), 0)

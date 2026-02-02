@@ -38,7 +38,6 @@ func TestMain(m *testing.M) {
 
 import (
 	"os"
-	"testing"
 )
 
 var testDir string
@@ -49,7 +48,7 @@ func TestMain(m *testing.M) {
 }
 
 // TODO: Write test that uses testDir
-func TestFileOperations(t *testing.T) {
+func TestFileOperations(t *T) {
 	// TODO: Implement
 }`,
 	solutionCode: `package testmain_test
@@ -57,7 +56,6 @@ func TestFileOperations(t *testing.T) {
 import (
 	"os"
 	"path/filepath"
-	"testing"
 )
 
 var testDir string
@@ -80,7 +78,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestFileOperations(t *testing.T) {
+func TestFileOperations(t *T) {
 	// Test can use testDir set by TestMain
 	testFile := filepath.Join(testDir, "test.txt")
 
@@ -109,25 +107,24 @@ func TestFileOperations(t *testing.T) {
 import (
 	"os"
 	"path/filepath"
-	"testing"
 )
 
 // Test1: testDir is set by TestMain
-func Test1(t *testing.T) {
+func Test1(t *T) {
 	if testDir == "" {
 		t.Error("testDir should be set by TestMain")
 	}
 }
 
 // Test2: testDir exists
-func Test2(t *testing.T) {
+func Test2(t *T) {
 	if _, err := os.Stat(testDir); os.IsNotExist(err) {
 		t.Errorf("testDir %q should exist", testDir)
 	}
 }
 
 // Test3: Can create file in testDir
-func Test3(t *testing.T) {
+func Test3(t *T) {
 	testFile := filepath.Join(testDir, "test3.txt")
 	err := os.WriteFile(testFile, []byte("test"), 0644)
 	if err != nil {
@@ -137,7 +134,7 @@ func Test3(t *testing.T) {
 }
 
 // Test4: Can read file from testDir
-func Test4(t *testing.T) {
+func Test4(t *T) {
 	testFile := filepath.Join(testDir, "test4.txt")
 	content := []byte("read test")
 	if err := os.WriteFile(testFile, content, 0644); err != nil {
@@ -155,7 +152,7 @@ func Test4(t *testing.T) {
 }
 
 // Test5: testDir is a directory
-func Test5(t *testing.T) {
+func Test5(t *T) {
 	info, err := os.Stat(testDir)
 	if err != nil {
 		t.Fatalf("Stat failed: %v", err)
@@ -166,7 +163,7 @@ func Test5(t *testing.T) {
 }
 
 // Test6: Can create subdirectory
-func Test6(t *testing.T) {
+func Test6(t *T) {
 	subDir := filepath.Join(testDir, "subdir")
 	err := os.Mkdir(subDir, 0755)
 	if err != nil {
@@ -176,7 +173,7 @@ func Test6(t *testing.T) {
 }
 
 // Test7: Multiple file operations
-func Test7(t *testing.T) {
+func Test7(t *T) {
 	for i := 0; i < 3; i++ {
 		file := filepath.Join(testDir, "multi"+string(rune('0'+i))+".txt")
 		if err := os.WriteFile(file, []byte("data"), 0644); err != nil {
@@ -187,7 +184,7 @@ func Test7(t *testing.T) {
 }
 
 // Test8: testDir is writable
-func Test8(t *testing.T) {
+func Test8(t *T) {
 	testFile := filepath.Join(testDir, "writable.txt")
 	err := os.WriteFile(testFile, []byte("test"), 0644)
 	if err != nil {
@@ -197,7 +194,7 @@ func Test8(t *testing.T) {
 }
 
 // Test9: File content persists within test
-func Test9(t *testing.T) {
+func Test9(t *T) {
 	testFile := filepath.Join(testDir, "persist.txt")
 	content := "persistent data"
 	os.WriteFile(testFile, []byte(content), 0644)
@@ -210,7 +207,7 @@ func Test9(t *testing.T) {
 }
 
 // Test10: testDir path is absolute
-func Test10(t *testing.T) {
+func Test10(t *T) {
 	if !filepath.IsAbs(testDir) {
 		t.Errorf("testDir should be absolute path, got %q", testDir)
 	}
@@ -478,7 +475,6 @@ func TestMain(m *testing.M) {
 import (
 	"os"
 	"path/filepath"
-	"testing"
 )
 
 var testDir string
@@ -501,7 +497,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestFileOperations(t *testing.T) {
+func TestFileOperations(t *T) {
 	// Тест может использовать testDir установленный TestMain
 	testFile := filepath.Join(testDir, "test.txt")
 
@@ -620,7 +616,6 @@ Go standart kutubxonasi TestMain ni keng foydalanadi - misollar uchun net/http t
 import (
 	"os"
 	"path/filepath"
-	"testing"
 )
 
 var testDir string
@@ -643,7 +638,7 @@ func TestMain(m *testing.M) {
 	os.Exit(code)
 }
 
-func TestFileOperations(t *testing.T) {
+func TestFileOperations(t *T) {
 	// Test TestMain tomonidan o'rnatilgan testDir dan foydalanishi mumkin
 	testFile := filepath.Join(testDir, "test.txt")
 

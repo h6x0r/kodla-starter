@@ -34,7 +34,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"testing"
 )
 
 type WeatherService struct {
@@ -60,7 +59,7 @@ func (f RoundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 // TODO: Write tests with mock HTTP client
-func TestWeatherService_GetTemperature(t *testing.T) {
+func TestWeatherService_GetTemperature(t *T) {
 	// TODO: Implement
 }`,
 	solutionCode: `package httptest_test
@@ -71,7 +70,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"testing"
 )
 
 type WeatherService struct {
@@ -112,8 +110,8 @@ func (f RoundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 	return f(req)  // Call the function
 }
 
-func TestWeatherService_GetTemperature(t *testing.T) {
-	t.Run("success", func(t *testing.T) {
+func TestWeatherService_GetTemperature(t *T) {
+	t.Run("success", func(t *T) {
 		// Create mock HTTP client
 		client := &http.Client{
 			Transport: RoundTripFunc(func(req *http.Request) (*http.Response, error) {
@@ -143,7 +141,7 @@ func TestWeatherService_GetTemperature(t *testing.T) {
 		}
 	})
 
-	t.Run("API error", func(t *testing.T) {
+	t.Run("API error", func(t *T) {
 		// Mock returns error status
 		client := &http.Client{
 			Transport: RoundTripFunc(func(req *http.Request) (*http.Response, error) {
@@ -164,7 +162,7 @@ func TestWeatherService_GetTemperature(t *testing.T) {
 		}
 	})
 
-	t.Run("network error", func(t *testing.T) {
+	t.Run("network error", func(t *T) {
 		// Mock returns network error
 		client := &http.Client{
 			Transport: RoundTripFunc(func(req *http.Request) (*http.Response, error) {
@@ -191,10 +189,9 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"testing"
 )
 
-func Test1(t *testing.T) {
+func Test1(t *T) {
 	client := &http.Client{
 		Transport: RoundTripFunc(func(req *http.Request) (*http.Response, error) {
 			return &http.Response{
@@ -211,7 +208,7 @@ func Test1(t *testing.T) {
 	}
 }
 
-func Test2(t *testing.T) {
+func Test2(t *T) {
 	client := &http.Client{
 		Transport: RoundTripFunc(func(req *http.Request) (*http.Response, error) {
 			return &http.Response{
@@ -228,7 +225,7 @@ func Test2(t *testing.T) {
 	}
 }
 
-func Test3(t *testing.T) {
+func Test3(t *T) {
 	client := &http.Client{
 		Transport: RoundTripFunc(func(req *http.Request) (*http.Response, error) {
 			return nil, errors.New("connection refused")
@@ -241,7 +238,7 @@ func Test3(t *testing.T) {
 	}
 }
 
-func Test4(t *testing.T) {
+func Test4(t *T) {
 	var requestedURL string
 	client := &http.Client{
 		Transport: RoundTripFunc(func(req *http.Request) (*http.Response, error) {
@@ -260,7 +257,7 @@ func Test4(t *testing.T) {
 	}
 }
 
-func Test5(t *testing.T) {
+func Test5(t *T) {
 	client := &http.Client{
 		Transport: RoundTripFunc(func(req *http.Request) (*http.Response, error) {
 			return &http.Response{
@@ -277,7 +274,7 @@ func Test5(t *testing.T) {
 	}
 }
 
-func Test6(t *testing.T) {
+func Test6(t *T) {
 	client := &http.Client{
 		Transport: RoundTripFunc(func(req *http.Request) (*http.Response, error) {
 			return &http.Response{
@@ -294,14 +291,14 @@ func Test6(t *testing.T) {
 	}
 }
 
-func Test7(t *testing.T) {
+func Test7(t *T) {
 	service := NewWeatherService(nil, "http://test.com")
 	if service.client == nil {
 		t.Error("expected default client to be set")
 	}
 }
 
-func Test8(t *testing.T) {
+func Test8(t *T) {
 	callCount := 0
 	client := &http.Client{
 		Transport: RoundTripFunc(func(req *http.Request) (*http.Response, error) {
@@ -321,7 +318,7 @@ func Test8(t *testing.T) {
 	}
 }
 
-func Test9(t *testing.T) {
+func Test9(t *T) {
 	client := &http.Client{
 		Transport: RoundTripFunc(func(req *http.Request) (*http.Response, error) {
 			return &http.Response{
@@ -338,7 +335,7 @@ func Test9(t *testing.T) {
 	}
 }
 
-func Test10(t *testing.T) {
+func Test10(t *T) {
 	client := &http.Client{
 		Transport: RoundTripFunc(func(req *http.Request) (*http.Response, error) {
 			if req.Method != "GET" {
@@ -405,7 +402,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"testing"
 )
 
 type WeatherService struct {
@@ -446,8 +442,8 @@ func (f RoundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 	return f(req)  // Вызвать функцию
 }
 
-func TestWeatherService_GetTemperature(t *testing.T) {
-	t.Run("успех", func(t *testing.T) {
+func TestWeatherService_GetTemperature(t *T) {
+	t.Run("успех", func(t *T) {
 		// Создать mock HTTP клиент
 		client := &http.Client{
 			Transport: RoundTripFunc(func(req *http.Request) (*http.Response, error) {
@@ -477,7 +473,7 @@ func TestWeatherService_GetTemperature(t *testing.T) {
 		}
 	})
 
-	t.Run("ошибка API", func(t *testing.T) {
+	t.Run("ошибка API", func(t *T) {
 		// Mock возвращает статус ошибки
 		client := &http.Client{
 			Transport: RoundTripFunc(func(req *http.Request) (*http.Response, error) {
@@ -498,7 +494,7 @@ func TestWeatherService_GetTemperature(t *testing.T) {
 		}
 	})
 
-	t.Run("сетевая ошибка", func(t *testing.T) {
+	t.Run("сетевая ошибка", func(t *T) {
 		// Mock возвращает сетевую ошибку
 		client := &http.Client{
 			Transport: RoundTripFunc(func(req *http.Request) (*http.Response, error) {
@@ -557,7 +553,6 @@ import (
 	"io"
 	"net/http"
 	"strings"
-	"testing"
 )
 
 type WeatherService struct {
@@ -598,8 +593,8 @@ func (f RoundTripFunc) RoundTrip(req *http.Request) (*http.Response, error) {
 	return f(req)  // Funksiyani chaqirish
 }
 
-func TestWeatherService_GetTemperature(t *testing.T) {
-	t.Run("muvaffaqiyat", func(t *testing.T) {
+func TestWeatherService_GetTemperature(t *T) {
+	t.Run("muvaffaqiyat", func(t *T) {
 		// Mock HTTP client yaratish
 		client := &http.Client{
 			Transport: RoundTripFunc(func(req *http.Request) (*http.Response, error) {
@@ -629,7 +624,7 @@ func TestWeatherService_GetTemperature(t *testing.T) {
 		}
 	})
 
-	t.Run("API xatosi", func(t *testing.T) {
+	t.Run("API xatosi", func(t *T) {
 		// Mock xato statusini qaytaradi
 		client := &http.Client{
 			Transport: RoundTripFunc(func(req *http.Request) (*http.Response, error) {
@@ -650,7 +645,7 @@ func TestWeatherService_GetTemperature(t *testing.T) {
 		}
 	})
 
-	t.Run("tarmoq xatosi", func(t *testing.T) {
+	t.Run("tarmoq xatosi", func(t *T) {
 		// Mock tarmoq xatosini qaytaradi
 		client := &http.Client{
 			Transport: RoundTripFunc(func(req *http.Request) (*http.Response, error) {

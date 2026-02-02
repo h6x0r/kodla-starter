@@ -20,9 +20,6 @@ export const task: Task = {
 - Mock should be reusable
 - Test service logic in isolation`,
 	initialCode: `package dbmock_test
-
-import "testing"
-
 type Order struct {
 	ID     int
 	UserID int
@@ -53,14 +50,13 @@ func (s *OrderService) PlaceOrder(userID int, total float64) (int, error) {
 type MockRepository struct{}
 
 // TODO: Write tests
-func TestOrderService_PlaceOrder(t *testing.T) {
+func TestOrderService_PlaceOrder(t *T) {
 	// TODO: Implement
 }`,
 	solutionCode: `package dbmock_test
 
 import (
 	"errors"
-	"testing"
 )
 
 type Order struct {
@@ -123,8 +119,8 @@ func (m *MockRepository) GetByID(id int) (Order, error) {
 	return Order{}, nil
 }
 
-func TestOrderService_PlaceOrder(t *testing.T) {
-	t.Run("success", func(t *testing.T) {
+func TestOrderService_PlaceOrder(t *T) {
+	t.Run("success", func(t *T) {
 		mock := &MockRepository{
 			CreateFunc: func(order Order) error {
 				// Verify order data
@@ -152,7 +148,7 @@ func TestOrderService_PlaceOrder(t *testing.T) {
 		}
 	})
 
-	t.Run("invalid total", func(t *testing.T) {
+	t.Run("invalid total", func(t *T) {
 		mock := &MockRepository{}
 		service := NewOrderService(mock)
 
@@ -166,7 +162,7 @@ func TestOrderService_PlaceOrder(t *testing.T) {
 		}
 	})
 
-	t.Run("database error", func(t *testing.T) {
+	t.Run("database error", func(t *T) {
 		mock := &MockRepository{
 			CreateFunc: func(order Order) error {
 				return errors.New("db error")
@@ -187,10 +183,9 @@ func TestOrderService_PlaceOrder(t *testing.T) {
 
 import (
 	"errors"
-	"testing"
 )
 
-func Test1(t *testing.T) {
+func Test1(t *T) {
 	mock := &MockRepository{
 		CreateFunc: func(order Order) error { return nil },
 	}
@@ -201,7 +196,7 @@ func Test1(t *testing.T) {
 	}
 }
 
-func Test2(t *testing.T) {
+func Test2(t *T) {
 	mock := &MockRepository{}
 	service := NewOrderService(mock)
 	_, err := service.PlaceOrder(1, -50.0)
@@ -210,7 +205,7 @@ func Test2(t *testing.T) {
 	}
 }
 
-func Test3(t *testing.T) {
+func Test3(t *T) {
 	mock := &MockRepository{}
 	service := NewOrderService(mock)
 	_, err := service.PlaceOrder(1, 0)
@@ -219,7 +214,7 @@ func Test3(t *testing.T) {
 	}
 }
 
-func Test4(t *testing.T) {
+func Test4(t *T) {
 	mock := &MockRepository{
 		CreateFunc: func(order Order) error {
 			return errors.New("connection refused")
@@ -232,7 +227,7 @@ func Test4(t *testing.T) {
 	}
 }
 
-func Test5(t *testing.T) {
+func Test5(t *T) {
 	var capturedOrder Order
 	mock := &MockRepository{
 		CreateFunc: func(order Order) error {
@@ -247,7 +242,7 @@ func Test5(t *testing.T) {
 	}
 }
 
-func Test6(t *testing.T) {
+func Test6(t *T) {
 	mock := &MockRepository{
 		CreateFunc: func(order Order) error { return nil },
 	}
@@ -258,7 +253,7 @@ func Test6(t *testing.T) {
 	}
 }
 
-func Test7(t *testing.T) {
+func Test7(t *T) {
 	mock := &MockRepository{}
 	service := NewOrderService(mock)
 	service.PlaceOrder(1, -10)
@@ -267,7 +262,7 @@ func Test7(t *testing.T) {
 	}
 }
 
-func Test8(t *testing.T) {
+func Test8(t *T) {
 	mock := &MockRepository{
 		CreateFunc: func(order Order) error { return nil },
 	}
@@ -279,7 +274,7 @@ func Test8(t *testing.T) {
 	}
 }
 
-func Test9(t *testing.T) {
+func Test9(t *T) {
 	mock := &MockRepository{
 		CreateFunc: func(order Order) error { return nil },
 	}
@@ -290,7 +285,7 @@ func Test9(t *testing.T) {
 	}
 }
 
-func Test10(t *testing.T) {
+func Test10(t *T) {
 	mock := &MockRepository{
 		CreateFunc: func(order Order) error { return nil },
 	}
@@ -314,7 +309,6 @@ func Test10(t *testing.T) {
 
 import (
 	"errors"
-	"testing"
 )
 
 type Order struct {
@@ -377,8 +371,8 @@ func (m *MockRepository) GetByID(id int) (Order, error) {
 	return Order{}, nil
 }
 
-func TestOrderService_PlaceOrder(t *testing.T) {
-	t.Run("успех", func(t *testing.T) {
+func TestOrderService_PlaceOrder(t *T) {
+	t.Run("успех", func(t *T) {
 		mock := &MockRepository{
 			CreateFunc: func(order Order) error {
 				// Проверить данные заказа
@@ -406,7 +400,7 @@ func TestOrderService_PlaceOrder(t *testing.T) {
 		}
 	})
 
-	t.Run("невалидный total", func(t *testing.T) {
+	t.Run("невалидный total", func(t *T) {
 		mock := &MockRepository{}
 		service := NewOrderService(mock)
 
@@ -420,7 +414,7 @@ func TestOrderService_PlaceOrder(t *testing.T) {
 		}
 	})
 
-	t.Run("ошибка базы данных", func(t *testing.T) {
+	t.Run("ошибка базы данных", func(t *T) {
 		mock := &MockRepository{
 			CreateFunc: func(order Order) error {
 				return errors.New("db error")
@@ -446,7 +440,6 @@ func TestOrderService_PlaceOrder(t *testing.T) {
 
 import (
 	"errors"
-	"testing"
 )
 
 type Order struct {
@@ -509,8 +502,8 @@ func (m *MockRepository) GetByID(id int) (Order, error) {
 	return Order{}, nil
 }
 
-func TestOrderService_PlaceOrder(t *testing.T) {
-	t.Run("muvaffaqiyat", func(t *testing.T) {
+func TestOrderService_PlaceOrder(t *T) {
+	t.Run("muvaffaqiyat", func(t *T) {
 		mock := &MockRepository{
 			CreateFunc: func(order Order) error {
 				// Buyurtma ma'lumotlarini tekshirish
@@ -538,7 +531,7 @@ func TestOrderService_PlaceOrder(t *testing.T) {
 		}
 	})
 
-	t.Run("noto'g'ri total", func(t *testing.T) {
+	t.Run("noto'g'ri total", func(t *T) {
 		mock := &MockRepository{}
 		service := NewOrderService(mock)
 
@@ -552,7 +545,7 @@ func TestOrderService_PlaceOrder(t *testing.T) {
 		}
 	})
 
-	t.Run("ma'lumotlar bazasi xatosi", func(t *testing.T) {
+	t.Run("ma'lumotlar bazasi xatosi", func(t *T) {
 		mock := &MockRepository{
 			CreateFunc: func(order Order) error {
 				return errors.New("db error")

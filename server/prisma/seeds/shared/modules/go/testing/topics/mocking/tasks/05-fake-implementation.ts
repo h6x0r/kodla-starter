@@ -20,9 +20,6 @@ export const task: Task = {
 - Store data in memory (map)
 - Support all interface operations`,
 	initialCode: `package fake_test
-
-import "testing"
-
 type Cache interface {
 	Set(key, value string) error
 	Get(key string) (string, bool)
@@ -42,13 +39,10 @@ func (f *FakeCache) Delete(key string) error {
 }
 
 // TODO: Write tests
-func TestFakeCache(t *testing.T) {
+func TestFakeCache(t *T) {
 	// TODO: Implement
 }`,
 	solutionCode: `package fake_test
-
-import "testing"
-
 type Cache interface {
 	Set(key, value string) error
 	Get(key string) (string, bool)
@@ -80,11 +74,11 @@ func (f *FakeCache) Delete(key string) error {
 	return nil
 }
 
-func TestFakeCache(t *testing.T) {
+func TestFakeCache(t *T) {
 	cache := NewFakeCache()
 
 	// Test Set and Get
-	t.Run("Set and Get", func(t *testing.T) {
+	t.Run("Set and Get", func(t *T) {
 		err := cache.Set("user:1", "John")
 		if err != nil {
 			t.Fatalf("Set error: %v", err)
@@ -100,7 +94,7 @@ func TestFakeCache(t *testing.T) {
 	})
 
 	// Test Get non-existent key
-	t.Run("Get non-existent", func(t *testing.T) {
+	t.Run("Get non-existent", func(t *T) {
 		_, ok := cache.Get("nonexistent")
 		if ok {
 			t.Error("expected key to not exist")
@@ -108,7 +102,7 @@ func TestFakeCache(t *testing.T) {
 	})
 
 	// Test Delete
-	t.Run("Delete", func(t *testing.T) {
+	t.Run("Delete", func(t *T) {
 		cache.Set("temp", "value")
 
 		err := cache.Delete("temp")
@@ -123,7 +117,7 @@ func TestFakeCache(t *testing.T) {
 	})
 
 	// Test multiple operations
-	t.Run("Multiple operations", func(t *testing.T) {
+	t.Run("Multiple operations", func(t *T) {
 		cache := NewFakeCache()
 
 		cache.Set("a", "1")
@@ -145,10 +139,7 @@ func TestFakeCache(t *testing.T) {
 			hint1: `Fake is a working implementation using simple data structures (map, slice).`,
 			hint2: `Unlike mocks, fakes have real logic and maintain state across calls.`,
 			testCode: `package fake_test
-
-import "testing"
-
-func Test1(t *testing.T) {
+func Test1(t *T) {
 	cache := NewFakeCache()
 	err := cache.Set("key", "value")
 	if err != nil {
@@ -156,7 +147,7 @@ func Test1(t *testing.T) {
 	}
 }
 
-func Test2(t *testing.T) {
+func Test2(t *T) {
 	cache := NewFakeCache()
 	cache.Set("key", "value")
 	val, ok := cache.Get("key")
@@ -165,7 +156,7 @@ func Test2(t *testing.T) {
 	}
 }
 
-func Test3(t *testing.T) {
+func Test3(t *T) {
 	cache := NewFakeCache()
 	_, ok := cache.Get("nonexistent")
 	if ok {
@@ -173,7 +164,7 @@ func Test3(t *testing.T) {
 	}
 }
 
-func Test4(t *testing.T) {
+func Test4(t *T) {
 	cache := NewFakeCache()
 	cache.Set("key", "value")
 	err := cache.Delete("key")
@@ -186,7 +177,7 @@ func Test4(t *testing.T) {
 	}
 }
 
-func Test5(t *testing.T) {
+func Test5(t *T) {
 	cache := NewFakeCache()
 	cache.Set("key", "first")
 	cache.Set("key", "second")
@@ -196,7 +187,7 @@ func Test5(t *testing.T) {
 	}
 }
 
-func Test6(t *testing.T) {
+func Test6(t *T) {
 	cache := NewFakeCache()
 	cache.Set("a", "1")
 	cache.Set("b", "2")
@@ -209,7 +200,7 @@ func Test6(t *testing.T) {
 	}
 }
 
-func Test7(t *testing.T) {
+func Test7(t *T) {
 	cache := NewFakeCache()
 	err := cache.Delete("nonexistent")
 	if err != nil {
@@ -217,7 +208,7 @@ func Test7(t *testing.T) {
 	}
 }
 
-func Test8(t *testing.T) {
+func Test8(t *T) {
 	cache := NewFakeCache()
 	cache.Set("key", "")
 	val, ok := cache.Get("key")
@@ -226,7 +217,7 @@ func Test8(t *testing.T) {
 	}
 }
 
-func Test9(t *testing.T) {
+func Test9(t *T) {
 	cache := NewFakeCache()
 	cache.Set("", "empty key")
 	val, ok := cache.Get("")
@@ -235,7 +226,7 @@ func Test9(t *testing.T) {
 	}
 }
 
-func Test10(t *testing.T) {
+func Test10(t *T) {
 	cache := NewFakeCache()
 	for i := 0; i < 100; i++ {
 		cache.Set("key", "value")
@@ -338,9 +329,6 @@ func TestUserService(t *testing.T) {
 
 Фейки обеспечивают быструю итерацию во время разработки без ожидания медленных зависимостей.`,
 			solutionCode: `package fake_test
-
-import "testing"
-
 type Cache interface {
 	Set(key, value string) error
 	Get(key string) (string, bool)
@@ -372,11 +360,11 @@ func (f *FakeCache) Delete(key string) error {
 	return nil
 }
 
-func TestFakeCache(t *testing.T) {
+func TestFakeCache(t *T) {
 	cache := NewFakeCache()
 
 	// Тест Set и Get
-	t.Run("Set и Get", func(t *testing.T) {
+	t.Run("Set и Get", func(t *T) {
 		err := cache.Set("user:1", "John")
 		if err != nil {
 			t.Fatalf("ошибка Set: %v", err)
@@ -392,7 +380,7 @@ func TestFakeCache(t *testing.T) {
 	})
 
 	// Тест Get несуществующего ключа
-	t.Run("Get несуществующего", func(t *testing.T) {
+	t.Run("Get несуществующего", func(t *T) {
 		_, ok := cache.Get("nonexistent")
 		if ok {
 			t.Error("ожидается отсутствие ключа")
@@ -400,7 +388,7 @@ func TestFakeCache(t *testing.T) {
 	})
 
 	// Тест Delete
-	t.Run("Delete", func(t *testing.T) {
+	t.Run("Delete", func(t *T) {
 		cache.Set("temp", "value")
 
 		err := cache.Delete("temp")
@@ -415,7 +403,7 @@ func TestFakeCache(t *testing.T) {
 	})
 
 	// Тест множественных операций
-	t.Run("Множественные операции", func(t *testing.T) {
+	t.Run("Множественные операции", func(t *T) {
 		cache := NewFakeCache()
 
 		cache.Set("a", "1")
@@ -483,9 +471,6 @@ func TestUserService(t *testing.T) {
 
 Fake lar sekin bog'liqliklarni kutmasdan rivojlantirish davomida tez iteratsiyani ta'minlaydi.`,
 			solutionCode: `package fake_test
-
-import "testing"
-
 type Cache interface {
 	Set(key, value string) error
 	Get(key string) (string, bool)
@@ -517,11 +502,11 @@ func (f *FakeCache) Delete(key string) error {
 	return nil
 }
 
-func TestFakeCache(t *testing.T) {
+func TestFakeCache(t *T) {
 	cache := NewFakeCache()
 
 	// Set va Get testlari
-	t.Run("Set va Get", func(t *testing.T) {
+	t.Run("Set va Get", func(t *T) {
 		err := cache.Set("user:1", "John")
 		if err != nil {
 			t.Fatalf("Set xatosi: %v", err)
@@ -537,7 +522,7 @@ func TestFakeCache(t *testing.T) {
 	})
 
 	// Mavjud bo'lmagan kalitni olish testi
-	t.Run("Mavjud bo'lmagan kalitni olish", func(t *testing.T) {
+	t.Run("Mavjud bo'lmagan kalitni olish", func(t *T) {
 		_, ok := cache.Get("nonexistent")
 		if ok {
 			t.Error("kalit mavjud bo'lmasligi kutilgan")
@@ -545,7 +530,7 @@ func TestFakeCache(t *testing.T) {
 	})
 
 	// Delete testi
-	t.Run("Delete", func(t *testing.T) {
+	t.Run("Delete", func(t *T) {
 		cache.Set("temp", "value")
 
 		err := cache.Delete("temp")
@@ -560,7 +545,7 @@ func TestFakeCache(t *testing.T) {
 	})
 
 	// Ko'p operatsiyalar testi
-	t.Run("Ko'p operatsiyalar", func(t *testing.T) {
+	t.Run("Ko'p operatsiyalar", func(t *T) {
 		cache := NewFakeCache()
 
 		cache.Set("a", "1")

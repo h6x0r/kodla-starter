@@ -16,14 +16,13 @@ export const task: Task = {
 5. Run with \`-cpu\` flag
 
 **Constraints:**
-- Use b.RunParallel(func(pb *testing.PB) {...})
+- Use b.RunParallel(func(pb *PB) {...})
 - Test concurrent access
 - Must be thread-safe`,
 	initialCode: `package parallel_test
 
 import (
 	"sync"
-	"testing"
 )
 
 type SafeCache struct {
@@ -46,14 +45,13 @@ func (c *SafeCache) Set(key string, value int) {
 }
 
 // TODO: Write parallel benchmark
-func BenchmarkSafeCacheParallel(b *testing.B) {
+func BenchmarkSafeCacheParallel(b *B) {
 	// TODO: Implement
 }`,
 	solutionCode: `package parallel_test
 
 import (
 	"sync"
-	"testing"
 )
 
 type SafeCache struct {
@@ -78,11 +76,11 @@ func (c *SafeCache) Set(key string, value int) {
 	c.data[key] = value
 }
 
-func BenchmarkSafeCacheParallel(b *testing.B) {
+func BenchmarkSafeCacheParallel(b *B) {
 	cache := NewSafeCache()
 	cache.Set("key1", 100)
 
-	b.RunParallel(func(pb *testing.PB) {	// Run in parallel
+	b.RunParallel(func(pb *PB) {	// Run in parallel
 		for pb.Next() {	// Each goroutine loops
 			cache.Get("key1")
 			cache.Set("key2", 200)
@@ -95,10 +93,9 @@ func BenchmarkSafeCacheParallel(b *testing.B) {
 
 import (
 	"sync"
-	"testing"
 )
 
-func Test1(t *testing.T) {
+func Test1(t *T) {
 	cache := NewSafeCache()
 	cache.Set("key", 42)
 	val, ok := cache.Get("key")
@@ -107,7 +104,7 @@ func Test1(t *testing.T) {
 	}
 }
 
-func Test2(t *testing.T) {
+func Test2(t *T) {
 	cache := NewSafeCache()
 	_, ok := cache.Get("nonexistent")
 	if ok {
@@ -115,7 +112,7 @@ func Test2(t *testing.T) {
 	}
 }
 
-func Test3(t *testing.T) {
+func Test3(t *T) {
 	cache := NewSafeCache()
 	cache.Set("key", 1)
 	cache.Set("key", 2)
@@ -125,7 +122,7 @@ func Test3(t *testing.T) {
 	}
 }
 
-func Test4(t *testing.T) {
+func Test4(t *T) {
 	cache := NewSafeCache()
 	for i := 0; i < 100; i++ {
 		cache.Set("k", i)
@@ -136,7 +133,7 @@ func Test4(t *testing.T) {
 	}
 }
 
-func Test5(t *testing.T) {
+func Test5(t *T) {
 	cache := NewSafeCache()
 	cache.Set("a", 1)
 	cache.Set("b", 2)
@@ -149,7 +146,7 @@ func Test5(t *testing.T) {
 	}
 }
 
-func Test6(t *testing.T) {
+func Test6(t *T) {
 	cache := NewSafeCache()
 	var wg sync.WaitGroup
 	for i := 0; i < 10; i++ {
@@ -166,7 +163,7 @@ func Test6(t *testing.T) {
 	}
 }
 
-func Test7(t *testing.T) {
+func Test7(t *T) {
 	cache := NewSafeCache()
 	cache.Set("key", 100)
 	var wg sync.WaitGroup
@@ -180,7 +177,7 @@ func Test7(t *testing.T) {
 	wg.Wait()
 }
 
-func Test8(t *testing.T) {
+func Test8(t *T) {
 	cache := NewSafeCache()
 	cache.Set("zero", 0)
 	val, ok := cache.Get("zero")
@@ -189,7 +186,7 @@ func Test8(t *testing.T) {
 	}
 }
 
-func Test9(t *testing.T) {
+func Test9(t *T) {
 	cache := NewSafeCache()
 	cache.Set("neg", -100)
 	val, ok := cache.Get("neg")
@@ -198,7 +195,7 @@ func Test9(t *testing.T) {
 	}
 }
 
-func Test10(t *testing.T) {
+func Test10(t *T) {
 	cache := NewSafeCache()
 	var wg sync.WaitGroup
 	for i := 0; i < 50; i++ {
@@ -228,7 +225,6 @@ func Test10(t *testing.T) {
 
 import (
 	"sync"
-	"testing"
 )
 
 type SafeCache struct {
@@ -253,11 +249,11 @@ func (c *SafeCache) Set(key string, value int) {
 	c.data[key] = value
 }
 
-func BenchmarkSafeCacheParallel(b *testing.B) {
+func BenchmarkSafeCacheParallel(b *B) {
 	cache := NewSafeCache()
 	cache.Set("key1", 100)
 
-	b.RunParallel(func(pb *testing.PB) {	// Запуск параллельно
+	b.RunParallel(func(pb *PB) {	// Запуск параллельно
 		for pb.Next() {	// Каждая goroutine циклится
 			cache.Get("key1")
 			cache.Set("key2", 200)
@@ -275,7 +271,6 @@ func BenchmarkSafeCacheParallel(b *testing.B) {
 
 import (
 	"sync"
-	"testing"
 )
 
 type SafeCache struct {
@@ -300,11 +295,11 @@ func (c *SafeCache) Set(key string, value int) {
 	c.data[key] = value
 }
 
-func BenchmarkSafeCacheParallel(b *testing.B) {
+func BenchmarkSafeCacheParallel(b *B) {
 	cache := NewSafeCache()
 	cache.Set("key1", 100)
 
-	b.RunParallel(func(pb *testing.PB) {	// Parallel ishga tushirish
+	b.RunParallel(func(pb *PB) {	// Parallel ishga tushirish
 		for pb.Next() {	// Har bir goroutine tsikl
 			cache.Get("key1")
 			cache.Set("key2", 200)

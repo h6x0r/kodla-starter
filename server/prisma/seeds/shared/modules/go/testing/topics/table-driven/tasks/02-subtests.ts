@@ -40,9 +40,6 @@ for _, tt := range tests {
 - Use t.Run for all cases
 - Test all four operations`,
 	initialCode: `package calc_test
-
-import "testing"
-
 // TODO: Implement calculator functions
 func Add(a, b int) int {
 	return 0 // TODO: Implement
@@ -58,21 +55,18 @@ func Divide(a, b int) int {
 }
 
 // TODO: Write subtests for calculator operations
-func TestCalculator(t *testing.T) {
+func TestCalculator(t *T) {
 	// TODO: Implement
 }`,
 	solutionCode: `package calc_test
-
-import "testing"
-
 func Add(a, b int) int      { return a + b }
 func Subtract(a, b int) int { return a - b }
 func Multiply(a, b int) int { return a * b }
 func Divide(a, b int) int   { return a / b }
 
-func TestCalculator(t *testing.T) {
+func TestCalculator(t *T) {
 	// Test Addition
-	t.Run("Addition", func(t *testing.T) {
+	t.Run("Addition", func(t *T) {
 		tests := []struct {
 			name string
 			a, b int
@@ -84,7 +78,7 @@ func TestCalculator(t *testing.T) {
 		}
 
 		for _, tt := range tests {
-			t.Run(tt.name, func(t *testing.T) {
+			t.Run(tt.name, func(t *T) {
 				got := Add(tt.a, tt.b)
 				if got != tt.want {
 					t.Errorf("Add(%d, %d) = %d, want %d", tt.a, tt.b, got, tt.want)
@@ -94,7 +88,7 @@ func TestCalculator(t *testing.T) {
 	})
 
 	// Test Subtraction
-	t.Run("Subtraction", func(t *testing.T) {
+	t.Run("Subtraction", func(t *T) {
 		tests := []struct {
 			name string
 			a, b int
@@ -106,7 +100,7 @@ func TestCalculator(t *testing.T) {
 		}
 
 		for _, tt := range tests {
-			t.Run(tt.name, func(t *testing.T) {
+			t.Run(tt.name, func(t *T) {
 				got := Subtract(tt.a, tt.b)
 				if got != tt.want {
 					t.Errorf("Subtract(%d, %d) = %d, want %d", tt.a, tt.b, got, tt.want)
@@ -116,7 +110,7 @@ func TestCalculator(t *testing.T) {
 	})
 
 	// Test Multiplication
-	t.Run("Multiplication", func(t *testing.T) {
+	t.Run("Multiplication", func(t *T) {
 		tests := []struct {
 			name string
 			a, b int
@@ -128,7 +122,7 @@ func TestCalculator(t *testing.T) {
 		}
 
 		for _, tt := range tests {
-			t.Run(tt.name, func(t *testing.T) {
+			t.Run(tt.name, func(t *T) {
 				got := Multiply(tt.a, tt.b)
 				if got != tt.want {
 					t.Errorf("Multiply(%d, %d) = %d, want %d", tt.a, tt.b, got, tt.want)
@@ -138,7 +132,7 @@ func TestCalculator(t *testing.T) {
 	})
 
 	// Test Division
-	t.Run("Division", func(t *testing.T) {
+	t.Run("Division", func(t *T) {
 		tests := []struct {
 			name string
 			a, b int
@@ -150,7 +144,7 @@ func TestCalculator(t *testing.T) {
 		}
 
 		for _, tt := range tests {
-			t.Run(tt.name, func(t *testing.T) {
+			t.Run(tt.name, func(t *T) {
 				got := Divide(tt.a, tt.b)
 				if got != tt.want {
 					t.Errorf("Divide(%d, %d) = %d, want %d", tt.a, tt.b, got, tt.want)
@@ -162,64 +156,61 @@ func TestCalculator(t *testing.T) {
 			hint1: `Use t.Run(name, func(t *testing.T) { ... }) to create a subtest. Each subtest gets its own t.`,
 			hint2: `Subtest names appear in test output: TestCalculator/Addition/positive_numbers`,
 			testCode: `package calc_test
-
-import "testing"
-
-func Test1(t *testing.T) {
+func Test1(t *T) {
 	if Add(2, 3) != 5 {
 		t.Error("Add(2, 3) should be 5")
 	}
 }
 
-func Test2(t *testing.T) {
+func Test2(t *T) {
 	if Add(-1, -1) != -2 {
 		t.Error("Add(-1, -1) should be -2")
 	}
 }
 
-func Test3(t *testing.T) {
+func Test3(t *T) {
 	if Subtract(5, 3) != 2 {
 		t.Error("Subtract(5, 3) should be 2")
 	}
 }
 
-func Test4(t *testing.T) {
+func Test4(t *T) {
 	if Subtract(3, 5) != -2 {
 		t.Error("Subtract(3, 5) should be -2")
 	}
 }
 
-func Test5(t *testing.T) {
+func Test5(t *T) {
 	if Multiply(3, 4) != 12 {
 		t.Error("Multiply(3, 4) should be 12")
 	}
 }
 
-func Test6(t *testing.T) {
+func Test6(t *T) {
 	if Multiply(5, 0) != 0 {
 		t.Error("Multiply(5, 0) should be 0")
 	}
 }
 
-func Test7(t *testing.T) {
+func Test7(t *T) {
 	if Divide(10, 2) != 5 {
 		t.Error("Divide(10, 2) should be 5")
 	}
 }
 
-func Test8(t *testing.T) {
+func Test8(t *T) {
 	if Divide(10, 3) != 3 {
 		t.Error("Divide(10, 3) should be 3 (truncated)")
 	}
 }
 
-func Test9(t *testing.T) {
+func Test9(t *T) {
 	if Add(0, 0) != 0 {
 		t.Error("Add(0, 0) should be 0")
 	}
 }
 
-func Test10(t *testing.T) {
+func Test10(t *T) {
 	if Multiply(-2, 3) != -6 {
 		t.Error("Multiply(-2, 3) should be -6")
 	}
@@ -431,17 +422,14 @@ func TestUserAPI(t *testing.T) {
 
 Такая организация делает тесты самодокументирующимися и легкими для навигации.`,
 			solutionCode: `package calc_test
-
-import "testing"
-
 func Add(a, b int) int      { return a + b }
 func Subtract(a, b int) int { return a - b }
 func Multiply(a, b int) int { return a * b }
 func Divide(a, b int) int   { return a / b }
 
-func TestCalculator(t *testing.T) {
+func TestCalculator(t *T) {
 	// Тестирование сложения
-	t.Run("Addition", func(t *testing.T) {
+	t.Run("Addition", func(t *T) {
 		tests := []struct {
 			name string
 			a, b int
@@ -453,7 +441,7 @@ func TestCalculator(t *testing.T) {
 		}
 
 		for _, tt := range tests {
-			t.Run(tt.name, func(t *testing.T) {
+			t.Run(tt.name, func(t *T) {
 				got := Add(tt.a, tt.b)
 				if got != tt.want {
 					t.Errorf("Add(%d, %d) = %d, want %d", tt.a, tt.b, got, tt.want)
@@ -463,7 +451,7 @@ func TestCalculator(t *testing.T) {
 	})
 
 	// Тестирование вычитания
-	t.Run("Subtraction", func(t *testing.T) {
+	t.Run("Subtraction", func(t *T) {
 		tests := []struct {
 			name string
 			a, b int
@@ -475,7 +463,7 @@ func TestCalculator(t *testing.T) {
 		}
 
 		for _, tt := range tests {
-			t.Run(tt.name, func(t *testing.T) {
+			t.Run(tt.name, func(t *T) {
 				got := Subtract(tt.a, tt.b)
 				if got != tt.want {
 					t.Errorf("Subtract(%d, %d) = %d, want %d", tt.a, tt.b, got, tt.want)
@@ -485,7 +473,7 @@ func TestCalculator(t *testing.T) {
 	})
 
 	// Тестирование умножения
-	t.Run("Multiplication", func(t *testing.T) {
+	t.Run("Multiplication", func(t *T) {
 		tests := []struct {
 			name string
 			a, b int
@@ -497,7 +485,7 @@ func TestCalculator(t *testing.T) {
 		}
 
 		for _, tt := range tests {
-			t.Run(tt.name, func(t *testing.T) {
+			t.Run(tt.name, func(t *T) {
 				got := Multiply(tt.a, tt.b)
 				if got != tt.want {
 					t.Errorf("Multiply(%d, %d) = %d, want %d", tt.a, tt.b, got, tt.want)
@@ -507,7 +495,7 @@ func TestCalculator(t *testing.T) {
 	})
 
 	// Тестирование деления
-	t.Run("Division", func(t *testing.T) {
+	t.Run("Division", func(t *T) {
 		tests := []struct {
 			name string
 			a, b int
@@ -519,7 +507,7 @@ func TestCalculator(t *testing.T) {
 		}
 
 		for _, tt := range tests {
-			t.Run(tt.name, func(t *testing.T) {
+			t.Run(tt.name, func(t *T) {
 				got := Divide(tt.a, tt.b)
 				if got != tt.want {
 					t.Errorf("Divide(%d, %d) = %d, want %d", tt.a, tt.b, got, tt.want)
@@ -644,17 +632,14 @@ func TestUserAPI(t *testing.T) {
 
 Bu tashkilot testlarni o'z-o'zini hujjatlashtiradigan va navigatsiya qilish uchun oson qiladi.`,
 			solutionCode: `package calc_test
-
-import "testing"
-
 func Add(a, b int) int      { return a + b }
 func Subtract(a, b int) int { return a - b }
 func Multiply(a, b int) int { return a * b }
 func Divide(a, b int) int   { return a / b }
 
-func TestCalculator(t *testing.T) {
+func TestCalculator(t *T) {
 	// Qo'shishni tekshirish
-	t.Run("Addition", func(t *testing.T) {
+	t.Run("Addition", func(t *T) {
 		tests := []struct {
 			name string
 			a, b int
@@ -666,7 +651,7 @@ func TestCalculator(t *testing.T) {
 		}
 
 		for _, tt := range tests {
-			t.Run(tt.name, func(t *testing.T) {
+			t.Run(tt.name, func(t *T) {
 				got := Add(tt.a, tt.b)
 				if got != tt.want {
 					t.Errorf("Add(%d, %d) = %d, want %d", tt.a, tt.b, got, tt.want)
@@ -676,7 +661,7 @@ func TestCalculator(t *testing.T) {
 	})
 
 	// Ayirishni tekshirish
-	t.Run("Subtraction", func(t *testing.T) {
+	t.Run("Subtraction", func(t *T) {
 		tests := []struct {
 			name string
 			a, b int
@@ -688,7 +673,7 @@ func TestCalculator(t *testing.T) {
 		}
 
 		for _, tt := range tests {
-			t.Run(tt.name, func(t *testing.T) {
+			t.Run(tt.name, func(t *T) {
 				got := Subtract(tt.a, tt.b)
 				if got != tt.want {
 					t.Errorf("Subtract(%d, %d) = %d, want %d", tt.a, tt.b, got, tt.want)
@@ -698,7 +683,7 @@ func TestCalculator(t *testing.T) {
 	})
 
 	// Ko'paytirishni tekshirish
-	t.Run("Multiplication", func(t *testing.T) {
+	t.Run("Multiplication", func(t *T) {
 		tests := []struct {
 			name string
 			a, b int
@@ -710,7 +695,7 @@ func TestCalculator(t *testing.T) {
 		}
 
 		for _, tt := range tests {
-			t.Run(tt.name, func(t *testing.T) {
+			t.Run(tt.name, func(t *T) {
 				got := Multiply(tt.a, tt.b)
 				if got != tt.want {
 					t.Errorf("Multiply(%d, %d) = %d, want %d", tt.a, tt.b, got, tt.want)
@@ -720,7 +705,7 @@ func TestCalculator(t *testing.T) {
 	})
 
 	// Bo'lishni tekshirish
-	t.Run("Division", func(t *testing.T) {
+	t.Run("Division", func(t *T) {
 		tests := []struct {
 			name string
 			a, b int
@@ -732,7 +717,7 @@ func TestCalculator(t *testing.T) {
 		}
 
 		for _, tt := range tests {
-			t.Run(tt.name, func(t *testing.T) {
+			t.Run(tt.name, func(t *T) {
 				got := Divide(tt.a, tt.b)
 				if got != tt.want {
 					t.Errorf("Divide(%d, %d) = %d, want %d", tt.a, tt.b, got, tt.want)

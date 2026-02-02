@@ -23,7 +23,6 @@ export const task: Task = {
 
 import (
 	"strings"
-	"testing"
 )
 
 // TODO: Implement with += operator
@@ -37,18 +36,17 @@ func ConcatBuilder(strs []string) string {
 }
 
 // TODO: Write benchmarks with b.ReportAllocs()
-func BenchmarkConcatPlus(b *testing.B) {
+func BenchmarkConcatPlus(b *B) {
 	// TODO: Implement
 }
 
-func BenchmarkConcatBuilder(b *testing.B) {
+func BenchmarkConcatBuilder(b *B) {
 	// TODO: Implement
 }`,
 	solutionCode: `package benchmem_test
 
 import (
 	"strings"
-	"testing"
 )
 
 func ConcatPlus(strs []string) string {
@@ -67,7 +65,7 @@ func ConcatBuilder(strs []string) string {
 	return builder.String()
 }
 
-func BenchmarkConcatPlus(b *testing.B) {
+func BenchmarkConcatPlus(b *B) {
 	b.ReportAllocs()	// Report memory allocations
 	strs := []string{"hello", " ", "world", " ", "test"}
 
@@ -76,7 +74,7 @@ func BenchmarkConcatPlus(b *testing.B) {
 	}
 }
 
-func BenchmarkConcatBuilder(b *testing.B) {
+func BenchmarkConcatBuilder(b *B) {
 	b.ReportAllocs()
 	strs := []string{"hello", " ", "world", " ", "test"}
 
@@ -90,52 +88,51 @@ func BenchmarkConcatBuilder(b *testing.B) {
 
 import (
 	"strings"
-	"testing"
 )
 
-func Test1(t *testing.T) {
+func Test1(t *T) {
 	result := ConcatPlus([]string{"hello", " ", "world"})
 	if result != "hello world" {
 		t.Errorf("expected 'hello world', got %q", result)
 	}
 }
 
-func Test2(t *testing.T) {
+func Test2(t *T) {
 	result := ConcatBuilder([]string{"hello", " ", "world"})
 	if result != "hello world" {
 		t.Errorf("expected 'hello world', got %q", result)
 	}
 }
 
-func Test3(t *testing.T) {
+func Test3(t *T) {
 	result := ConcatPlus([]string{})
 	if result != "" {
 		t.Errorf("expected empty string, got %q", result)
 	}
 }
 
-func Test4(t *testing.T) {
+func Test4(t *T) {
 	result := ConcatBuilder([]string{})
 	if result != "" {
 		t.Errorf("expected empty string, got %q", result)
 	}
 }
 
-func Test5(t *testing.T) {
+func Test5(t *T) {
 	result := ConcatPlus([]string{"single"})
 	if result != "single" {
 		t.Errorf("expected 'single', got %q", result)
 	}
 }
 
-func Test6(t *testing.T) {
+func Test6(t *T) {
 	result := ConcatBuilder([]string{"single"})
 	if result != "single" {
 		t.Errorf("expected 'single', got %q", result)
 	}
 }
 
-func Test7(t *testing.T) {
+func Test7(t *T) {
 	strs := []string{"a", "b", "c", "d", "e"}
 	plus := ConcatPlus(strs)
 	builder := ConcatBuilder(strs)
@@ -144,21 +141,21 @@ func Test7(t *testing.T) {
 	}
 }
 
-func Test8(t *testing.T) {
+func Test8(t *T) {
 	result := ConcatPlus([]string{"", "", ""})
 	if result != "" {
 		t.Errorf("expected empty string, got %q", result)
 	}
 }
 
-func Test9(t *testing.T) {
+func Test9(t *T) {
 	result := ConcatBuilder([]string{"", "text", ""})
 	if result != "text" {
 		t.Errorf("expected 'text', got %q", result)
 	}
 }
 
-func Test10(t *testing.T) {
+func Test10(t *T) {
 	strs := make([]string, 100)
 	for i := 0; i < 100; i++ {
 		strs[i] = "x"
@@ -286,7 +283,6 @@ Builder в 5 раз быстрее и использует в 5 раз мень�
 
 import (
 	"strings"
-	"testing"
 )
 
 func ConcatPlus(strs []string) string {
@@ -305,7 +301,7 @@ func ConcatBuilder(strs []string) string {
 	return builder.String()
 }
 
-func BenchmarkConcatPlus(b *testing.B) {
+func BenchmarkConcatPlus(b *B) {
 	b.ReportAllocs()	// Отчет о выделениях памяти
 	strs := []string{"hello", " ", "world", " ", "test"}
 
@@ -314,7 +310,7 @@ func BenchmarkConcatPlus(b *testing.B) {
 	}
 }
 
-func BenchmarkConcatBuilder(b *testing.B) {
+func BenchmarkConcatBuilder(b *B) {
 	b.ReportAllocs()
 	strs := []string{"hello", " ", "world", " ", "test"}
 
@@ -383,7 +379,6 @@ Xotira profillash production-darajali Go xizmatlari uchun zarur.`,
 
 import (
 	"strings"
-	"testing"
 )
 
 func ConcatPlus(strs []string) string {
@@ -402,7 +397,7 @@ func ConcatBuilder(strs []string) string {
 	return builder.String()
 }
 
-func BenchmarkConcatPlus(b *testing.B) {
+func BenchmarkConcatPlus(b *B) {
 	b.ReportAllocs()	// Xotira ajratishlari haqida hisobot
 	strs := []string{"hello", " ", "world", " ", "test"}
 
@@ -411,7 +406,7 @@ func BenchmarkConcatPlus(b *testing.B) {
 	}
 }
 
-func BenchmarkConcatBuilder(b *testing.B) {
+func BenchmarkConcatBuilder(b *B) {
 	b.ReportAllocs()
 	strs := []string{"hello", " ", "world", " ", "test"}
 

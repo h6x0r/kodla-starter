@@ -29,27 +29,21 @@ func TestAdd(t *testing.T) {
 - Test function must start with \`Test\`
 - Use descriptive error messages`,
 	initialCode: `package math_test
-
-import "testing"
-
 // TODO: Implement Add function
 func Add(a, b int) int {
 	return 0 // TODO: Implement
 }
 
 // TODO: Write TestAdd with multiple test cases
-func TestAdd(t *testing.T) {
+func TestAdd(t *T) {
 	// TODO: Implement
 }`,
 	solutionCode: `package math_test
-
-import "testing"
-
 func Add(a, b int) int {
 	return a + b  // Simple addition
 }
 
-func TestAdd(t *testing.T) {
+func TestAdd(t *T) {
 	// Test positive numbers
 	result := Add(2, 3)
 	if result != 5 {
@@ -77,11 +71,8 @@ func TestAdd(t *testing.T) {
 			hint1: `Go test functions must have signature: func TestXxx(t *testing.T).`,
 			hint2: `Use t.Errorf to report failures without stopping the test. Include actual and expected values.`,
 			testCode: `package math_test
-
-import "testing"
-
 // Test1: Basic addition
-func Test1(t *testing.T) {
+func Test1(t *T) {
 	result := Add(2, 3)
 	if result != 5 {
 		t.Errorf("Add(2, 3) = %d; want 5", result)
@@ -89,7 +80,7 @@ func Test1(t *testing.T) {
 }
 
 // Test2: Adding zero
-func Test2(t *testing.T) {
+func Test2(t *T) {
 	result := Add(5, 0)
 	if result != 5 {
 		t.Errorf("Add(5, 0) = %d; want 5", result)
@@ -101,7 +92,7 @@ func Test2(t *testing.T) {
 }
 
 // Test3: Negative numbers
-func Test3(t *testing.T) {
+func Test3(t *T) {
 	result := Add(-1, -1)
 	if result != -2 {
 		t.Errorf("Add(-1, -1) = %d; want -2", result)
@@ -109,7 +100,7 @@ func Test3(t *testing.T) {
 }
 
 // Test4: Mixed positive and negative
-func Test4(t *testing.T) {
+func Test4(t *T) {
 	result := Add(10, -3)
 	if result != 7 {
 		t.Errorf("Add(10, -3) = %d; want 7", result)
@@ -121,7 +112,7 @@ func Test4(t *testing.T) {
 }
 
 // Test5: Large numbers
-func Test5(t *testing.T) {
+func Test5(t *T) {
 	result := Add(1000000, 2000000)
 	if result != 3000000 {
 		t.Errorf("Add(1000000, 2000000) = %d; want 3000000", result)
@@ -129,7 +120,7 @@ func Test5(t *testing.T) {
 }
 
 // Test6: Adding same number to itself
-func Test6(t *testing.T) {
+func Test6(t *T) {
 	result := Add(7, 7)
 	if result != 14 {
 		t.Errorf("Add(7, 7) = %d; want 14", result)
@@ -137,7 +128,7 @@ func Test6(t *testing.T) {
 }
 
 // Test7: Zero plus zero
-func Test7(t *testing.T) {
+func Test7(t *T) {
 	result := Add(0, 0)
 	if result != 0 {
 		t.Errorf("Add(0, 0) = %d; want 0", result)
@@ -145,7 +136,7 @@ func Test7(t *testing.T) {
 }
 
 // Test8: Multiple assertions in sequence
-func Test8(t *testing.T) {
+func Test8(t *T) {
 	cases := []struct {
 		a, b, want int
 	}{
@@ -161,7 +152,7 @@ func Test8(t *testing.T) {
 }
 
 // Test9: Boundary values
-func Test9(t *testing.T) {
+func Test9(t *T) {
 	result := Add(1, -1)
 	if result != 0 {
 		t.Errorf("Add(1, -1) = %d; want 0", result)
@@ -169,7 +160,7 @@ func Test9(t *testing.T) {
 }
 
 // Test10: Function returns correct type
-func Test10(t *testing.T) {
+func Test10(t *T) {
 	var result int = Add(5, 3)
 	if result != 8 {
 		t.Errorf("Add(5, 3) = %d; want 8", result)
@@ -258,14 +249,11 @@ func TestAdd(t *testing.T) {
 
 Стандартная библиотека Go имеет 10,000+ тестов, обеспечивающих стабильность между обновлениями.`,
 			solutionCode: `package math_test
-
-import "testing"
-
 func Add(a, b int) int {
 	return a + b  // Простое сложение
 }
 
-func TestAdd(t *testing.T) {
+func TestAdd(t *T) {
 	// Тестируем положительные числа
 	result := Add(2, 3)
 	if result != 5 {
@@ -345,14 +333,11 @@ Google'dagi Go jamoasi funksiya qo'shganda, ular avval testlarni yozadilar (TDD)
 
 Go standart kutubxonasida yangilanishlar o'rtasida barqarorlikni ta'minlaydigan 10,000+ test mavjud.`,
 			solutionCode: `package math_test
-
-import "testing"
-
 func Add(a, b int) int {
 	return a + b  // Oddiy qo'shish
 }
 
-func TestAdd(t *testing.T) {
+func TestAdd(t *T) {
 	// Musbat sonlarni tekshirish
 	result := Add(2, 3)
 	if result != 5 {

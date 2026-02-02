@@ -35,7 +35,6 @@ if rec.Code != http.StatusOK {
 import (
 	"net/http"
 	"net/http/httptest"
-	"testing"
 )
 
 // TODO: Implement HealthHandler that returns {"status": "ok"}
@@ -44,7 +43,7 @@ func HealthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // TODO: Test HealthHandler using httptest
-func TestHealthHandler(t *testing.T) {
+func TestHealthHandler(t *T) {
 	// TODO: Implement
 }`,
 	solutionCode: `package httphandler_test
@@ -52,7 +51,6 @@ func TestHealthHandler(t *testing.T) {
 import (
 	"net/http"
 	"net/http/httptest"
-	"testing"
 )
 
 func HealthHandler(w http.ResponseWriter, r *http.Request) {
@@ -61,7 +59,7 @@ func HealthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("{\"status\": \"ok\"}"))             // Write JSON response
 }
 
-func TestHealthHandler(t *testing.T) {
+func TestHealthHandler(t *T) {
 	// Create test request
 	req := httptest.NewRequest("GET", "/health", nil)
 
@@ -95,11 +93,10 @@ func TestHealthHandler(t *testing.T) {
 import (
 	"net/http"
 	"net/http/httptest"
-	"testing"
 )
 
 // Test1: Handler returns 200 OK
-func Test1(t *testing.T) {
+func Test1(t *T) {
 	req := httptest.NewRequest("GET", "/health", nil)
 	rec := httptest.NewRecorder()
 	HealthHandler(rec, req)
@@ -109,7 +106,7 @@ func Test1(t *testing.T) {
 }
 
 // Test2: Handler returns JSON content type
-func Test2(t *testing.T) {
+func Test2(t *T) {
 	req := httptest.NewRequest("GET", "/health", nil)
 	rec := httptest.NewRecorder()
 	HealthHandler(rec, req)
@@ -120,7 +117,7 @@ func Test2(t *testing.T) {
 }
 
 // Test3: Handler returns correct body
-func Test3(t *testing.T) {
+func Test3(t *T) {
 	req := httptest.NewRequest("GET", "/health", nil)
 	rec := httptest.NewRecorder()
 	HealthHandler(rec, req)
@@ -131,7 +128,7 @@ func Test3(t *testing.T) {
 }
 
 // Test4: Handler works with POST method
-func Test4(t *testing.T) {
+func Test4(t *T) {
 	req := httptest.NewRequest("POST", "/health", nil)
 	rec := httptest.NewRecorder()
 	HealthHandler(rec, req)
@@ -141,7 +138,7 @@ func Test4(t *testing.T) {
 }
 
 // Test5: Body is not empty
-func Test5(t *testing.T) {
+func Test5(t *T) {
 	req := httptest.NewRequest("GET", "/health", nil)
 	rec := httptest.NewRecorder()
 	HealthHandler(rec, req)
@@ -151,7 +148,7 @@ func Test5(t *testing.T) {
 }
 
 // Test6: Response contains status field
-func Test6(t *testing.T) {
+func Test6(t *T) {
 	req := httptest.NewRequest("GET", "/health", nil)
 	rec := httptest.NewRecorder()
 	HealthHandler(rec, req)
@@ -162,7 +159,7 @@ func Test6(t *testing.T) {
 }
 
 // Test7: Multiple requests work correctly
-func Test7(t *testing.T) {
+func Test7(t *T) {
 	for i := 0; i < 3; i++ {
 		req := httptest.NewRequest("GET", "/health", nil)
 		rec := httptest.NewRecorder()
@@ -174,7 +171,7 @@ func Test7(t *testing.T) {
 }
 
 // Test8: Handler with query parameters
-func Test8(t *testing.T) {
+func Test8(t *T) {
 	req := httptest.NewRequest("GET", "/health?debug=true", nil)
 	rec := httptest.NewRecorder()
 	HealthHandler(rec, req)
@@ -184,7 +181,7 @@ func Test8(t *testing.T) {
 }
 
 // Test9: Response headers set correctly
-func Test9(t *testing.T) {
+func Test9(t *T) {
 	req := httptest.NewRequest("GET", "/health", nil)
 	rec := httptest.NewRecorder()
 	HealthHandler(rec, req)
@@ -194,7 +191,7 @@ func Test9(t *testing.T) {
 }
 
 // Test10: Complete health check validation
-func Test10(t *testing.T) {
+func Test10(t *T) {
 	req := httptest.NewRequest("GET", "/health", nil)
 	rec := httptest.NewRecorder()
 	HealthHandler(rec, req)
@@ -373,7 +370,6 @@ func TestCreateCharge(t *testing.T) {
 import (
 	"net/http"
 	"net/http/httptest"
-	"testing"
 )
 
 func HealthHandler(w http.ResponseWriter, r *http.Request) {
@@ -382,7 +378,7 @@ func HealthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("{\"status\": \"ok\"}"))             // Записать JSON ответ
 }
 
-func TestHealthHandler(t *testing.T) {
+func TestHealthHandler(t *T) {
 	// Создать тестовый запрос
 	req := httptest.NewRequest("GET", "/health", nil)
 
@@ -495,7 +491,6 @@ Google da xizmatlar httptest asosida minglab testlarga ega, bu API o'zgarishlari
 import (
 	"net/http"
 	"net/http/httptest"
-	"testing"
 )
 
 func HealthHandler(w http.ResponseWriter, r *http.Request) {
@@ -504,7 +499,7 @@ func HealthHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("{\"status\": \"ok\"}"))             // JSON javobini yozish
 }
 
-func TestHealthHandler(t *testing.T) {
+func TestHealthHandler(t *T) {
 	// Test so'rovini yaratish
 	req := httptest.NewRequest("GET", "/health", nil)
 

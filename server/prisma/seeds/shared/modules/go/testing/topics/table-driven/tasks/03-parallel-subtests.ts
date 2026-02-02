@@ -31,23 +31,19 @@ for _, tt := range tests {
 - Call t.Parallel() immediately after subtest creation
 - Test at least 10 numbers`,
 	initialCode: `package parallel_test
-
-import "testing"
-
 // TODO: Implement IsPrime function
 func IsPrime(n int) bool {
 	return false // TODO: Implement
 }
 
 // TODO: Write parallel subtests for IsPrime
-func TestIsPrime(t *testing.T) {
+func TestIsPrime(t *T) {
 	// TODO: Implement
 }`,
 	solutionCode: `package parallel_test
 
 import (
 	"fmt"
-	"testing"
 )
 
 func IsPrime(n int) bool {
@@ -62,7 +58,7 @@ func IsPrime(n int) bool {
 	return true
 }
 
-func TestIsPrime(t *testing.T) {
+func TestIsPrime(t *T) {
 	// Define test cases
 	tests := []struct {
 		input int
@@ -87,7 +83,7 @@ func TestIsPrime(t *testing.T) {
 
 	for _, tt := range tests {
 		tt := tt  // Capture range variable for parallel execution
-		t.Run(fmt.Sprintf("n=%d", tt.input), func(t *testing.T) {
+		t.Run(fmt.Sprintf("n=%d", tt.input), func(t *T) {
 			t.Parallel()  // Run this subtest in parallel
 
 			got := IsPrime(tt.input)
@@ -103,11 +99,10 @@ func TestIsPrime(t *testing.T) {
 
 import (
 	"fmt"
-	"testing"
 )
 
 // Test1: Basic prime number detection
-func Test1(t *testing.T) {
+func Test1(t *T) {
 	if !IsPrime(7) {
 		t.Error("7 should be prime")
 	}
@@ -117,7 +112,7 @@ func Test1(t *testing.T) {
 }
 
 // Test2: Edge case - numbers less than 2
-func Test2(t *testing.T) {
+func Test2(t *T) {
 	tests := []struct {
 		n    int
 		want bool
@@ -135,7 +130,7 @@ func Test2(t *testing.T) {
 }
 
 // Test3: Small primes
-func Test3(t *testing.T) {
+func Test3(t *T) {
 	primes := []int{2, 3, 5, 7, 11, 13, 17, 19, 23, 29}
 	for _, p := range primes {
 		if !IsPrime(p) {
@@ -145,7 +140,7 @@ func Test3(t *testing.T) {
 }
 
 // Test4: Small composites
-func Test4(t *testing.T) {
+func Test4(t *T) {
 	composites := []int{4, 6, 8, 9, 10, 12, 14, 15, 16, 18}
 	for _, c := range composites {
 		if IsPrime(c) {
@@ -155,7 +150,7 @@ func Test4(t *testing.T) {
 }
 
 // Test5: Parallel subtests basic
-func Test5(t *testing.T) {
+func Test5(t *T) {
 	tests := []struct {
 		input int
 		want  bool
@@ -167,7 +162,7 @@ func Test5(t *testing.T) {
 	}
 	for _, tt := range tests {
 		tt := tt
-		t.Run(fmt.Sprintf("n=%d", tt.input), func(t *testing.T) {
+		t.Run(fmt.Sprintf("n=%d", tt.input), func(t *T) {
 			t.Parallel()
 			if got := IsPrime(tt.input); got != tt.want {
 				t.Errorf("IsPrime(%d) = %v, want %v", tt.input, got, tt.want)
@@ -177,11 +172,11 @@ func Test5(t *testing.T) {
 }
 
 // Test6: Parallel with larger primes
-func Test6(t *testing.T) {
+func Test6(t *T) {
 	largePrimes := []int{97, 101, 103, 107, 109}
 	for _, p := range largePrimes {
 		p := p
-		t.Run(fmt.Sprintf("prime-%d", p), func(t *testing.T) {
+		t.Run(fmt.Sprintf("prime-%d", p), func(t *T) {
 			t.Parallel()
 			if !IsPrime(p) {
 				t.Errorf("IsPrime(%d) should be true", p)
@@ -191,11 +186,11 @@ func Test6(t *testing.T) {
 }
 
 // Test7: Perfect squares are not prime
-func Test7(t *testing.T) {
+func Test7(t *T) {
 	squares := []int{4, 9, 16, 25, 36, 49, 64, 81, 100}
 	for _, s := range squares {
 		s := s
-		t.Run(fmt.Sprintf("square-%d", s), func(t *testing.T) {
+		t.Run(fmt.Sprintf("square-%d", s), func(t *T) {
 			t.Parallel()
 			if IsPrime(s) {
 				t.Errorf("IsPrime(%d) should be false (perfect square)", s)
@@ -205,7 +200,7 @@ func Test7(t *testing.T) {
 }
 
 // Test8: Numbers around edge boundaries
-func Test8(t *testing.T) {
+func Test8(t *T) {
 	tests := []struct {
 		input int
 		want  bool
@@ -216,7 +211,7 @@ func Test8(t *testing.T) {
 	}
 	for _, tt := range tests {
 		tt := tt
-		t.Run(fmt.Sprintf("boundary-%d", tt.input), func(t *testing.T) {
+		t.Run(fmt.Sprintf("boundary-%d", tt.input), func(t *T) {
 			t.Parallel()
 			if got := IsPrime(tt.input); got != tt.want {
 				t.Errorf("IsPrime(%d) = %v, want %v", tt.input, got, tt.want)
@@ -226,7 +221,7 @@ func Test8(t *testing.T) {
 }
 
 // Test9: Parallel subtests with range 1-20
-func Test9(t *testing.T) {
+func Test9(t *T) {
 	expected := map[int]bool{
 		1: false, 2: true, 3: true, 4: false, 5: true,
 		6: false, 7: true, 8: false, 9: false, 10: false,
@@ -235,7 +230,7 @@ func Test9(t *testing.T) {
 	}
 	for n := 1; n <= 20; n++ {
 		n := n
-		t.Run(fmt.Sprintf("n=%d", n), func(t *testing.T) {
+		t.Run(fmt.Sprintf("n=%d", n), func(t *T) {
 			t.Parallel()
 			if got := IsPrime(n); got != expected[n] {
 				t.Errorf("IsPrime(%d) = %v, want %v", n, got, expected[n])
@@ -245,7 +240,7 @@ func Test9(t *testing.T) {
 }
 
 // Test10: Verify function exists and returns bool
-func Test10(t *testing.T) {
+func Test10(t *T) {
 	results := make([]bool, 0, 5)
 	for _, n := range []int{2, 3, 4, 5, 6} {
 		results = append(results, IsPrime(n))
@@ -500,7 +495,6 @@ go test -parallel 1
 
 import (
 	"fmt"
-	"testing"
 )
 
 func IsPrime(n int) bool {
@@ -515,7 +509,7 @@ func IsPrime(n int) bool {
 	return true
 }
 
-func TestIsPrime(t *testing.T) {
+func TestIsPrime(t *T) {
 	// Определить тестовые случаи
 	tests := []struct {
 		input int
@@ -540,7 +534,7 @@ func TestIsPrime(t *testing.T) {
 
 	for _, tt := range tests {
 		tt := tt  // Захватить переменную диапазона для параллельного выполнения
-		t.Run(fmt.Sprintf("n=%d", tt.input), func(t *testing.T) {
+		t.Run(fmt.Sprintf("n=%d", tt.input), func(t *T) {
 			t.Parallel()  // Запустить этот подтест параллельно
 
 			got := IsPrime(tt.input)
@@ -687,7 +681,6 @@ go test -parallel 1
 
 import (
 	"fmt"
-	"testing"
 )
 
 func IsPrime(n int) bool {
@@ -702,7 +695,7 @@ func IsPrime(n int) bool {
 	return true
 }
 
-func TestIsPrime(t *testing.T) {
+func TestIsPrime(t *T) {
 	// Test holatlarini aniqlash
 	tests := []struct {
 		input int
@@ -727,7 +720,7 @@ func TestIsPrime(t *testing.T) {
 
 	for _, tt := range tests {
 		tt := tt  // Parallel bajarish uchun diapazon o'zgaruvchisini ushlash
-		t.Run(fmt.Sprintf("n=%d", tt.input), func(t *testing.T) {
+		t.Run(fmt.Sprintf("n=%d", tt.input), func(t *T) {
 			t.Parallel()  // Ushbu subtestni parallel ravishda ishga tushirish
 
 			got := IsPrime(tt.input)

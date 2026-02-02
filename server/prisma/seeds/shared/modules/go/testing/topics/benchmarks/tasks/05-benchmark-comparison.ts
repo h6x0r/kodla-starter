@@ -20,9 +20,6 @@ export const task: Task = {
 - Test with 100, 1000, 10000 elements
 - Report memory allocations`,
 	initialCode: `package compare_test
-
-import "testing"
-
 // TODO: Implement LinearSearch
 func LinearSearch(slice []int, target int) bool {
 	return false // TODO: Implement
@@ -39,14 +36,13 @@ func MapSearch(m map[int]bool, target int) bool {
 }
 
 // TODO: Write comparative benchmarks
-func BenchmarkSearch(b *testing.B) {
+func BenchmarkSearch(b *B) {
 	// TODO: Implement
 }`,
 	solutionCode: `package compare_test
 
 import (
 	"sort"
-	"testing"
 )
 
 func LinearSearch(slice []int, target int) bool {
@@ -67,7 +63,7 @@ func MapSearch(m map[int]bool, target int) bool {
 	return m[target]  // O(1)
 }
 
-func BenchmarkSearch(b *testing.B) {
+func BenchmarkSearch(b *B) {
 	sizes := []int{100, 1000, 10000}
 
 	for _, size := range sizes {
@@ -85,7 +81,7 @@ func BenchmarkSearch(b *testing.B) {
 		target := size / 2  // Middle element
 
 		// Linear search benchmark
-		b.Run(fmt.Sprintf("Linear/%d", size), func(b *testing.B) {
+		b.Run(fmt.Sprintf("Linear/%d", size), func(b *B) {
 			b.ReportAllocs()
 			for i := 0; i < b.N; i++ {
 				LinearSearch(slice, target)
@@ -93,7 +89,7 @@ func BenchmarkSearch(b *testing.B) {
 		})
 
 		// Binary search benchmark
-		b.Run(fmt.Sprintf("Binary/%d", size), func(b *testing.B) {
+		b.Run(fmt.Sprintf("Binary/%d", size), func(b *B) {
 			b.ReportAllocs()
 			for i := 0; i < b.N; i++ {
 				BinarySearch(slice, target)
@@ -101,7 +97,7 @@ func BenchmarkSearch(b *testing.B) {
 		})
 
 		// Map search benchmark
-		b.Run(fmt.Sprintf("Map/%d", size), func(b *testing.B) {
+		b.Run(fmt.Sprintf("Map/%d", size), func(b *B) {
 			b.ReportAllocs()
 			for i := 0; i < b.N; i++ {
 				MapSearch(m, target)
@@ -115,73 +111,72 @@ func BenchmarkSearch(b *testing.B) {
 
 import (
 	"sort"
-	"testing"
 )
 
-func Test1(t *testing.T) {
+func Test1(t *T) {
 	slice := []int{1, 2, 3, 4, 5}
 	if !LinearSearch(slice, 3) {
 		t.Error("LinearSearch should find 3")
 	}
 }
 
-func Test2(t *testing.T) {
+func Test2(t *T) {
 	slice := []int{1, 2, 3, 4, 5}
 	if LinearSearch(slice, 10) {
 		t.Error("LinearSearch should not find 10")
 	}
 }
 
-func Test3(t *testing.T) {
+func Test3(t *T) {
 	slice := []int{1, 2, 3, 4, 5}
 	if !BinarySearch(slice, 3) {
 		t.Error("BinarySearch should find 3")
 	}
 }
 
-func Test4(t *testing.T) {
+func Test4(t *T) {
 	slice := []int{1, 2, 3, 4, 5}
 	if BinarySearch(slice, 10) {
 		t.Error("BinarySearch should not find 10")
 	}
 }
 
-func Test5(t *testing.T) {
+func Test5(t *T) {
 	m := map[int]bool{1: true, 2: true, 3: true}
 	if !MapSearch(m, 2) {
 		t.Error("MapSearch should find 2")
 	}
 }
 
-func Test6(t *testing.T) {
+func Test6(t *T) {
 	m := map[int]bool{1: true, 2: true}
 	if MapSearch(m, 5) {
 		t.Error("MapSearch should not find 5")
 	}
 }
 
-func Test7(t *testing.T) {
+func Test7(t *T) {
 	slice := []int{}
 	if LinearSearch(slice, 1) {
 		t.Error("LinearSearch on empty slice should return false")
 	}
 }
 
-func Test8(t *testing.T) {
+func Test8(t *T) {
 	slice := []int{}
 	if BinarySearch(slice, 1) {
 		t.Error("BinarySearch on empty slice should return false")
 	}
 }
 
-func Test9(t *testing.T) {
+func Test9(t *T) {
 	m := map[int]bool{}
 	if MapSearch(m, 1) {
 		t.Error("MapSearch on empty map should return false")
 	}
 }
 
-func Test10(t *testing.T) {
+func Test10(t *T) {
 	slice := make([]int, 1000)
 	for i := 0; i < 1000; i++ {
 		slice[i] = i * 2
@@ -209,7 +204,6 @@ func Test10(t *testing.T) {
 import (
 	"fmt"
 	"sort"
-	"testing"
 )
 
 func LinearSearch(slice []int, target int) bool {
@@ -230,7 +224,7 @@ func MapSearch(m map[int]bool, target int) bool {
 	return m[target]  // O(1)
 }
 
-func BenchmarkSearch(b *testing.B) {
+func BenchmarkSearch(b *B) {
 	sizes := []int{100, 1000, 10000}
 
 	for _, size := range sizes {
@@ -248,7 +242,7 @@ func BenchmarkSearch(b *testing.B) {
 		target := size / 2  // Средний элемент
 
 		// Бенчмарк линейного поиска
-		b.Run(fmt.Sprintf("Linear/%d", size), func(b *testing.B) {
+		b.Run(fmt.Sprintf("Linear/%d", size), func(b *B) {
 			b.ReportAllocs()
 			for i := 0; i < b.N; i++ {
 				LinearSearch(slice, target)
@@ -256,7 +250,7 @@ func BenchmarkSearch(b *testing.B) {
 		})
 
 		// Бенчмарк бинарного поиска
-		b.Run(fmt.Sprintf("Binary/%d", size), func(b *testing.B) {
+		b.Run(fmt.Sprintf("Binary/%d", size), func(b *B) {
 			b.ReportAllocs()
 			for i := 0; i < b.N; i++ {
 				BinarySearch(slice, target)
@@ -264,7 +258,7 @@ func BenchmarkSearch(b *testing.B) {
 		})
 
 		// Бенчмарк поиска по map
-		b.Run(fmt.Sprintf("Map/%d", size), func(b *testing.B) {
+		b.Run(fmt.Sprintf("Map/%d", size), func(b *B) {
 			b.ReportAllocs()
 			for i := 0; i < b.N; i++ {
 				MapSearch(m, target)
@@ -284,7 +278,6 @@ func BenchmarkSearch(b *testing.B) {
 import (
 	"fmt"
 	"sort"
-	"testing"
 )
 
 func LinearSearch(slice []int, target int) bool {
@@ -305,7 +298,7 @@ func MapSearch(m map[int]bool, target int) bool {
 	return m[target]  // O(1)
 }
 
-func BenchmarkSearch(b *testing.B) {
+func BenchmarkSearch(b *B) {
 	sizes := []int{100, 1000, 10000}
 
 	for _, size := range sizes {
@@ -323,7 +316,7 @@ func BenchmarkSearch(b *testing.B) {
 		target := size / 2  // O'rta element
 
 		// Chiziqli qidiruv benchmark
-		b.Run(fmt.Sprintf("Linear/%d", size), func(b *testing.B) {
+		b.Run(fmt.Sprintf("Linear/%d", size), func(b *B) {
 			b.ReportAllocs()
 			for i := 0; i < b.N; i++ {
 				LinearSearch(slice, target)
@@ -331,7 +324,7 @@ func BenchmarkSearch(b *testing.B) {
 		})
 
 		// Ikkilik qidiruv benchmark
-		b.Run(fmt.Sprintf("Binary/%d", size), func(b *testing.B) {
+		b.Run(fmt.Sprintf("Binary/%d", size), func(b *B) {
 			b.ReportAllocs()
 			for i := 0; i < b.N; i++ {
 				BinarySearch(slice, target)
@@ -339,7 +332,7 @@ func BenchmarkSearch(b *testing.B) {
 		})
 
 		// Map qidiruv benchmark
-		b.Run(fmt.Sprintf("Map/%d", size), func(b *testing.B) {
+		b.Run(fmt.Sprintf("Map/%d", size), func(b *B) {
 			b.ReportAllocs()
 			for i := 0; i < b.N; i++ {
 				MapSearch(m, target)

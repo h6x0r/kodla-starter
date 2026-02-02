@@ -20,9 +20,6 @@ export const task: Task = {
 - Verify both call count and arguments
 - Test without real logging`,
 	initialCode: `package spy_test
-
-import "testing"
-
 type Logger interface {
 	Log(message string)
 }
@@ -44,13 +41,10 @@ func (s *UserService) CreateUser(name string) error {
 type SpyLogger struct{}
 
 // TODO: Write tests verifying log calls
-func TestUserService_CreateUser(t *testing.T) {
+func TestUserService_CreateUser(t *T) {
 	// TODO: Implement
 }`,
 	solutionCode: `package spy_test
-
-import "testing"
-
 type Logger interface {
 	Log(message string)
 }
@@ -80,7 +74,7 @@ func (s *SpyLogger) Log(message string) {
 	s.CallCount++	// Increment count
 }
 
-func TestUserService_CreateUser(t *testing.T) {
+func TestUserService_CreateUser(t *T) {
 	spy := &SpyLogger{}
 	service := NewUserService(spy)
 
@@ -113,10 +107,7 @@ func TestUserService_CreateUser(t *testing.T) {
 			hint1: `Spy records all interactions (calls, arguments) for later verification.`,
 			hint2: `Store calls in a slice and provide assertion methods.`,
 			testCode: `package spy_test
-
-import "testing"
-
-func Test1(t *testing.T) {
+func Test1(t *T) {
 	spy := &SpyLogger{}
 	service := NewUserService(spy)
 	err := service.CreateUser("Alice")
@@ -125,7 +116,7 @@ func Test1(t *testing.T) {
 	}
 }
 
-func Test2(t *testing.T) {
+func Test2(t *T) {
 	spy := &SpyLogger{}
 	service := NewUserService(spy)
 	service.CreateUser("Bob")
@@ -134,7 +125,7 @@ func Test2(t *testing.T) {
 	}
 }
 
-func Test3(t *testing.T) {
+func Test3(t *T) {
 	spy := &SpyLogger{}
 	service := NewUserService(spy)
 	service.CreateUser("Charlie")
@@ -143,7 +134,7 @@ func Test3(t *testing.T) {
 	}
 }
 
-func Test4(t *testing.T) {
+func Test4(t *T) {
 	spy := &SpyLogger{}
 	service := NewUserService(spy)
 	service.CreateUser("Dave")
@@ -153,7 +144,7 @@ func Test4(t *testing.T) {
 	}
 }
 
-func Test5(t *testing.T) {
+func Test5(t *T) {
 	spy := &SpyLogger{}
 	service := NewUserService(spy)
 	service.CreateUser("Eve")
@@ -163,7 +154,7 @@ func Test5(t *testing.T) {
 	}
 }
 
-func Test6(t *testing.T) {
+func Test6(t *T) {
 	spy := &SpyLogger{}
 	service := NewUserService(spy)
 	service.CreateUser("User1")
@@ -173,7 +164,7 @@ func Test6(t *testing.T) {
 	}
 }
 
-func Test7(t *testing.T) {
+func Test7(t *T) {
 	spy := &SpyLogger{}
 	service := NewUserService(spy)
 	service.CreateUser("User1")
@@ -183,14 +174,14 @@ func Test7(t *testing.T) {
 	}
 }
 
-func Test8(t *testing.T) {
+func Test8(t *T) {
 	spy := &SpyLogger{}
 	if spy.CallCount != 0 || len(spy.Messages) != 0 {
 		t.Error("new spy should have zero calls and messages")
 	}
 }
 
-func Test9(t *testing.T) {
+func Test9(t *T) {
 	spy := &SpyLogger{}
 	spy.Log("direct call")
 	if spy.CallCount != 1 || spy.Messages[0] != "direct call" {
@@ -198,7 +189,7 @@ func Test9(t *testing.T) {
 	}
 }
 
-func Test10(t *testing.T) {
+func Test10(t *T) {
 	spy := &SpyLogger{}
 	service := NewUserService(spy)
 	service.CreateUser("")
@@ -229,9 +220,6 @@ func Test10(t *testing.T) {
 			hint2: `Храните вызовы в slice и предоставьте методы для проверок.`,
 			whyItMatters: `Паттерн Spy проверяет взаимодействия с зависимостями, обеспечивая правильную интеграцию.`,
 			solutionCode: `package spy_test
-
-import "testing"
-
 type Logger interface {
 	Log(message string)
 }
@@ -260,7 +248,7 @@ func (s *SpyLogger) Log(message string) {
 	s.CallCount++	// Увеличить счетчик
 }
 
-func TestUserService_CreateUser(t *testing.T) {
+func TestUserService_CreateUser(t *T) {
 	spy := &SpyLogger{}
 	service := NewUserService(spy)
 
@@ -310,9 +298,6 @@ func TestUserService_CreateUser(t *testing.T) {
 			hint2: `Chaqiruvlarni slice da saqlang va tekshirish metodlarini taqdim eting.`,
 			whyItMatters: `Spy pattern bog'liqliklar bilan o'zaro ta'sirlarni tekshiradi va to'g'ri integratsiyani ta'minlaydi.`,
 			solutionCode: `package spy_test
-
-import "testing"
-
 type Logger interface {
 	Log(message string)
 }
@@ -341,7 +326,7 @@ func (s *SpyLogger) Log(message string) {
 	s.CallCount++	// Hisoblagichni oshirish
 }
 
-func TestUserService_CreateUser(t *testing.T) {
+func TestUserService_CreateUser(t *T) {
 	spy := &SpyLogger{}
 	service := NewUserService(spy)
 

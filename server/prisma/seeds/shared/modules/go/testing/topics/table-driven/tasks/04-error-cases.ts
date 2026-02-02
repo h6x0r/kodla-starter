@@ -37,7 +37,6 @@ tests := []struct {
 import (
 	"errors"
 	"strings"
-	"testing"
 )
 
 // TODO: Implement ParseEmail that validates email format
@@ -47,7 +46,7 @@ func ParseEmail(s string) (string, error) {
 }
 
 // TODO: Write table-driven test with error cases
-func TestParseEmail(t *testing.T) {
+func TestParseEmail(t *T) {
 	// TODO: Implement
 }`,
 	solutionCode: `package email_test
@@ -55,7 +54,6 @@ func TestParseEmail(t *testing.T) {
 import (
 	"errors"
 	"strings"
-	"testing"
 )
 
 func ParseEmail(s string) (string, error) {
@@ -82,7 +80,7 @@ func ParseEmail(s string) (string, error) {
 	return s, nil  // Return cleaned email
 }
 
-func TestParseEmail(t *testing.T) {
+func TestParseEmail(t *T) {
 	tests := []struct {
 		name    string
 		input   string
@@ -143,7 +141,7 @@ func TestParseEmail(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *T) {
 			got, err := ParseEmail(tt.input)
 
 			// Check error expectation
@@ -166,11 +164,10 @@ func TestParseEmail(t *testing.T) {
 import (
 	"errors"
 	"strings"
-	"testing"
 )
 
 // Test1: Valid email returns no error
-func Test1(t *testing.T) {
+func Test1(t *T) {
 	got, err := ParseEmail("user@example.com")
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
@@ -181,7 +178,7 @@ func Test1(t *testing.T) {
 }
 
 // Test2: Missing @ returns error
-func Test2(t *testing.T) {
+func Test2(t *T) {
 	_, err := ParseEmail("userexample.com")
 	if err == nil {
 		t.Error("expected error for missing @")
@@ -189,7 +186,7 @@ func Test2(t *testing.T) {
 }
 
 // Test3: Missing dot in domain returns error
-func Test3(t *testing.T) {
+func Test3(t *T) {
 	_, err := ParseEmail("user@example")
 	if err == nil {
 		t.Error("expected error for missing dot in domain")
@@ -197,7 +194,7 @@ func Test3(t *testing.T) {
 }
 
 // Test4: Empty username returns error
-func Test4(t *testing.T) {
+func Test4(t *T) {
 	_, err := ParseEmail("@example.com")
 	if err == nil {
 		t.Error("expected error for empty username")
@@ -205,7 +202,7 @@ func Test4(t *testing.T) {
 }
 
 // Test5: Multiple @ signs returns error
-func Test5(t *testing.T) {
+func Test5(t *T) {
 	_, err := ParseEmail("user@@example.com")
 	if err == nil {
 		t.Error("expected error for multiple @ signs")
@@ -213,7 +210,7 @@ func Test5(t *testing.T) {
 }
 
 // Test6: Whitespace trimming works
-func Test6(t *testing.T) {
+func Test6(t *T) {
 	got, err := ParseEmail("  user@example.com  ")
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
@@ -224,7 +221,7 @@ func Test6(t *testing.T) {
 }
 
 // Test7: Subdomain email is valid
-func Test7(t *testing.T) {
+func Test7(t *T) {
 	got, err := ParseEmail("user@mail.example.com")
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
@@ -235,7 +232,7 @@ func Test7(t *testing.T) {
 }
 
 // Test8: Table-driven with wantErr pattern
-func Test8(t *testing.T) {
+func Test8(t *T) {
 	tests := []struct {
 		name    string
 		input   string
@@ -247,7 +244,7 @@ func Test8(t *testing.T) {
 		{"no dot", "test@test", "", true},
 	}
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *T) {
 			got, err := ParseEmail(tt.input)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ParseEmail(%q) error = %v, wantErr %v", tt.input, err, tt.wantErr)
@@ -261,7 +258,7 @@ func Test8(t *testing.T) {
 }
 
 // Test9: Empty input returns error
-func Test9(t *testing.T) {
+func Test9(t *T) {
 	_, err := ParseEmail("")
 	if err == nil {
 		t.Error("expected error for empty input")
@@ -269,7 +266,7 @@ func Test9(t *testing.T) {
 }
 
 // Test10: Complex valid emails
-func Test10(t *testing.T) {
+func Test10(t *T) {
 	validEmails := []string{
 		"user@example.com",
 		"user.name@example.com",
@@ -579,7 +576,6 @@ for _, tt := range tests {
 import (
 	"errors"
 	"strings"
-	"testing"
 )
 
 func ParseEmail(s string) (string, error) {
@@ -606,7 +602,7 @@ func ParseEmail(s string) (string, error) {
 	return s, nil  // Вернуть очищенный email
 }
 
-func TestParseEmail(t *testing.T) {
+func TestParseEmail(t *T) {
 	tests := []struct {
 		name    string
 		input   string
@@ -667,7 +663,7 @@ func TestParseEmail(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *T) {
 			got, err := ParseEmail(tt.input)
 
 			// Проверить ожидание ошибки
@@ -846,7 +842,6 @@ Amazon'da barcha API validatorlar to'g'ri va noto'g'ri kirishlarni testlashi ker
 import (
 	"errors"
 	"strings"
-	"testing"
 )
 
 func ParseEmail(s string) (string, error) {
@@ -873,7 +868,7 @@ func ParseEmail(s string) (string, error) {
 	return s, nil  // Tozalangan emailni qaytarish
 }
 
-func TestParseEmail(t *testing.T) {
+func TestParseEmail(t *T) {
 	tests := []struct {
 		name    string
 		input   string
@@ -934,7 +929,7 @@ func TestParseEmail(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+		t.Run(tt.name, func(t *T) {
 			got, err := ParseEmail(tt.input)
 
 			// Xato kutilishini tekshirish
