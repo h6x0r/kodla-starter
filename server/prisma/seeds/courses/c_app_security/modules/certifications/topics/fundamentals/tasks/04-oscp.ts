@@ -1350,7 +1350,7 @@ OSCP teaches "Try Harder" mindset - the persistence needed for real security wor
 		},
 		uz: {
 			title: 'OSCP Pentest Amaliyoti',
-			description: `OSCP (Offensive Security Certified Professional) konsepsiyalarini kodlash orqali mashq qiling.
+			description: `OSCP (Offensive Security Certified Professional) konsepsiyalarini practixsh orqali mashq qiling.
 
 **OSCP Yo'nalishlari:**
 

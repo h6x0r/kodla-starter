@@ -1333,12 +1333,12 @@ func ensureEOF(dec *json.Decoder) error {
 }`
 		},
 		uz: {
-			title: `Qat'iy JSON validatsiya va kodlash`,
+			title: `Qat'iy JSON validatsiya va practixsh`,
 			description: `Qat'iy validatsiya, noma'lum maydonlarni rad etish, biznes qoidalarini qo'llash va trailing tokenlarni aniqlash bilan production-darajali JSON parsini amalga oshiring.
 
 **Siz amalga oshirasiz:**
 
-**1-4 Daraja (Oson → O'rta+) — Qat'iy dekodlash:**
+**1-4 Daraja (Oson → O'rta+) — Qat'iy depractixsh:**
 1. **UserDTO struct** — id, name, age (ixtiyoriy) uchun JSON teglari bilan DTO
 2. **StrictDecode(data []byte) (UserDTO, error)** — Qat'iy JSON decoder:
    2.1. \`json.Decoder\` dan \`DisallowUnknownFields()\` bilan foydalanadi
@@ -1351,17 +1351,17 @@ func ensureEOF(dec *json.Decoder) error {
    3.2. \`Name != ""\` (bo'sh bo'lmagan ism)
    3.3. \`Age == nil\` yoki \`*Age >= 0\` (ixtiyoriy, lekin mavjud bo'lsa manfiy bo'lmasligi kerak)
 
-**6-Daraja (O'rta+) — Massiv dekodlash:**
-4. **StrictDecodeList(data []byte) ([]UserDTO, error)** — Elementlar bo'yicha validatsiya bilan massiv dekodlash:
-   4.1. \`[]json.RawMessage\` ga dekodlash
+**6-Daraja (O'rta+) — Massiv depractixsh:**
+4. **StrictDecodeList(data []byte) ([]UserDTO, error)** — Elementlar bo'yicha validatsiya bilan massiv depractixsh:
+   4.1. \`[]json.RawMessage\` ga depractixsh
    4.2. Har bir element uchun \`StrictDecode\` ni chaqirish
    4.3. Birinchi xatoda tez muvaffaqiyatsizlik
 
-**7-Daraja (O'rta+) — Kodlash:**
-5. **MarshalUser(u UserDTO) ([]byte, error)** — Kodlashdan oldin validatsiya
+**7-Daraja (O'rta+) — Practixsh:**
+5. **MarshalUser(u UserDTO) ([]byte, error)** — Practixshdan oldin validatsiya
 
 **8-Daraja (O'rta+) — Panic Wrapper:**
-6. **MustStrictDecode(data []byte) UserDTO** — Dekodlash xatosida Panic
+6. **MustStrictDecode(data []byte) UserDTO** — Depractixsh xatosida Panic
 
 **Yordamchi funksiya:**
 7. **ensureEOF(dec *json.Decoder) error** — Trailing tokenlar yo'qligini tekshirish
@@ -1409,19 +1409,19 @@ trailing := []byte(\`{"id": 1, "name": "Frank"}{"extra": "data"}\`)
 _, err = StrictDecode(trailing)
 // err != nil (trailing tokenlar aniqlandi)
 
-// Massiv dekodlash
+// Massiv depractixsh
 array := []byte(\`[{"id": 1, "name": "Alice"}, {"id": 2, "name": "Bob"}]\`)
 users, err := StrictDecodeList(array)
 // users = []UserDTO{{ID: 1, Name: "Alice"}, {ID: 2, Name: "Bob"}}
 
-// Validatsiya bilan kodlash
+// Validatsiya bilan practixsh
 user := UserDTO{ID: 1, Name: "Alice", Age: ptr(25)}
 data, err := MarshalUser(user)
 // data = \`{"id":1,"name":"Alice","age":25}\`, err = nil
 
 invalidUser := UserDTO{ID: 0, Name: "Bad"}
 _, err = MarshalUser(invalidUser)
-// err = ErrBadInput (kodlashdan oldin validatsiya)
+// err = ErrBadInput (practixshdan oldin validatsiya)
 
 // Panic versiyasi
 user = MustStrictDecode([]byte(\`{"id": 1, "name": "Alice"}\`))
@@ -1438,7 +1438,7 @@ user = MustStrictDecode([]byte(\`{"id": 1, "name": "Alice"}\`))
 - MarshalUser: Marshaling dan oldin validatsiya
 - MustStrictDecode: Har qanday xatoda Panic`,
 			hint1: `StrictDecode: json.NewDecoder(bytes.NewReader(data)) orqali decoder yarating, dec.DisallowUnknownFields() ni chaqiring, dto ga Decode qiling, keyin ValidateUser(dto), keyin ensureEOF(dec). dto yoki xato qaytaring.`,
-			hint2: `ValidateUser: Agar u.ID <= 0 || u.Name == "" bo'lsa ErrBadInput qaytaring. Agar u.Age != nil && *u.Age < 0 bo'lsa ErrBadInput qaytaring. StrictDecodeList: []json.RawMessage ga dekodlang, sikl va har bir raw element uchun StrictDecode ni chaqiring.`,
+			hint2: `ValidateUser: Agar u.ID <= 0 || u.Name == "" bo'lsa ErrBadInput qaytaring. Agar u.Age != nil && *u.Age < 0 bo'lsa ErrBadInput qaytaring. StrictDecodeList: []json.RawMessage ga depractixng, sikl va har bir raw element uchun StrictDecode ni chaqiring.`,
 			whyItMatters: `Qat'iy JSON validatsiya API xavfsizligi, ma'lumotlar yaxlitligi va production tizimlarida injection hujumlarini oldini olish uchun muhimdir.
 
 **Nima uchun bu muhim:**
@@ -1633,21 +1633,21 @@ func ParseDecoder(data []byte) (UserDTO, error) {
 
 **6. json.RawMessage bilan massiv validatsiyasi**
 
-**Nima uchun avval \`[]json.RawMessage\` ga dekodlash:**
+**Nima uchun avval \`[]json.RawMessage\` ga depractixsh:**
 
 \`\`\`go
 // YOMON — elementlar bo'yicha qat'iy validatsiya qo'llab bo'lmaydi
 func DecodeArrayBad(data []byte) ([]UserDTO, error) {
     var users []UserDTO
     json.Unmarshal(data, &users)
-    // Har bir element qat'iy tekshiruvsiz dekodlandi!
+    // Har bir element qat'iy tekshiruvsiz depractixndi!
     return users, nil
 }
 
 // YAXSHI — elementlar bo'yicha qat'iy validatsiya
 func StrictDecodeList(data []byte) ([]UserDTO, error) {
     var rawItems []json.RawMessage
-    // Massiv strukturasini dekodlash
+    // Massiv strukturasini depractixsh
     dec.Decode(&rawItems)
 
     // Har bir elementni to'liq qat'iy tekshiruvlar bilan validatsiya qilish
@@ -1805,7 +1805,7 @@ func TestStrictDecode(t *testing.T) {
 - Biznes validatsiyani parsingdan ajrating
 - Ixtiyoriy maydonlar uchun \`*T\` dan foydalaning (nil = yo'q)
 - Qat'iy nazorat va oqim qayta ishlash uchun \`json.Decoder\` dan foydalaning
-- Elementlar bo'yicha validatsiya uchun massivlarni \`[]json.RawMessage\` ga dekodlang
+- Elementlar bo'yicha validatsiya uchun massivlarni \`[]json.RawMessage\` ga depractixng
 - Foydalanuvchi kiritishi uchun \`Must*\` funksiyalaridan hech qachon foydalanmang
 - Validatsiya mantiqini bitta funksiyada markazlashtiring
 - Barcha validatsiya tarmoqlari va chegaraviy holatlarni testlang`,
@@ -1829,9 +1829,9 @@ var ErrBadInput = errors.New("bad input")
 func StrictDecode(data []byte) (UserDTO, error) {
 	dec := json.NewDecoder(bytes.NewReader(data))	// qat'iylikni nazorat qilish uchun decoder orqali JSON ni oqimli qayta ishlash
 	dec.DisallowUnknownFields()	// noma'lum maydonli payload larni rad etish
-	var dto UserDTO	// dekodlangan ma'lumotlar bilan to'ldirish uchun DTO ajratish
-	if err := dec.Decode(&dto); err != nil {	// birinchi JSON ob'ektini dto ga dekodlash
-		return UserDTO{}, err	// dekodlash xatosini chaqiruvchiga uzatish
+	var dto UserDTO	// depractixngan ma'lumotlar bilan to'ldirish uchun DTO ajratish
+	if err := dec.Decode(&dto); err != nil {	// birinchi JSON ob'ektini dto ga depractixsh
+		return UserDTO{}, err	// depractixsh xatosini chaqiruvchiga uzatish
 	}
 	if err := ValidateUser(dto); err != nil {	// DTO biznes cheklovlarini qondirishini tekshirish
 		return UserDTO{}, err	// yomon kiritish uchun validatsiya xatosini qaytarish
@@ -1839,7 +1839,7 @@ func StrictDecode(data []byte) (UserDTO, error) {
 	if err := ensureEOF(dec); err != nil {	// ob'ektdan keyin trailing tokenlar yo'qligini tasdiqlash
 		return UserDTO{}, err	// kutilmagan qo'shimcha ma'lumotlar mavjud bo'lganda muvaffaqiyatsizlik
 	}
-	return dto, nil	// dekodlangan va tekshirilgan DTO ni qaytarish
+	return dto, nil	// depractixngan va tekshirilgan DTO ni qaytarish
 }
 
 func ValidateUser(u UserDTO) error {
@@ -1859,8 +1859,8 @@ func StrictDecodeList(data []byte) ([]UserDTO, error) {
 	dec := json.NewDecoder(bytes.NewReader(data))	// massiv payload uchun decoder yaratish
 	dec.DisallowUnknownFields()	// yuqori darajadagi massivda noma'lum maydonlarni taqiqlash
 	var rawItems []json.RawMessage	// elementlar bo'yicha validatsiya uchun raw JSON elementlarini saqlash
-	if err := dec.Decode(&rawItems); err != nil {	// butun massivni raw messages slice ga dekodlash
-		return nil, err	// dekodlash xatolarini chaqiruvchiga uzatish
+	if err := dec.Decode(&rawItems); err != nil {	// butun massivni raw messages slice ga depractixsh
+		return nil, err	// depractixsh xatolarini chaqiruvchiga uzatish
 	}
 	if err := ensureEOF(dec); err != nil {	// massivdan keyin trailing tokenlar yo'qligini tekshirish
 		return nil, err	// qo'shimcha ma'lumotlar topilganda muvaffaqiyatsizlik
@@ -1873,14 +1873,14 @@ func StrictDecodeList(data []byte) ([]UserDTO, error) {
 		}
 		users = append(users, user)	// yaroqli foydalanuvchini natija slice ga qo'shish
 	}
-	return users, nil	// to'liq dekodlangan foydalanuvchi kolleksiyasini qaytarish
+	return users, nil	// to'liq depractixngan foydalanuvchi kolleksiyasini qaytarish
 }
 
 func MarshalUser(u UserDTO) ([]byte, error) {
 	if err := ValidateUser(u); err != nil {	// noto'g'ri DTOlarni serializatsiya qilishni taqiqlash
 		return nil, err
 	}
-	payload, err := json.Marshal(u)	// DTO ni JSON baytlariga kodlash
+	payload, err := json.Marshal(u)	// DTO ni JSON baytlariga practixsh
 	if err != nil {	// marshaling xatolarini qayta ishlash
 		return nil, err
 	}
@@ -1888,11 +1888,11 @@ func MarshalUser(u UserDTO) ([]byte, error) {
 }
 
 func MustStrictDecode(data []byte) UserDTO {
-	user, err := StrictDecode(data)	// umumiy mantiq yordamida qat'iy dekodlashga harakat qilish
-	if err != nil {	// dekodlash qat'iy shartnomani qondirganda panic
+	user, err := StrictDecode(data)	// umumiy mantiq yordamida qat'iy depractixshga harakat qilish
+	if err != nil {	// depractixsh qat'iy shartnomani qondirganda panic
 		panic(err)
 	}
-	return user	// pars muvaffaqiyatli bo'lganda dekodlangan DTO ni qaytarish
+	return user	// pars muvaffaqiyatli bo'lganda depractixngan DTO ni qaytarish
 }
 
 func ensureEOF(dec *json.Decoder) error {

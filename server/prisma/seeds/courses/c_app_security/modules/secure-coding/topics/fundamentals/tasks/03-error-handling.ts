@@ -450,7 +450,7 @@ Xato xabarlari ko'pincha ochib beradi:
 **Sizning vazifangiz:**
 
 \`SecureErrorHandler\` klassini amalga oshiring.`,
-			hint1: `getErrorCode uchun xato xabarini 'unauthorized', 'permission', 'not found' kalit so'zlariga tekshiring va kodlarga moslashtiring.`,
+			hint1: `getErrorCode uchun xato xabarini 'unauthorized', 'permission', 'not found' kalit so'zlariga tekshiring va practixrga moslashtiring.`,
 			hint2: `redactSensitiveData uchun sensitivePatterns massividan sezgir ma'lumotlarni topish va [REDACTED] bilan almashtirish uchun foydalaning.`,
 			whyItMatters: `Xato xabarlari ichki tafsilotlarni oshkor qilganda tajovuzkorlar uchun oltin kon.`
 		}

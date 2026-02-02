@@ -191,10 +191,10 @@ output = pe(x)
 - **Эффективность**: Предвычислено, нет обучаемых параметров`,
 		},
 		uz: {
-			title: 'Pozitsion kodlash',
-			description: `# Pozitsion kodlash
+			title: 'Pozitsion practixsh',
+			description: `# Pozitsion practixsh
 
-Transformerlarga pozitsiya ma'lumotini berish uchun sinusoidal pozitsion kodlashni amalga oshiring.
+Transformerlarga pozitsiya ma'lumotini berish uchun sinusoidal pozitsion practixshni amalga oshiring.
 
 ## Topshiriq
 
@@ -214,7 +214,7 @@ output = pe(x)
 \`\`\``,
 			hint1: "PE ni saqlash uchun register_buffer dan foydalaning, u model bilan birga harakatlanadi",
 			hint2: "Juft indekslar sin, toq indekslar cos dan foydalanadi",
-			whyItMatters: `Pozitsion kodlash transformerlarga pozitsiya xabardorligini beradi:
+			whyItMatters: `Pozitsion practixsh transformerlarga pozitsiya xabardorligini beradi:
 
 - **Rekursiya yo'q**: Transformerlarda o'rnatilgan pozitsiya ma'lumoti yo'q
 - **Sinusoidal**: Uzunroq ketma-ketliklarga umumlashadi

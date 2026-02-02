@@ -1,11 +1,11 @@
-# Testing Plan - Kodla/Practix
+# Testing Plan - Practix/Practix
 
 > **Last Updated:** 2026-01-16
 > **E2E Framework:** Playwright (planned)
 
 ## Overview
 
-This document outlines the comprehensive testing strategy for the Kodla/Practix platform.
+This document outlines the comprehensive testing strategy for the Practix/Practix platform.
 
 | Layer | Framework | Status | Target Coverage |
 |-------|-----------|--------|-----------------|

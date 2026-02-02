@@ -51,7 +51,7 @@ test.describe('Admin Dashboard', () => {
     });
   });
 
-  // Admin user tests - these require e2e-admin@kodla.dev to be seeded
+  // Admin user tests - these require e2e-admin@practix.dev to be seeded
   // Run: docker compose exec backend npm run seed to create admin user
   test.describe('Admin - Admin User', () => {
     // Note: If these tests fail with timeout, run seed to create admin user
@@ -60,7 +60,7 @@ test.describe('Admin Dashboard', () => {
     test('should display admin dashboard for admin user', async ({ auth, page }) => {
       // Try to login as admin - skip if user doesn't exist
       await page.goto('/login');
-      await page.fill('[data-testid="email-input"]', 'e2e-admin@kodla.dev');
+      await page.fill('[data-testid="email-input"]', 'e2e-admin@practix.dev');
       await page.fill('[data-testid="password-input"]', 'AdminPassword123!');
       await page.click('[data-testid="login-button"]');
 
@@ -91,7 +91,7 @@ test.describe('Admin Dashboard', () => {
     test('should have admin page content when logged in as admin', async ({ auth, page }) => {
       // Try to login as admin
       await page.goto('/login');
-      await page.fill('[data-testid="email-input"]', 'e2e-admin@kodla.dev');
+      await page.fill('[data-testid="email-input"]', 'e2e-admin@practix.dev');
       await page.fill('[data-testid="password-input"]', 'AdminPassword123!');
       await page.click('[data-testid="login-button"]');
 
@@ -121,7 +121,7 @@ test.describe('Admin Dashboard', () => {
     test('should have proper structure when accessed as admin', async ({ page }) => {
       // Try admin login
       await page.goto('/login');
-      await page.fill('[data-testid="email-input"]', 'e2e-admin@kodla.dev');
+      await page.fill('[data-testid="email-input"]', 'e2e-admin@practix.dev');
       await page.fill('[data-testid="password-input"]', 'AdminPassword123!');
       await page.click('[data-testid="login-button"]');
 
@@ -148,7 +148,7 @@ test.describe('Admin Dashboard', () => {
     test('should be keyboard navigable', async ({ page }) => {
       // Try admin login
       await page.goto('/login');
-      await page.fill('[data-testid="email-input"]', 'e2e-admin@kodla.dev');
+      await page.fill('[data-testid="email-input"]', 'e2e-admin@practix.dev');
       await page.fill('[data-testid="password-input"]', 'AdminPassword123!');
       await page.click('[data-testid="login-button"]');
 
@@ -181,7 +181,7 @@ test.describe('Admin Dashboard', () => {
     test('should handle API errors gracefully when admin', async ({ page }) => {
       // Try admin login
       await page.goto('/login');
-      await page.fill('[data-testid="email-input"]', 'e2e-admin@kodla.dev');
+      await page.fill('[data-testid="email-input"]', 'e2e-admin@practix.dev');
       await page.fill('[data-testid="password-input"]', 'AdminPassword123!');
       await page.click('[data-testid="login-button"]');
 

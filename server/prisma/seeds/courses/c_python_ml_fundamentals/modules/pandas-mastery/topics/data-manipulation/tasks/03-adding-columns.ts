@@ -216,7 +216,7 @@ rename_columns(df, {'price': 'unit_price'})  # Rename price -> unit_price
 
 - **Xususiyat yaratish**: Mavjudlardan yangi xususiyatlar chiqarish
 - **Ma'lumotlarni normalizatsiya qilish**: Qiymatlarni masshtablash yoki o'zgartirish
-- **Kodlash**: Kategoriyalarni raqamlarga aylantirish`,
+- **Practixsh**: Kategoriyalarni raqamlarga aylantirish`,
 		},
 	},
 };

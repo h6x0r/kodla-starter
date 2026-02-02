@@ -37,22 +37,42 @@ func GetUser(id string) (*User, error) {
 - Must set all three AppError fields`,
 	initialCode: `package errorsx
 
+import "fmt"
+
 type AppError struct {
 	Code string
 	Op   string
 	Err  error
 }
 
+// Error implements error interface
+func (e *AppError) Error() string {
+	if e == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("op=%s, code=%s, err=%v", e.Op, e.Code, e.Err)
+}
+
 // TODO: Implement E constructor function
-func E($2) error {
+func E(code, op string, err error) error {
 	return nil // TODO: Implement
 }`,
 	solutionCode: `package errorsx
+
+import "fmt"
 
 type AppError struct {
 	Code string
 	Op   string
 	Err  error
+}
+
+// Error implements error interface
+func (e *AppError) Error() string {
+	if e == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("op=%s, code=%s, err=%v", e.Op, e.Code, e.Err)
 }
 
 func E(code, op string, err error) error {
@@ -342,10 +362,20 @@ func (h *Handler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 **Короткое имя:** E() намеренно краткое - оно используется часто в обработке ошибок, поэтому короткое имя уменьшает шум в коде.`,
 			solutionCode: `package errorsx
 
+import "fmt"
+
 type AppError struct {
 	Code string
 	Op   string
 	Err  error
+}
+
+// Error implements error interface
+func (e *AppError) Error() string {
+	if e == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("op=%s, code=%s, err=%v", e.Op, e.Code, e.Err)
 }
 
 func E(code, op string, err error) error {
@@ -385,17 +415,17 @@ func GetUser(id string) (*User, error) {
 - AppError ning uchta fieldini to ldirishi kerak`,
 			hint1: `Avval err ni nil ga tekshiring va nil qaytaring.`,
 			hint2: `Parametrlardan uchta field bilan AppError yarating.`,
-			whyItMatters: `E() biznes kodlari bilan to liq kontekstlashtirilgan xatolarni yaratishning qisqa usulini taqdim etadi.
+			whyItMatters: `E() biznes practixri bilan to liq kontekstlashtirilgan xatolarni yaratishning qisqa usulini taqdim etadi.
 
-**Nima uchun xato kodlari:**
+**Nima uchun xato practixri:**
 - **Kategoriyalash:** Xatolarni tur bo yicha guruhlash
-- **API:** API larda doimiy xato kodlarini qaytarish
+- **API:** API larda doimiy xato practixrini qaytarish
 - **Monitoring:** Dashboard larda kategoriya bo yicha xato darajalarini kuzatish
-- **Alerting:** Xato kodlari asosida alert larni ishga tushirish
+- **Alerting:** Xato practixri asosida alert larni ishga tushirish
 
 **Ishlab chiqarish patterni:**
 \`\`\`go
-// Xato kodlarini konstantalar sifatida aniqlash
+// Xato practixrini konstantalar sifatida aniqlash
 const (
     ErrCodeAuth       = "AUTH_ERROR"
     ErrCodeDB         = "DB_ERROR"
@@ -426,7 +456,7 @@ func (h *Handler) CreateOrder(w http.ResponseWriter, r *http.Request) {
     if err != nil {
         var appErr *AppError
         if errors.As(err, &appErr) {
-            // Xato kodlarini HTTP statusga moslashtirish
+            // Xato practixrini HTTP statusga moslashtirish
             switch appErr.Code {
             case ErrCodeAuth:
                 w.WriteHeader(401)
@@ -449,10 +479,20 @@ func (h *Handler) CreateOrder(w http.ResponseWriter, r *http.Request) {
 **Qisqa nom:** E() ataylab qisqa - u xatolarni qayta ishlashda tez-tez ishlatiladi, shuning uchun qisqa nom koddagi shovqinni kamaytiradi.`,
 			solutionCode: `package errorsx
 
+import "fmt"
+
 type AppError struct {
 	Code string
 	Op   string
 	Err  error
+}
+
+// Error implements error interface
+func (e *AppError) Error() string {
+	if e == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("op=%s, code=%s, err=%v", e.Op, e.Code, e.Err)
 }
 
 func E(code, op string, err error) error {

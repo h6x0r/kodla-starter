@@ -809,7 +809,7 @@ To'g'ri ajratish va dependency injection bilan refaktoringlangan servislarni ama
 **1. Dependency injection orqali test qilish mumkinligi**
 
 \`\`\`go
-// YOMON: Qattiq kodlangan bog'liqliklarga ega God Object
+// YOMON: Qattiq practixngan bog'liqliklarga ega God Object
 type OrderProcessor struct {
 	validator    *OrderValidator    // ichida yaratilgan
 	payment      *StripePayment     // Stripe ga qattiq bog'langan!

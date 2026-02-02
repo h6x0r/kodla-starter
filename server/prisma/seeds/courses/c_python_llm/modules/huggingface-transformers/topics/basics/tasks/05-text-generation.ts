@@ -340,12 +340,12 @@ text = generator.generate("The future of AI", strategy="top_p", top_p=0.9)
 			title: 'Matn generatsiyasi',
 			description: `# HuggingFace bilan matn generatsiyasi
 
-Turli dekodlash strategiyalari bilan matn generatsiyasini amalga oshiring.
+Turli depractixsh strategiyalari bilan matn generatsiyasini amalga oshiring.
 
 ## Topshiriq
 
 \`TextGenerator\` sinfini amalga oshiring:
-- Greedy dekodlash
+- Greedy depractixsh
 - Temperature bilan sampling
 - Top-k va top-p sampling
 - Beam search

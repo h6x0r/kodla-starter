@@ -541,7 +541,7 @@ Response:
 			whyItMatters: `HTTP inference handlerlari ML xizmatlarining asosi:
 
 - **API shartnomalar**: Aniq so'rov/javob strukturalari
-- **Xatolarni qayta ishlash**: To'g'ri HTTP status kodlari va xato xabarlari
+- **Xatolarni qayta ishlash**: To'g'ri HTTP status practixri va xato xabarlari
 - **Tekshirish**: Noto'g'ri kirishlarning modelga yetishini oldini olish
 - **Kuzatuvchanlik**: Javoblarga latency kuzatish o'rnatilgan`,
 		},

@@ -1199,7 +1199,7 @@ func ProcessImages(ctx context.Context, images []Image) error {
         for _, img := range images {
             image := img
             jobs <- func(ctx context.Context) error {
-                // Rasm dekodlash buzilgan ma'lumotlarda panikaga tushishi mumkin
+                // Rasm depractixsh buzilgan ma'lumotlarda panikaga tushishi mumkin
                 return processImage(ctx, image)
             }
         }

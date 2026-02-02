@@ -48,7 +48,7 @@ describe('storage utility', () => {
       storage.setTaskCode('hello-world', 'package main');
 
       expect(localStorage.setItem).toHaveBeenCalledWith(
-        'kodla_task_code_hello-world',
+        'practix_task_code_hello-world',
         'package main',
       );
 
@@ -90,7 +90,7 @@ describe('storage utility', () => {
     it('should save and retrieve language preference', () => {
       storage.setLanguage('ru');
 
-      expect(localStorage.setItem).toHaveBeenCalledWith('kodla_language', 'ru');
+      expect(localStorage.setItem).toHaveBeenCalledWith('practix_language', 'ru');
 
       const result = storage.getLanguage();
       expect(result).toBe('ru');
@@ -106,7 +106,7 @@ describe('storage utility', () => {
     it('should save and retrieve theme preference', () => {
       storage.setTheme('dark');
 
-      expect(localStorage.setItem).toHaveBeenCalledWith('kodla_theme', 'dark');
+      expect(localStorage.setItem).toHaveBeenCalledWith('practix_theme', 'dark');
 
       const result = storage.getTheme();
       expect(result).toBe('dark');
@@ -129,7 +129,7 @@ describe('storage utility', () => {
     it('should save and retrieve token', () => {
       storage.setToken('jwt-token-123');
 
-      expect(localStorage.setItem).toHaveBeenCalledWith('kodla_token', 'jwt-token-123');
+      expect(localStorage.setItem).toHaveBeenCalledWith('practix_token', 'jwt-token-123');
 
       const result = storage.getToken();
       expect(result).toBe('jwt-token-123');
@@ -144,7 +144,7 @@ describe('storage utility', () => {
       storage.setToken('token-to-remove');
       storage.removeToken();
 
-      expect(localStorage.removeItem).toHaveBeenCalledWith('kodla_token');
+      expect(localStorage.removeItem).toHaveBeenCalledWith('practix_token');
     });
   });
 
@@ -153,7 +153,7 @@ describe('storage utility', () => {
       storage.setTaskCode('task-1', 'some code');
       storage.removeTaskCode('task-1');
 
-      expect(localStorage.removeItem).toHaveBeenCalledWith('kodla_task_code_task-1');
+      expect(localStorage.removeItem).toHaveBeenCalledWith('practix_task_code_task-1');
     });
   });
 
@@ -163,7 +163,7 @@ describe('storage utility', () => {
       storage.setMockUser(mockUser);
 
       expect(localStorage.setItem).toHaveBeenCalledWith(
-        'kodla_mock_db_user',
+        'practix_mock_db_user',
         JSON.stringify(mockUser)
       );
 
@@ -208,7 +208,7 @@ describe('storage utility', () => {
     });
 
     it('should handle invalid JSON gracefully', () => {
-      mockStorage['kodla_started_courses'] = 'invalid json';
+      mockStorage['practix_started_courses'] = 'invalid json';
 
       const result = storage.getStartedCourses();
       expect(result).toEqual([]);
@@ -220,13 +220,13 @@ describe('storage utility', () => {
       storage.setCompletedTasks(['task-1', 'task-2']);
 
       expect(localStorage.setItem).toHaveBeenCalledWith(
-        'kodla_completed_tasks',
+        'practix_completed_tasks',
         JSON.stringify(['task-1', 'task-2'])
       );
     });
 
     it('should handle invalid JSON gracefully for getCompletedTasks', () => {
-      mockStorage['kodla_completed_tasks'] = 'invalid json';
+      mockStorage['practix_completed_tasks'] = 'invalid json';
 
       const result = storage.getCompletedTasks();
       expect(result).toEqual([]);
@@ -251,11 +251,11 @@ describe('storage utility', () => {
       storage.setRoadmapPrefs({ role: 'dev', level: 'mid', goal: 'test' });
       storage.removeRoadmapPrefs();
 
-      expect(localStorage.removeItem).toHaveBeenCalledWith('kodla_roadmap_prefs');
+      expect(localStorage.removeItem).toHaveBeenCalledWith('practix_roadmap_prefs');
     });
 
     it('should handle invalid JSON gracefully', () => {
-      mockStorage['kodla_roadmap_prefs'] = 'invalid json';
+      mockStorage['practix_roadmap_prefs'] = 'invalid json';
 
       const result = storage.getRoadmapPrefs();
       expect(result).toEqual({ role: '', level: '', goal: '' });
@@ -266,7 +266,7 @@ describe('storage utility', () => {
     it('should save and retrieve sidebar collapsed state', () => {
       storage.setSidebarCollapsed(true);
 
-      expect(localStorage.setItem).toHaveBeenCalledWith('kodla_sidebar_collapsed', 'true');
+      expect(localStorage.setItem).toHaveBeenCalledWith('practix_sidebar_collapsed', 'true');
 
       const result = storage.getSidebarCollapsed();
       expect(result).toBe(true);
@@ -303,11 +303,11 @@ describe('storage utility', () => {
       storage.setTimerState({ elapsed: 100, isRunning: false, mode: 'timer' } as any);
       storage.removeTimerState();
 
-      expect(localStorage.removeItem).toHaveBeenCalledWith('kodla_timer_state');
+      expect(localStorage.removeItem).toHaveBeenCalledWith('practix_timer_state');
     });
 
     it('should handle invalid JSON gracefully', () => {
-      mockStorage['kodla_timer_state'] = 'invalid json';
+      mockStorage['practix_timer_state'] = 'invalid json';
 
       const result = storage.getTimerState();
       expect(result).toBeNull();
@@ -315,7 +315,7 @@ describe('storage utility', () => {
   });
 
   describe('clearAll', () => {
-    it('should clear all kodla storage keys', () => {
+    it('should clear all practix storage keys', () => {
       // Set some values
       storage.setToken('token');
       storage.setTheme('dark');
@@ -331,27 +331,27 @@ describe('storage utility', () => {
 
     it('should clear task code keys with dynamic prefix', () => {
       // Manually populate mockStorage with task code keys to test the filter/forEach branch
-      mockStorage['kodla_task_code_task-1'] = 'code1';
-      mockStorage['kodla_task_code_task-2'] = 'code2';
-      mockStorage['kodla_task_code_another-task'] = 'code3';
+      mockStorage['practix_task_code_task-1'] = 'code1';
+      mockStorage['practix_task_code_task-2'] = 'code2';
+      mockStorage['practix_task_code_another-task'] = 'code3';
 
       // Clear all
       storage.clearAll();
 
       // Verify task code keys were cleared
-      expect(localStorage.removeItem).toHaveBeenCalledWith('kodla_task_code_task-1');
-      expect(localStorage.removeItem).toHaveBeenCalledWith('kodla_task_code_task-2');
-      expect(localStorage.removeItem).toHaveBeenCalledWith('kodla_task_code_another-task');
+      expect(localStorage.removeItem).toHaveBeenCalledWith('practix_task_code_task-1');
+      expect(localStorage.removeItem).toHaveBeenCalledWith('practix_task_code_task-2');
+      expect(localStorage.removeItem).toHaveBeenCalledWith('practix_task_code_another-task');
     });
 
     it('should clear language and timer state', () => {
-      mockStorage['kodla_language'] = 'ru';
-      mockStorage['kodla_timer_state'] = JSON.stringify({ elapsed: 100 });
+      mockStorage['practix_language'] = 'ru';
+      mockStorage['practix_timer_state'] = JSON.stringify({ elapsed: 100 });
 
       storage.clearAll();
 
-      expect(localStorage.removeItem).toHaveBeenCalledWith('kodla_language');
-      expect(localStorage.removeItem).toHaveBeenCalledWith('kodla_timer_state');
+      expect(localStorage.removeItem).toHaveBeenCalledWith('practix_language');
+      expect(localStorage.removeItem).toHaveBeenCalledWith('practix_timer_state');
     });
   });
 });

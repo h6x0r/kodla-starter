@@ -201,6 +201,31 @@ func (u *User) ID() int {
 		return 0 // defensive: handle nil receiver
 	}
 	return u.id
+}
+
+// Option is a functional option for User configuration
+type Option func(*User) error
+
+// WithEmail returns an Option that sets the user's email with validation
+func WithEmail(email string) Option {
+	return func(u *User) error {
+		if !strings.Contains(email, "@") {
+			return fmt.Errorf("invalid email")
+		}
+		u.Email = email
+		return nil
+	}
+}
+
+// WithAge returns an Option that sets the user's age with validation
+func WithAge(age int) Option {
+	return func(u *User) error {
+		if age < 0 || age > 150 {
+			return fmt.Errorf("invalid age")
+		}
+		u.Age = age
+		return nil
+	}
 }`,
 			hint1: `Validate id and name first, then create the User struct. Loop through options and apply each one, returning error immediately if any option fails.`,
 			hint2: `The ID() method is a getter for the private id field. Check for nil receiver before accessing u.id to prevent panic.`,
@@ -479,6 +504,31 @@ func (u *User) ID() int {
 		return 0 // защитно: обрабатываем nil получатель
 	}
 	return u.id
+}
+
+// Option - функциональная опция для конфигурации User
+type Option func(*User) error
+
+// WithEmail возвращает Option, устанавливающую email с валидацией
+func WithEmail(email string) Option {
+	return func(u *User) error {
+		if !strings.Contains(email, "@") {
+			return fmt.Errorf("invalid email")
+		}
+		u.Email = email
+		return nil
+	}
+}
+
+// WithAge возвращает Option, устанавливающую возраст с валидацией
+func WithAge(age int) Option {
+	return func(u *User) error {
+		if age < 0 || age > 150 {
+			return fmt.Errorf("invalid age")
+		}
+		u.Age = age
+		return nil
+	}
 }`,
 			description: `Реализуйте **конструктор с валидацией**, который обеспечивает инварианты и инкапсулирует приватные поля.
 
@@ -783,6 +833,31 @@ func (u *User) ID() int {
 		return 0 // himoya: nil qabul qiluvchini qayta ishlaymiz
 	}
 	return u.id
+}
+
+// Option - User konfiguratsiyasi uchun funksional opsiya
+type Option func(*User) error
+
+// WithEmail validatsiya bilan email o'rnatuvchi Option qaytaradi
+func WithEmail(email string) Option {
+	return func(u *User) error {
+		if !strings.Contains(email, "@") {
+			return fmt.Errorf("invalid email")
+		}
+		u.Email = email
+		return nil
+	}
+}
+
+// WithAge validatsiya bilan yosh o'rnatuvchi Option qaytaradi
+func WithAge(age int) Option {
+	return func(u *User) error {
+		if age < 0 || age > 150 {
+			return fmt.Errorf("invalid age")
+		}
+		u.Age = age
+		return nil
+	}
 }`,
 			description: `Invariantlarni ta'minlovchi va xususiy maydonlarni inkapsulyatsiya qiluvchi **validatsiyali konstruktor** ni amalga oshiring.
 

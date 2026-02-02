@@ -1,4 +1,4 @@
-# KODLA Platform - Run Guide
+# PRACTIX Platform - Run Guide
 
 ## Prerequisites
 * **Node.js** (v18+)
@@ -60,7 +60,7 @@ Runs Vite dev server + NestJS in watch mode.
                                                ▼
                     ┌─────────────┐     ┌─────────────┐
                     │  PostgreSQL │     │   Piston    │
-                    │  (kodla_db) │     │  (sandbox)  │
+                    │  (practix_db) │     │  (sandbox)  │
                     └─────────────┘     └─────────────┘
 ```
 
@@ -98,7 +98,7 @@ REDIS_PORT=6379
 
 ### Backend (`server/.env` or docker-compose)
 ```env
-DATABASE_URL="postgresql://kodla_user:kodla_secure_password@db:5432/kodla_db"
+DATABASE_URL="postgresql://practix_user:practix_secure_password@db:5432/practix_db"
 JWT_SECRET="your_jwt_secret"
 PORT=8080
 GEMINI_API_KEY="your_google_ai_key"
@@ -196,5 +196,5 @@ BullMQ automatically distributes jobs across workers.
 ---
 
 ## Support
-- GitHub Issues: https://github.com/your-org/kodla/issues
+- GitHub Issues: https://github.com/your-org/practix/issues
 - Documentation: See TECH_STACK.md for architecture details

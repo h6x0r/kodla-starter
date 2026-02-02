@@ -100,7 +100,7 @@ const MONTHS_OPTIONS = [
 // ============================================================================
 // LocalStorage Keys for Wizard State Persistence
 // ============================================================================
-const WIZARD_STORAGE_KEY = 'kodla_roadmap_wizard';
+const WIZARD_STORAGE_KEY = 'practix_roadmap_wizard';
 
 interface PersistedWizardState {
   wizardState: WizardState;

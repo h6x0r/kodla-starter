@@ -14,7 +14,7 @@ export const module: Module = {
         },
         uz: {
             title: 'Xatolarni qayta ishlash naqshlari',
-            description: 'Ilg\'or xatolarni qayta ishlash naqshlarini o\'rganing: natija turlari, validatsiya, xato kodlari va tiklanish strategiyalari.',
+            description: 'Ilg\'or xatolarni qayta ishlash naqshlarini o\'rganing: natija turlari, validatsiya, xato practixri va tiklanish strategiyalari.',
         },
     },
 };

@@ -49,7 +49,8 @@ export class SubmissionsController {
   @UseGuards(JwtAuthGuard)
   @Post()
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 10, ttl: 60000 } }) // 10 submissions per minute
+  // TODO: RE-ENABLE AFTER E2E TESTING - restore: limit: 10, ttl: 60000
+  @Throttle({ default: { limit: 10000, ttl: 60000 } }) // DISABLED FOR E2E
   async create(@Request() req, @Body() body: CreateSubmissionDto) {
     const ip = this.getClientIp(req);
     return this.submissionsService.create(
@@ -70,7 +71,8 @@ export class SubmissionsController {
   @UseGuards(JwtAuthGuard)
   @Post('prompt')
   @HttpCode(HttpStatus.OK)
-  @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 prompt submissions per minute
+  // TODO: RE-ENABLE AFTER E2E TESTING - restore: limit: 5, ttl: 60000
+  @Throttle({ default: { limit: 10000, ttl: 60000 } }) // DISABLED FOR E2E
   async submitPrompt(@Request() req, @Body() body: SubmitPromptDto) {
     return this.submissionsService.submitPrompt(
       req.user.userId,

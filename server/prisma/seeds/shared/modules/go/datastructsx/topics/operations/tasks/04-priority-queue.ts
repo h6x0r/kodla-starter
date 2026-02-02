@@ -1589,7 +1589,7 @@ func RouteRequest(request Request) {
 
 **Haqiqiy foydalanish**: AWS ELB, Kubernetes, NGINX - hammasi ustuvorlikka asoslangan yuk balanslashdan foydalanadi.
 
-**6. Huffman kodlash — Ma'lumotlarni siqish**
+**6. Huffman practixsh — Ma'lumotlarni siqish**
 
 Siqish uchun optimal prefix-free kodini qurish:
 
@@ -1628,7 +1628,7 @@ func BuildHuffmanTree(frequencies map[rune]int) *Node {
 }
 \`\`\`
 
-**Haqiqiy foydalanish**: ZIP, GZIP, PNG, JPEG hammasi siqish uchun Huffman kodlashdan foydalanadi.
+**Haqiqiy foydalanish**: ZIP, GZIP, PNG, JPEG hammasi siqish uchun Huffman practixshdan foydalanadi.
 
 **7. Nega heap-asosli implementatsiya?**
 

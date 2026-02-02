@@ -414,19 +414,19 @@ Fix: var x = "\\x3c/script\\x3e\\x3cscript\\x3ealert(1)//";
 			whyItMatters: `XSS постоянно входит в OWASP Top 10. Контекстное кодирование - основная защита.`
 		},
 		uz: {
-			title: 'XSS ni oldini olish uchun chiqishni kodlash',
-			description: `XSS ni oldini olish uchun kontekstga qarab chiqishni kodlashni o'rganing.
+			title: 'XSS ni oldini olish uchun chiqishni practixsh',
+			description: `XSS ni oldini olish uchun kontekstga qarab chiqishni practixshni o'rganing.
 
 **Asosiy tushuncha:**
 
-Faqat kiritishni tekshirish yetarli emas. Chiqishni QAYERGA ketishiga qarab kodlash kerak.
+Faqat kiritishni tekshirish yetarli emas. Chiqishni QAYERGA ketishiga qarab practixsh kerak.
 
 **Sizning vazifangiz:**
 
 \`OutputEncoder\` klassini amalga oshiring.`,
 			hint1: `encodeForHTML uchun: & → &amp;, < → &lt;, > → &gt;, " → &quot;, ' → &#x27;`,
-			hint2: `encodeForAttribute uchun BARCHA alfanumerik bo'lmagan belgilarni &#xHH; formatida kodlang.`,
-			whyItMatters: `XSS doimo OWASP Top 10 da. Kontekstli kodlash asosiy himoya.`
+			hint2: `encodeForAttribute uchun BARCHA alfanumerik bo'lmagan belgilarni &#xHH; formatida practixng.`,
+			whyItMatters: `XSS doimo OWASP Top 10 da. Kontekstli practixsh asosiy himoya.`
 		}
 	}
 };

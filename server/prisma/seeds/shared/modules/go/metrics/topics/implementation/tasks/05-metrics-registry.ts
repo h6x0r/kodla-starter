@@ -354,9 +354,9 @@ func (r *Registry) RenderAll() string {
 	for _, name := range names {                         // iterate metrics in sorted order
 		metric := r.metrics[name]
 		// Add HELP and TYPE comments for each metric
-		result += fmt.Sprintf("# HELP %s %s metric\n", name, metric.Type())
-		result += fmt.Sprintf("# TYPE %s %s\n", name, metric.Type())
-		result += fmt.Sprintf("%s %s\n", name, metric.Render())  // add metric value line
+		result += fmt.Sprintf("# HELP %s %s metric\\n", name, metric.Type())
+		result += fmt.Sprintf("# TYPE %s %s\\n", name, metric.Type())
+		result += fmt.Sprintf("%s %s\\n", name, metric.Render())  // add metric value line
 	}
 
 	return result
@@ -895,9 +895,9 @@ func (r *Registry) RenderAll() string {
 	for _, name := range names {                         // итерируем метрики в отсортированном порядке
 		metric := r.metrics[name]
 		// Добавляем HELP и TYPE комментарии для каждой метрики
-		result += fmt.Sprintf("# HELP %s %s metric\n", name, metric.Type())
-		result += fmt.Sprintf("# TYPE %s %s\n", name, metric.Type())
-		result += fmt.Sprintf("%s %s\n", name, metric.Render())  // добавляем строку значения метрики
+		result += fmt.Sprintf("# HELP %s %s metric\\n", name, metric.Type())
+		result += fmt.Sprintf("# TYPE %s %s\\n", name, metric.Type())
+		result += fmt.Sprintf("%s %s\\n", name, metric.Render())  // добавляем строку значения метрики
 	}
 
 	return result
@@ -1311,9 +1311,9 @@ func (r *Registry) RenderAll() string {
 	for _, name := range names {                         // saralangan tartibda metrikalarni takrorlaymiz
 		metric := r.metrics[name]
 		// Har bir metrika uchun HELP va TYPE izohlarini qo'shamiz
-		result += fmt.Sprintf("# HELP %s %s metric\n", name, metric.Type())
-		result += fmt.Sprintf("# TYPE %s %s\n", name, metric.Type())
-		result += fmt.Sprintf("%s %s\n", name, metric.Render())  // metrika qiymati qatorini qo'shamiz
+		result += fmt.Sprintf("# HELP %s %s metric\\n", name, metric.Type())
+		result += fmt.Sprintf("# TYPE %s %s\\n", name, metric.Type())
+		result += fmt.Sprintf("%s %s\\n", name, metric.Render())  // metrika qiymati qatorini qo'shamiz
 	}
 
 	return result

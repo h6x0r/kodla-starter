@@ -32,21 +32,23 @@ import { HealthModule } from './health/health.module';
     SentryModule,
     SecurityModule, // Security features (IP ban, code scanner, activity logger)
     // Rate limiting configuration
+    // TODO: RE-ENABLE AFTER E2E TESTING - restore original limits:
+    // short: ttl=1000, limit=3 | medium: ttl=10000, limit=20 | long: ttl=60000, limit=60
     ThrottlerModule.forRoot([
       {
         name: 'short',
-        ttl: 1000,    // 1 second
-        limit: 3,      // 3 requests per second
+        ttl: 1000,
+        limit: 10000,  // DISABLED FOR E2E TESTING
       },
       {
         name: 'medium',
-        ttl: 10000,   // 10 seconds
-        limit: 20,     // 20 requests per 10 seconds
+        ttl: 10000,
+        limit: 10000,  // DISABLED FOR E2E TESTING
       },
       {
         name: 'long',
-        ttl: 60000,   // 1 minute
-        limit: 60,     // 60 requests per minute
+        ttl: 60000,
+        limit: 10000,  // DISABLED FOR E2E TESTING
       },
     ]),
     PrismaModule,

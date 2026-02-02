@@ -1,4 +1,4 @@
-# KODLA Tech Stack & Integrations
+# PRACTIX Tech Stack & Integrations
 
 > Last updated: 2026-01-04
 
@@ -367,7 +367,7 @@ Submit Mode:
 
 ```bash
 # Database
-DATABASE_URL=postgresql://user:pass@localhost:5432/kodla
+DATABASE_URL=postgresql://user:pass@localhost:5432/practix
 
 # JWT
 JWT_SECRET=your-secret-key

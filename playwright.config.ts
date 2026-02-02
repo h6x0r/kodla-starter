@@ -1,9 +1,27 @@
 import { defineConfig, devices } from '@playwright/test';
 
 /**
- * Playwright Configuration for Kodla E2E Tests
+ * Playwright Configuration for Practix E2E Tests
  * @see https://playwright.dev/docs/test-configuration
+ *
+ * Test Tiers (set via E2E_TIER env variable):
+ * - QUICK: 20 tasks, 2 workers, ~5 min (PR checks)
+ * - DAILY: 250 tasks, 4 workers, ~30 min (daily CI)
+ * - FULL: All tasks, 4 workers, ~2-3 hours (weekly/release)
  */
+
+// Get tier-specific configuration
+type TestTier = 'QUICK' | 'DAILY' | 'FULL';
+const tier = (process.env.E2E_TIER?.toUpperCase() || 'QUICK') as TestTier;
+
+const tierConfigs: Record<TestTier, { workers: number; timeout: number; retries: number }> = {
+  QUICK: { workers: 2, timeout: 180_000, retries: 1 },   // Go 1.21 on ARM needs ~60s
+  DAILY: { workers: 4, timeout: 180_000, retries: 2 },   // Java/Go need longer timeout
+  FULL: { workers: 4, timeout: 240_000, retries: 2 },    // Extended for all languages
+};
+
+const currentTierConfig = tierConfigs[tier] || tierConfigs.QUICK;
+
 export default defineConfig({
   // Test directory
   testDir: './e2e/tests',
@@ -17,16 +35,19 @@ export default defineConfig({
   // Fail the build on CI if you accidentally left test.only in the source code
   forbidOnly: !!process.env.CI,
 
-  // Retry on CI only
-  retries: process.env.CI ? 2 : 0,
+  // Retries based on tier configuration
+  retries: process.env.CI ? currentTierConfig.retries : 0,
 
-  // Use single worker to avoid session token conflicts when same user logs in from multiple tests
-  workers: 1,
+  // Workers based on tier (task-validation tests can run in parallel)
+  // Use 1 worker for regular tests to avoid session conflicts
+  workers: process.env.E2E_TIER ? currentTierConfig.workers : 1,
 
   // Reporter to use
   reporter: [
     ['html', { outputFolder: 'playwright-report' }],
     ['list'],
+    // Add JSON reporter for CI
+    ...(process.env.CI ? [['json', { outputFile: 'playwright-results/results.json' }] as const] : []),
   ],
 
   // Shared settings for all the projects below
@@ -52,6 +73,15 @@ export default defineConfig({
     // Main test project
     {
       name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
+
+    // Task validation project with parallel execution
+    {
+      name: 'task-validation',
+      testMatch: '**/task-validation/**/*.spec.ts',
       use: {
         ...devices['Desktop Chrome'],
       },
@@ -87,8 +117,8 @@ export default defineConfig({
   // Output folder for test artifacts
   outputDir: 'playwright-results',
 
-  // Global timeout
-  timeout: 30 * 1000,
+  // Global timeout based on tier (Java needs more time)
+  timeout: currentTierConfig.timeout,
 
   // Expect timeout
   expect: {

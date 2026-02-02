@@ -34,10 +34,20 @@ if errors.Is(appErr, sql.ErrNoRows) {
 - Must return the Err field`,
 	initialCode: `package errorsx
 
+import "fmt"
+
 type AppError struct {
 	Code string
 	Op   string
 	Err  error
+}
+
+// Error implements error interface
+func (e *AppError) Error() string {
+	if e == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("op=%s, code=%s, err=%v", e.Op, e.Code, e.Err)
 }
 
 // TODO: Implement Unwrap() method to return underlying error
@@ -46,10 +56,20 @@ func (e *AppError) Unwrap() error {
 }`,
 	solutionCode: `package errorsx
 
+import "fmt"
+
 type AppError struct {
 	Code string
 	Op   string
 	Err  error
+}
+
+// Error implements error interface
+func (e *AppError) Error() string {
+	if e == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("op=%s, code=%s, err=%v", e.Op, e.Code, e.Err)
 }
 
 func (e *AppError) Unwrap() error {
@@ -252,10 +272,20 @@ if errors.Is(svcErr, sql.ErrNoRows) {
 Без Unwrap() вы потеряете доступ к оригинальной ошибке и не сможете использовать errors.Is/As.`,
 			solutionCode: `package errorsx
 
+import "fmt"
+
 type AppError struct {
 	Code string
 	Op   string
 	Err  error
+}
+
+// Error implements error interface
+func (e *AppError) Error() string {
+	if e == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("op=%s, code=%s, err=%v", e.Op, e.Code, e.Err)
 }
 
 func (e *AppError) Unwrap() error {
@@ -326,10 +356,20 @@ if errors.Is(svcErr, sql.ErrNoRows) {
 Unwrap() siz asl xatoga kirishni yo'qotasiz va errors.Is/As dan foydalana olmaysiz.`,
 			solutionCode: `package errorsx
 
+import "fmt"
+
 type AppError struct {
 	Code string
 	Op   string
 	Err  error
+}
+
+// Error implements error interface
+func (e *AppError) Error() string {
+	if e == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("op=%s, code=%s, err=%v", e.Op, e.Code, e.Err)
 }
 
 func (e *AppError) Unwrap() error {

@@ -479,7 +479,7 @@ if len(password) < minPasswordLength { return false }
 \`\`\`
 
 **Qachon o'zgaruvchilarni ajratish kerak:**
-- Kontekstsiz qattiq kodlangan raqamlar
+- Kontekstsiz qattiq practixngan raqamlar
 - Takrorlanuvchi literal qiymatlar
 - Murakkab hisoblashlar
 - Konfiguratsiya qiymatlari

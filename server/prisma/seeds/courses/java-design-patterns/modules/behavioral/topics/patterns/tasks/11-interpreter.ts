@@ -980,7 +980,7 @@ Daraxt strukturasi to'g'ri operatsiyalar tartibini ta'minlaydi!`,
 Grammatikaning to'g'ri ifodasiz interpretatorlar qurish chalkash, qo'llab-quvvatlab bo'lmaydigan kodga olib keladi:
 
 \`\`\`java
-// Interpreter SDAN - qattiq kodlangan parsing mantiq
+// Interpreter SDAN - qattiq practixngan parsing mantiq
 class Calculator {
     public int evaluate(String expression) {	// satrga asoslangan hisoblash
         // Chalkash parsing regex yoki satr manipulyatsiyasi bilan

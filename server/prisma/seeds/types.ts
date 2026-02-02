@@ -1,5 +1,5 @@
 /**
- * TypeScript interfaces for KODLA learning platform seed data
+ * TypeScript interfaces for PRACTIX learning platform seed data
  * Defines hierarchical structure: Course → Module → Topic → Task
  */
 

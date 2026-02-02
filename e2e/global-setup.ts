@@ -10,8 +10,8 @@ import { FullConfig } from '@playwright/test';
  * - Database must be seeded with E2E test users (npm run seed in server/)
  *
  * E2E Test Users (created by npm run seed):
- * - e2e-test@kodla.dev / TestPassword123! (free user)
- * - e2e-premium@kodla.dev / PremiumPassword123! (premium user)
+ * - e2e-test@practix.dev / TestPassword123! (free user)
+ * - e2e-premium@practix.dev / PremiumPassword123! (premium user)
  */
 async function globalSetup(config: FullConfig) {
   console.log('🚀 Starting E2E test setup...');
@@ -48,7 +48,7 @@ async function globalSetup(config: FullConfig) {
     // Note: We don't do a login check here because it creates sessions
     // that can conflict with actual test logins. The tests themselves
     // will fail with clear error messages if the test users don't exist.
-    console.log('📝 Test users should be seeded: e2e-test@kodla.dev, e2e-premium@kodla.dev');
+    console.log('📝 Test users should be seeded: e2e-test@practix.dev, e2e-premium@practix.dev');
 
   } catch (error) {
     if (error instanceof TypeError && error.message.includes('fetch failed')) {

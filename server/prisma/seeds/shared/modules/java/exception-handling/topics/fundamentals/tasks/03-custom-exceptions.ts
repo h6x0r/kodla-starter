@@ -642,7 +642,7 @@ Talablar:
 2. RuntimeException dan meros oluvchi InvalidAccountException yarating
 3. InsufficientFundsException tashlaydigan withdraw() metodi bilan BankAccount klassini yarating
 4. Hisob tafsilotlari bilan maxsus xato xabarlarini qo'shing
-5. Maxsus istisnolarga xato kodlarini kiriting
+5. Maxsus istisnolarga xato practixrini kiriting
 
 Misol:
 \`\`\`java

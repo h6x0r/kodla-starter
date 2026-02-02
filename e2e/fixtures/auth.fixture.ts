@@ -4,19 +4,19 @@ import { test as base, Page } from '@playwright/test';
  * Test user credentials for E2E tests
  */
 export const TEST_USER = {
-  email: 'e2e-test@kodla.dev',
+  email: 'e2e-test@practix.dev',
   password: 'TestPassword123!',
   name: 'E2E Test User',
 };
 
 export const PREMIUM_USER = {
-  email: 'e2e-premium@kodla.dev',
+  email: 'e2e-premium@practix.dev',
   password: 'PremiumPassword123!',
   name: 'E2E Premium User',
 };
 
 export const ADMIN_USER = {
-  email: 'e2e-admin@kodla.dev',
+  email: 'e2e-admin@practix.dev',
   password: 'AdminPassword123!',
   name: 'E2E Admin User',
 };

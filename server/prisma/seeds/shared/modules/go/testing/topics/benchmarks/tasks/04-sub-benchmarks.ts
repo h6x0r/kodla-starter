@@ -248,7 +248,7 @@ func BenchmarkJSON(b *testing.B) {
 			description: `Yaxshiroq struktura uchun **b.Run** sub-benchmarklaridan foydalanib benchmarklarni tashkil qiling.
 
 **Talablar:**
-1. JSON va XML kodlash funksiyalarini amalga oshiring
+1. JSON va XML practixsh funksiyalarini amalga oshiring
 2. Turli o'lchamlar uchun sub-benchmarklar yarating
 3. b.Run(name, func(b *testing.B) {...}) dan foydalaning
 4. Kichik, o'rtacha, katta to'plamlarni test qiling

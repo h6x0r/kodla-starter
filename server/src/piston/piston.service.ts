@@ -92,15 +92,15 @@ export const LANGUAGES: Record<string, LanguageConfig> = {
     name: 'Go',
     extension: '.go',
     monacoId: 'go',
-    timeLimit: 5000,
-    memoryLimit: 256 * 1024 * 1024, // 256MB
+    timeLimit: 180000, // Go 1.21+ on ARM emulation needs ~60s for compilation
+    memoryLimit: 512 * 1024 * 1024, // 512MB for Go 1.21+ compiler
   },
   java: {
     pistonName: 'java',
     name: 'Java',
     extension: '.java',
     monacoId: 'java',
-    timeLimit: 15000, // Java needs more time for compilation
+    timeLimit: 60000, // Java needs more time for compilation on ARM
     memoryLimit: 512 * 1024 * 1024,
   },
   javascript: {
@@ -778,17 +778,37 @@ if __name__ == "__main__":
    */
   private buildGoTestCode(solutionCode: string, testCode: string, maxTests?: number): string {
     // For Go, we need to combine into a single file with test runner
-    // Remove package declarations and test file structure
+    // Remove package declarations AND all import statements from solution code
+    // Note: Using Go 1.21+ which supports 'any' keyword natively
     const cleanSolution = solutionCode
       .replace(/^package\s+\w+\s*$/gm, '')
+      .replace(/import\s*\([\s\S]*?\)/g, '')  // Remove multi-line import blocks
+      .replace(/import\s+"[^"]+"/g, '')       // Remove single-line imports
       .trim();
 
+    // Remove package declaration AND all import statements from test code
+    // Note: Using Go 1.21+ which supports 'any' keyword natively
     const cleanTests = testCode
       .replace(/^package\s+\w+\s*$/gm, '')
-      .replace(/import\s*\(\s*"testing"\s*\)/g, '')
-      .replace(/import\s+"testing"/g, '')
+      .replace(/import\s*\([\s\S]*?\)/g, '')  // Remove multi-line import blocks
+      .replace(/import\s+"[^"]+"/g, '')       // Remove single-line imports
       .replace(/\*testing\.T/g, '*T')
       .trim();
+
+    // Extract imports from BOTH solution and test code (excluding "testing")
+    const solutionImports = this.extractGoImports(solutionCode);
+    const testImports = this.extractGoImports(testCode);
+    const candidateImports = [...new Set([...solutionImports, ...testImports])];
+
+    // Filter to only imports that are actually used in the cleaned code
+    const combinedCode = cleanSolution + '\n' + cleanTests;
+    const additionalImports = candidateImports.filter(imp => {
+      // Get the package name (last part of import path)
+      const pkgName = imp.split('/').pop() || imp;
+      // Check if package name is used in the code (as identifier)
+      const usagePattern = new RegExp(`\\b${pkgName}\\.`, 'g');
+      return usagePattern.test(combinedCode);
+    });
 
     // Extract test function names and descriptions from testCode
     const testFunctions = this.extractGoTestFunctionsWithDescriptions(testCode);
@@ -802,13 +822,15 @@ if __name__ == "__main__":
       return `    runTest("${t.name}", ${t.name}, "${escapedDesc}")`;
     }).join('\n');
 
+    // Build complete import list (base + additional from tests)
+    const baseImports = ['encoding/json', 'fmt', 'os', 'regexp'];
+    const allImports = [...new Set([...baseImports, ...additionalImports])];
+    const importBlock = allImports.map(i => `    "${i}"`).join('\n');
+
     return `package main
 
 import (
-    "encoding/json"
-    "fmt"
-    "os"
-    "regexp"
+${importBlock}
 )
 
 // Test result structure
@@ -947,6 +969,41 @@ ${testCalls}
     }
 }
 `;
+  }
+
+  /**
+   * Extract Go imports from code (excluding "testing")
+   */
+  private extractGoImports(code: string): string[] {
+    const imports: string[] = [];
+
+    // Match multi-line import blocks: import ( "pkg1" "pkg2" )
+    const multiImportMatch = code.match(/import\s*\(([\s\S]*?)\)/);
+    if (multiImportMatch) {
+      const importBlock = multiImportMatch[1];
+      const packageMatches = importBlock.match(/"([^"]+)"/g);
+      if (packageMatches) {
+        packageMatches.forEach(pkg => {
+          const cleanPkg = pkg.replace(/"/g, '');
+          if (cleanPkg !== 'testing') {
+            imports.push(cleanPkg);
+          }
+        });
+      }
+    }
+
+    // Match single-line imports: import "pkg"
+    const singleImportMatches = code.match(/import\s+"([^"]+)"/g);
+    if (singleImportMatches) {
+      singleImportMatches.forEach(match => {
+        const pkgMatch = match.match(/"([^"]+)"/);
+        if (pkgMatch && pkgMatch[1] !== 'testing') {
+          imports.push(pkgMatch[1]);
+        }
+      });
+    }
+
+    return imports;
   }
 
   /**

@@ -365,7 +365,7 @@ func HandleGetUser(w http.ResponseWriter, r *http.Request, userID string) {
 		uz: {
 			title: 'Xatolarni qayta ishlash - Asosiy patternlar',
 			description: `Izchil xato javoblari bilan tuzilgan xatolarni qayta ishlashni amalga oshiring.`,
-			hint1: `HandleError da w.WriteHeader(err.StatusCode) ni o\'rnating, code, message, details ni o\'z ichiga olgan ErrorDetail bilan ErrorResponse yarating, keyin JSON ga kodlang.`,
+			hint1: `HandleError da w.WriteHeader(err.StatusCode) ni o\'rnating, code, message, details ni o\'z ichiga olgan ErrorDetail bilan ErrorResponse yarating, keyin JSON ga practixng.`,
 			hint2: `HandleGetUser da userID shartlarini tekshiring va har bir holat uchun mos AppError bilan HandleError ni chaqiring. Muvaffaqiyatda foydalanuvchi ma\'lumotlari bilan 200 qaytaring.`,
 			whyItMatters: `Tuzilgan xatolarni qayta ishlash mijozlarga muammolarni tez hal qilishda yordam beradigan izchil, amaliy xato xabarlarini taqdim etadi.`,
 			solutionCode: `package api

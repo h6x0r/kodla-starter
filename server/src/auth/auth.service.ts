@@ -3,6 +3,7 @@ import { UsersService } from '../users/users.service';
 import { SessionsService } from '../sessions/sessions.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { LoginDto, RegisterDto } from '../common/dto';
 import { User, DeviceType } from '@prisma/client';
 import { parseDeviceType } from '../common/utils/device-parser';
@@ -121,7 +122,9 @@ export class AuthService {
   }
 
   private generateToken(user: User) {
-    const payload = { email: user.email, sub: user.id };
+    // Include jti (JWT ID) to ensure each token is unique
+    // This prevents session collision when same user logs in multiple times
+    const payload = { email: user.email, sub: user.id, jti: crypto.randomUUID() };
     return this.jwtService.sign(payload);
   }
 

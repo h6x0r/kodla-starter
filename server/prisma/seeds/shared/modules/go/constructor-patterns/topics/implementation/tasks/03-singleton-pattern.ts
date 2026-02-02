@@ -77,6 +77,7 @@ import (
 )
 
 func Test1(t *testing.T) {
+	Reset()
 	Initialize("postgres://localhost:5432/db", 100)
 	db := GetInstance()
 	if db == nil {
@@ -85,6 +86,7 @@ func Test1(t *testing.T) {
 }
 
 func Test2(t *testing.T) {
+	Reset()
 	Initialize("postgres://localhost:5432/db", 100)
 	db1 := GetInstance()
 	db2 := GetInstance()
@@ -94,6 +96,7 @@ func Test2(t *testing.T) {
 }
 
 func Test3(t *testing.T) {
+	Reset()
 	Initialize("postgres://localhost:5432/db", 100)
 	db := GetInstance()
 	if db.ConnectionString != "postgres://localhost:5432/db" {
@@ -102,6 +105,7 @@ func Test3(t *testing.T) {
 }
 
 func Test4(t *testing.T) {
+	Reset()
 	Initialize("postgres://localhost:5432/db", 100)
 	db := GetInstance()
 	if db.MaxConnections != 100 {
@@ -110,6 +114,7 @@ func Test4(t *testing.T) {
 }
 
 func Test5(t *testing.T) {
+	Reset()
 	Initialize("first://db", 50)
 	Initialize("second://db", 200)
 	db := GetInstance()
@@ -119,6 +124,7 @@ func Test5(t *testing.T) {
 }
 
 func Test6(t *testing.T) {
+	Reset()
 	Initialize("test://db", 10)
 	var wg sync.WaitGroup
 	instances := make([]*Database, 10)
@@ -138,6 +144,7 @@ func Test6(t *testing.T) {
 }
 
 func Test7(t *testing.T) {
+	Reset()
 	Initialize("", 0)
 	db := GetInstance()
 	if db == nil {
@@ -146,6 +153,7 @@ func Test7(t *testing.T) {
 }
 
 func Test8(t *testing.T) {
+	Reset()
 	Initialize("db://test", 25)
 	db := GetInstance()
 	if db.MaxConnections != 25 {
@@ -154,6 +162,7 @@ func Test8(t *testing.T) {
 }
 
 func Test9(t *testing.T) {
+	Reset()
 	Initialize("conn1", 1)
 	db1 := GetInstance()
 	Initialize("conn2", 2)
@@ -164,6 +173,7 @@ func Test9(t *testing.T) {
 }
 
 func Test10(t *testing.T) {
+	Reset()
 	Initialize("final://test", 999)
 	db := GetInstance()
 	db.MaxConnections = 1
@@ -224,6 +234,15 @@ func GetInstance() *Database {
 		}
 	})
 	return instance
+}
+
+// Reset clears the singleton for testing purposes only
+// WARNING: Do not use in production code!
+func Reset() {
+	instance = nil
+	once = sync.Once{}
+	configConnStr = ""
+	configMaxConns = 0
 }`,
 	hint1: `Use package-level variables: one for the singleton instance (*Database), one for sync.Once, and temporary ones for configuration. sync.Once.Do() ensures the initialization function runs exactly once.`,
 	hint2: `Initialize() stores configuration in package variables. GetInstance() uses once.Do() to create the instance exactly once, using the stored configuration. The function passed to Do() only runs on the first call.`,
@@ -655,6 +674,15 @@ func GetInstance() *Database {
 		}
 	})
 	return instance
+}
+
+// Reset очищает singleton только для целей тестирования
+// ВНИМАНИЕ: Не использовать в production коде!
+func Reset() {
+	instance = nil
+	once = sync.Once{}
+	configConnStr = ""
+	configMaxConns = 0
 }`,
 			description: `Реализуйте **потокобезопасный singleton pattern** используя \`sync.Once\`, чтобы гарантировать создание ровно одного экземпляра даже при конкурентном доступе.
 
@@ -1119,6 +1147,15 @@ func GetInstance() *Database {
 		}
 	})
 	return instance
+}
+
+// Reset singletonni faqat test maqsadlari uchun tozalaydi
+// OGOHLANTIRISH: Production kodda foydalanmang!
+func Reset() {
+	instance = nil
+	once = sync.Once{}
+	configConnStr = ""
+	configMaxConns = 0
 }`,
 			description: `Concurrent kirish ostida ham aynan bitta nusxa yaratilishini ta'minlash uchun \`sync.Once\` dan foydalanib **thread-safe singleton pattern** ni amalga oshiring.
 

@@ -215,7 +215,7 @@ output = model(x)
 			whyItMatters: `Matn tasniflash asosiy NLP vazifasi:
 
 - **Embeddings**: Zich so'z tasvirlarini o'rganish
-- **LSTM kodlash**: Ketma-ket kontekstni olish
+- **LSTM practixsh**: Ketma-ket kontekstni olish
 - **Tuyg'u tahlili**: Sharhlarni ijobiy/salbiy deb tasniflash
 - **Mavzu tasniflash**: Hujjatlarni kategoriyalash`,
 		},

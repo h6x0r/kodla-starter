@@ -1218,11 +1218,11 @@ type Event struct {
 
 **6-7 Daraja (O'rta+) — Maxsus turlar bilan Event:**
 7. **Event struct** — ID, Name, OccurredAt (Timestamp), Cost (Money)
-8. **Event round-trip kodlash** — To'liq marshal/unmarshal tsiklini sinovdan o'tkazish
+8. **Event round-trip practixsh** — To'liq marshal/unmarshal tsiklini sinovdan o'tkazish
 
 **Asosiy tushunchalar:**
-- **json.Marshaler interfeysi**: \`MarshalJSON() ([]byte, error)\` ni amalga oshiradigan turlar o'z JSON kodlashini boshqaradi
-- **json.Unmarshaler interfeysi**: \`UnmarshalJSON(data []byte) error\` ni amalga oshiradigan turlar o'z JSON dekodlashini boshqaradi
+- **json.Marshaler interfeysi**: \`MarshalJSON() ([]byte, error)\` ni amalga oshiradigan turlar o'z JSON practixshini boshqaradi
+- **json.Unmarshaler interfeysi**: \`UnmarshalJSON(data []byte) error\` ni amalga oshiradigan turlar o'z JSON depractixshini boshqaradi
 - **Maxsus formatlar**: Murakkab turlarni ilovaga xos formatlarda serializatsiya qilish
 - **Moslashuvchan pars qilish**: API mosligi uchun bir nechta kirish formatlarini qabul qilish
 - **Tur xavfsizligi**: Validatsiya bilan primitivlarni maxsus turlarga o'rash
@@ -1291,7 +1291,7 @@ json.Unmarshal(data, &decoded)
 - Barcha maxsus unmarshalerlar noto'g'ri kiritish uchun ErrInvalidFormat qaytarishi kerak`,
 			hint1: `Timestamp.MarshalJSON: Soniyalar uchun t.Unix() ni oling, qator baytlariga aylantirish uchun strconv.FormatInt dan foydalaning. Timestamp.UnmarshalJSON: Raqam formati uchun strconv.ParseInt ni sinab ko'ring, agar xato bo'lsa qatorga json.Unmarshal ni sinab ko'ring, keyin time.Parse(time.RFC3339, s).`,
 			hint2: `Money.MarshalJSON: float64(m.Amount)/100.0 ni hisoblang, fmt.Sprintf("%.2f %s", dollars, currency) dan foydalaning, keyin qatorni json.Marshal qiling. Money.UnmarshalJSON: Qatorga json.Unmarshal ni sinab ko'ring, bo'sh joy bo'yicha strings.Split, birinchi qismni ParseFloat va sentlar uchun 100 ga ko'paytiring. Agar xato bo'lsa, Amount/Currency maydonlari bilan anonim strukturaga unmarshal qilishni sinab ko'ring.`,
-			whyItMatters: `Maxsus JSON marshalerlar serializatsiya formatlari ustidan aniq nazoratni ta'minlaydi, bu tur xavfsizligini saqlash, domenga xos kodlashlarni amalga oshirish va orqaga moslik uchun bir nechta kirish formatlarini qo'llab-quvvatlashga imkon beradi.
+			whyItMatters: `Maxsus JSON marshalerlar serializatsiya formatlari ustidan aniq nazoratni ta'minlaydi, bu tur xavfsizligini saqlash, domenga xos practixshlarni amalga oshirish va orqaga moslik uchun bir nechta kirish formatlarini qo'llab-quvvatlashga imkon beradi.
 
 **Nima uchun bu muhim:**
 
@@ -1490,13 +1490,13 @@ func (m Money) MarshalJSON() ([]byte, error) {
 **Haqiqiy hodisa**: E-commerce platformasi narxlar uchun \`float64\` dan foydalangan. 1 yildan keyin to'plangan yaxlitlash xatolari hisobga olinmagan farqlarda $12,437 ni tashkil qildi. Butun sentlarga o'tdi, xatolar yo'qoldi.
 
 **Asosiy xulosalar:**
-- Maxsus kodlash uchun \`MarshalJSON()\` ni amalga oshiring (value receiver OK)
-- Maxsus dekodlash uchun \`UnmarshalJSON()\` ni amalga oshiring (pointer receiver SHART)
+- Maxsus practixsh uchun \`MarshalJSON()\` ni amalga oshiring (value receiver OK)
+- Maxsus depractixsh uchun \`UnmarshalJSON()\` ni amalga oshiring (pointer receiver SHART)
 - Orqaga moslik uchun bir nechta kirish formatlarini qabul qiling
 - Pul uchun butun sentlardan foydalaning, hech qachon floatlardan emas
 - Vaqt uchun ham Unix timestamps ham ISO 8601 ni qo'llab-quvvatlang
 - Noto'g'ri formatlar uchun maxsus xatolar qaytaring
-- Round-trip kodlash va format mosligini sinab ko'ring
+- Round-trip practixsh va format mosligini sinab ko'ring
 - Maxsus marshalerlar tur xavfsizligi + moslashuvchan formatlarni ta'minlaydi`,
 			solutionCode: `package encodingx
 

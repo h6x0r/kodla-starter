@@ -1186,7 +1186,7 @@ func GetPort() int {
     port := FirstNonNil(
         envPort,        // Avval muhit o'zgaruvchisi
         configPort,     // Keyin konfiguratsiya fayli
-        &defaultPort,   // Nihoyat qattiq kodlangan default
+        &defaultPort,   // Nihoyat qattiq practixngan default
     )
 
     return GetIntOrDefault(port, 8080)

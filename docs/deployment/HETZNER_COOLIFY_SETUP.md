@@ -1,4 +1,4 @@
-# Деплой Kodla на Hetzner + Coolify
+# Деплой Practix на Hetzner + Coolify
 
 > Полная инструкция по настройке production-ready окружения
 
@@ -10,7 +10,7 @@
 2. [Шаг 1: Создание сервера Hetzner](#шаг-1-создание-сервера-hetzner)
 3. [Шаг 2: Установка Coolify](#шаг-2-установка-coolify)
 4. [Шаг 3: Настройка домена](#шаг-3-настройка-домена)
-5. [Шаг 4: Деплой Kodla](#шаг-4-деплой-kodla)
+5. [Шаг 4: Деплой Practix](#шаг-4-деплой-practix)
 6. [Шаг 5: Настройка Piston](#шаг-5-настройка-piston)
 7. [Шаг 6: Seed базы данных](#шаг-6-seed-базы-данных)
 8. [Шаг 7: Мониторинг и бэкапы](#шаг-7-мониторинг-и-бэкапы)
@@ -26,8 +26,8 @@
 │                 4 vCPU, 8 GB RAM, 80 GB SSD                 │
 ├─────────────────────────────────────────────────────────────┤
 │  Coolify (Self-hosted PaaS)                                 │
-│  ├── Frontend (React/Vite)     → kodla.uz                  │
-│  ├── Backend (NestJS)          → api.kodla.uz              │
+│  ├── Frontend (React/Vite)     → practix.uz                  │
+│  ├── Backend (NestJS)          → api.practix.uz              │
 │  ├── PostgreSQL 15             → Internal                   │
 │  ├── Redis 7                   → Internal                   │
 │  └── Piston (privileged)       → Internal                   │
@@ -77,7 +77,7 @@
    # Скопировать и вставить в Hetzner
    ```
 
-7. **Name:** `kodla-prod`
+7. **Name:** `practix-prod`
 
 8. **Create & Buy Now**
 
@@ -88,12 +88,12 @@
 brew install hcloud
 
 # Авторизоваться
-hcloud context create kodla
+hcloud context create practix
 # Ввести API token из Hetzner Console → Security → API Tokens
 
 # Создать сервер
 hcloud server create \
-  --name kodla-prod \
+  --name practix-prod \
   --type cx32 \
   --image ubuntu-24.04 \
   --location fsn1 \
@@ -104,7 +104,7 @@ hcloud server create \
 
 ```bash
 # Получить IP из консоли Hetzner или:
-hcloud server ip kodla-prod
+hcloud server ip practix-prod
 
 # Подключиться
 ssh root@YOUR_SERVER_IP
@@ -147,11 +147,11 @@ Access your Coolify instance at: http://YOUR_IP:8000
 
 3. **Settings** → **Configuration**:
    - Instance URL: `http://YOUR_SERVER_IP:8000` (позже заменим на домен)
-   - Instance Name: `Kodla Production`
+   - Instance Name: `Practix Production`
 
 4. **Sources** → **Add Source** → **GitHub**:
    - Авторизовать GitHub App
-   - Выбрать репозиторий `kodla-starter`
+   - Выбрать репозиторий `practix-starter`
 
 ---
 
@@ -180,17 +180,17 @@ Access your Coolify instance at: http://YOUR_IP:8000
 ### 3.3 Обновить Coolify URL
 
 1. **Settings** → **Configuration**
-2. Instance URL: `https://coolify.kodla.uz`
+2. Instance URL: `https://coolify.practix.uz`
 3. Save
 
 ---
 
-## Шаг 4: Деплой Kodla
+## Шаг 4: Деплой Practix
 
 ### 4.1 Создание проекта
 
 1. **Projects** → **Add Project**
-   - Name: `Kodla`
+   - Name: `Practix`
    - Description: `Learning platform`
 
 2. **Add Resource** → **Production Environment**
@@ -200,17 +200,17 @@ Access your Coolify instance at: http://YOUR_IP:8000
 1. **Add Resource** → **Database** → **PostgreSQL**
 
 2. Настройки:
-   - Name: `kodla-db`
+   - Name: `practix-db`
    - Version: `15`
-   - Default Database: `kodla`
-   - Username: `kodla`
+   - Default Database: `practix`
+   - Username: `practix`
    - Password: (сгенерировать и сохранить!)
 
 3. **Deploy**
 
 4. Скопировать **Internal URL**:
    ```
-   postgresql://kodla:PASSWORD@kodla-db:5432/kodla
+   postgresql://practix:PASSWORD@practix-db:5432/practix
    ```
 
 ### 4.3 Деплой Redis
@@ -218,7 +218,7 @@ Access your Coolify instance at: http://YOUR_IP:8000
 1. **Add Resource** → **Database** → **Redis**
 
 2. Настройки:
-   - Name: `kodla-redis`
+   - Name: `practix-redis`
    - Version: `7`
    - Password: (сгенерировать и сохранить!)
 
@@ -226,14 +226,14 @@ Access your Coolify instance at: http://YOUR_IP:8000
 
 4. Скопировать **Internal URL**:
    ```
-   redis://:PASSWORD@kodla-redis:6379
+   redis://:PASSWORD@practix-redis:6379
    ```
 
 ### 4.4 Деплой Backend
 
 1. **Add Resource** → **Application** → **GitHub**
 
-2. Выбрать репозиторий `kodla-starter`
+2. Выбрать репозиторий `practix-starter`
 
 3. **Build Configuration**:
    - Build Pack: `Dockerfile`
@@ -246,10 +246,10 @@ Access your Coolify instance at: http://YOUR_IP:8000
    PORT=8080
 
    # Database (из шага 4.2)
-   DATABASE_URL=postgresql://kodla:PASSWORD@kodla-db:5432/kodla
+   DATABASE_URL=postgresql://practix:PASSWORD@practix-db:5432/practix
 
    # Redis (из шага 4.3)
-   REDIS_URL=redis://:PASSWORD@kodla-redis:6379
+   REDIS_URL=redis://:PASSWORD@practix-redis:6379
 
    # JWT
    JWT_SECRET=your-super-secret-jwt-key-min-32-chars
@@ -259,15 +259,15 @@ Access your Coolify instance at: http://YOUR_IP:8000
    GEMINI_API_KEY=your-gemini-api-key
 
    # Piston (internal)
-   PISTON_URL=http://kodla-piston:2000
+   PISTON_URL=http://practix-piston:2000
 
    # Frontend URL (для CORS)
-   FRONTEND_URL=https://kodla.uz
+   FRONTEND_URL=https://practix.uz
    ```
 
 5. **Network**:
    - Port: `8080`
-   - Domain: `api.kodla.uz`
+   - Domain: `api.practix.uz`
 
 6. **Health Check**:
    - Path: `/health`
@@ -279,7 +279,7 @@ Access your Coolify instance at: http://YOUR_IP:8000
 
 1. **Add Resource** → **Application** → **GitHub**
 
-2. Выбрать репозиторий `kodla-starter`
+2. Выбрать репозиторий `practix-starter`
 
 3. **Build Configuration**:
    - Build Pack: `Dockerfile`
@@ -288,13 +288,13 @@ Access your Coolify instance at: http://YOUR_IP:8000
 
 4. **Environment Variables** (build-time):
    ```env
-   VITE_API_URL=https://api.kodla.uz
+   VITE_API_URL=https://api.practix.uz
    VITE_APP_ENV=production
    ```
 
 5. **Network**:
    - Port: `80`
-   - Domain: `kodla.uz`
+   - Domain: `practix.uz`
 
 6. **Deploy**
 
@@ -306,14 +306,14 @@ Access your Coolify instance at: http://YOUR_IP:8000
 
 1. **Add Resource** → **Docker Compose**
 
-2. **Name:** `kodla-piston`
+2. **Name:** `practix-piston`
 
 3. **Docker Compose:**
    ```yaml
    services:
      piston:
        image: ghcr.io/engineer-man/piston:latest
-       container_name: kodla-piston
+       container_name: practix-piston
        restart: unless-stopped
        privileged: true
        ports:
@@ -341,17 +341,17 @@ ssh root@YOUR_SERVER_IP
 docker ps | grep piston
 
 # Установить языки
-docker exec -it kodla-piston piston ppman install python
-docker exec -it kodla-piston piston ppman install node
-docker exec -it kodla-piston piston ppman install typescript
-docker exec -it kodla-piston piston ppman install go
-docker exec -it kodla-piston piston ppman install java
-docker exec -it kodla-piston piston ppman install gcc      # C
-docker exec -it kodla-piston piston ppman install g++      # C++
-docker exec -it kodla-piston piston ppman install rust
+docker exec -it practix-piston piston ppman install python
+docker exec -it practix-piston piston ppman install node
+docker exec -it practix-piston piston ppman install typescript
+docker exec -it practix-piston piston ppman install go
+docker exec -it practix-piston piston ppman install java
+docker exec -it practix-piston piston ppman install gcc      # C
+docker exec -it practix-piston piston ppman install g++      # C++
+docker exec -it practix-piston piston ppman install rust
 
 # Проверить установленные языки
-docker exec -it kodla-piston piston ppman list
+docker exec -it practix-piston piston ppman list
 ```
 
 ### 5.3 Проверка Piston
@@ -448,7 +448,7 @@ Backend уже настроен с `/health` endpoint. Coolify автомати�
 
 ### 7.3 Автоматические бэкапы PostgreSQL
 
-1. **Coolify** → **kodla-db** → **Backups**
+1. **Coolify** → **practix-db** → **Backups**
 2. **Enable Scheduled Backups**
 3. **Schedule**: `0 3 * * *` (каждый день в 3:00)
 4. **Retention**: 7 дней
@@ -458,8 +458,8 @@ Backend уже настроен с `/health` endpoint. Coolify автомати�
 Добавить в cron на сервере:
 
 ```bash
-# /etc/cron.d/kodla-backup
-0 4 * * * root docker exec kodla-db pg_dump -U kodla kodla | gzip > /backups/kodla-$(date +\%Y\%m\%d).sql.gz
+# /etc/cron.d/practix-backup
+0 4 * * * root docker exec practix-db pg_dump -U practix practix | gzip > /backups/practix-$(date +\%Y\%m\%d).sql.gz
 0 5 * * * root find /backups -name "*.sql.gz" -mtime +7 -delete
 ```
 
@@ -621,21 +621,21 @@ docker compose up -d
 
 ```bash
 # Проверить логи
-docker logs kodla-piston
+docker logs practix-piston
 
 # Проверить privileged mode
-docker inspect kodla-piston | grep Privileged
+docker inspect practix-piston | grep Privileged
 # Должно быть: "Privileged": true
 
 # Проверить установленные языки
-docker exec kodla-piston piston ppman list
+docker exec practix-piston piston ppman list
 ```
 
 ### Проблема: Database connection refused
 
 ```bash
 # Проверить что PostgreSQL запущен
-docker ps | grep kodla-db
+docker ps | grep practix-db
 
 # Проверить сеть
 docker network ls
@@ -647,8 +647,8 @@ docker network inspect coolify
 ### Проблема: CORS ошибки
 
 Проверить environment variables:
-- Backend: `FRONTEND_URL=https://kodla.uz`
-- Frontend: `VITE_API_URL=https://api.kodla.uz`
+- Backend: `FRONTEND_URL=https://practix.uz`
+- Frontend: `VITE_API_URL=https://api.practix.uz`
 
 ### Проблема: SSL не работает
 

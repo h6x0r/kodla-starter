@@ -17,8 +17,8 @@ export const module: Module = {
 			description: 'Реализуйте валидацию JSON продакшен-уровня со строгим парсингом, отклонением неизвестных полей и защищенными паттернами кодирования.'
 		},
 		uz: {
-			title: 'JSON kodlash',
-			description: 'Qat\'iy parsing, noma\'lum maydonlarni rad etish va xavfsizlik bilan mustahkamlangan kodlash patternlari bilan ishlab chiqarish darajasidagi JSON validatsiyani amalga oshiring.'
+			title: 'JSON practixsh',
+			description: 'Qat\'iy parsing, noma\'lum maydonlarni rad etish va xavfsizlik bilan mustahkamlangan practixsh patternlari bilan ishlab chiqarish darajasidagi JSON validatsiyani amalga oshiring.'
 		}
 	}
 };

@@ -15,7 +15,7 @@ export const topic: Topic = {
 		},
 		uz: {
 			title: 'JSON validatsiyasi',
-			description: 'Noma\'lum maydonlarni rad etish, biznes validatsiyasi va xavfsizlik bilan mustahkamlangan kodlash/dekodlash patternlari bilan qat\'iy JSON tahlilini o\'rganish.'
+			description: 'Noma\'lum maydonlarni rad etish, biznes validatsiyasi va xavfsizlik bilan mustahkamlangan practixsh/depractixsh patternlari bilan qat\'iy JSON tahlilini o\'rganish.'
 		}
 	}
 };

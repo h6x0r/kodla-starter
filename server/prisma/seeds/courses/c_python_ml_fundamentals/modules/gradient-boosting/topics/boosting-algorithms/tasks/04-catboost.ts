@@ -200,7 +200,7 @@ predictions = model.predict(X_test)
 			hint2: 'GPU uchun: CatBoostClassifier(task_type="GPU")',
 			whyItMatters: `CatBoost quyidagilarda ajralib turadi:
 
-- **Kategorik ishlov berish**: Qo'lda kodlashsiz sinfda eng yaxshi
+- **Kategorik ishlov berish**: Qo'lda practixshsiz sinfda eng yaxshi
 - **Ordered boosting**: Kichik ma'lumotlarda ortiqcha moslanishni kamaytiradi
 - **GPU qo'llab-quvvatlash**: Oson GPU tezlashtirish`,
 		},

@@ -15,8 +15,8 @@ Custom constraints allow you to specify exactly what operations a type must supp
 **Task:** Create a custom constraint for numeric types that support ordering, and implement a generic \`Clamp\` function that restricts a value to be within a min-max range.
 
 **Requirements:**
-- Define a \`Numeric\` constraint that includes common numeric types
-- The constraint should also include the \`constraints.Ordered\` interface
+- Define a \`Numeric\` constraint that includes integer and float types
+- The constraint should support comparison with < and > operators
 - Implement \`Clamp[T Numeric](value, min, max T) T\` function
 - If value < min, return min; if value > max, return max; otherwise return value
 
@@ -29,12 +29,11 @@ fmt.Println(Clamp(7.5, 0.0, 5.0)) // Output: 5.0
 \`\`\``,
     initialCode: `package generics
 
-import "golang.org/x/exp/constraints"
-
 // TODO: Define a custom Numeric constraint
 // It should include integer and float types, and support ordering
 type Numeric interface {
-    // Add type constraints here
+    // Add type constraints here using type union syntax
+    // Example: ~int | ~float64
 }
 
 // TODO: Implement Clamp function to restrict a value within min and max bounds
@@ -43,11 +42,11 @@ func Clamp[T Numeric](value, min, max T) T {
 }`,
     solutionCode: `package generics
 
-import "golang.org/x/exp/constraints"
-
 // Numeric constraint includes all numeric types that can be ordered
 type Numeric interface {
-    constraints.Integer | constraints.Float
+	~int | ~int8 | ~int16 | ~int32 | ~int64 |
+	~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr |
+	~float32 | ~float64
 }
 
 // Clamp restricts a value to be within the specified min and max bounds
@@ -192,11 +191,11 @@ Clamp(7.5, 0.0, 5.0)  // 5.0
             title: 'Пользовательские ограничения',
             solutionCode: `package generics
 
-import "golang.org/x/exp/constraints"
-
 // Numeric ограничение включает все числовые типы, которые можно упорядочить
 type Numeric interface {
-    constraints.Integer | constraints.Float
+	~int | ~int8 | ~int16 | ~int32 | ~int64 |
+	~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr |
+	~float32 | ~float64
 }
 
 // Clamp ограничивает значение в пределах указанных минимальных и максимальных границ
@@ -264,11 +263,11 @@ Clamp(7.5, 0.0, 5.0)  // 5.0
             title: 'Maxsus cheklovlar',
             solutionCode: `package generics
 
-import "golang.org/x/exp/constraints"
-
 // Numeric cheklovi tartiblanishi mumkin bo'lgan barcha raqamli tiplarni o'z ichiga oladi
 type Numeric interface {
-    constraints.Integer | constraints.Float
+	~int | ~int8 | ~int16 | ~int32 | ~int64 |
+	~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr |
+	~float32 | ~float64
 }
 
 // Clamp qiymatni belgilangan minimal va maksimal chegaralar ichida cheklaydi

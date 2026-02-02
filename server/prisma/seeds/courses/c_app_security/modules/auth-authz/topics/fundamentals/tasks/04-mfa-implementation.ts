@@ -523,12 +523,12 @@ Ko'p faktorli autentifikatsiya foydalanuvchilardan ikki yoki undan ko'p tasdiqla
 
 \`MfaManager\` klassini amalga oshiring:
 
-1. TOTP kodlarini yaratish va tasdiqlash
-2. Zaxira kodlarni boshqarish
+1. TOTP practixrini yaratish va tasdiqlash
+2. Zaxira practixrni boshqarish
 3. MFA yoqish jarayonini boshqarish
 4. Urinishlarni tezlik cheklash bilan tasdiqlash`,
 			hint1: `generateTotpSecret uchun 20 tasodifiy bayt yarating va Base32 ga aylantiring.`,
-			hint2: `validateBackupCode uchun kodni uppercase ga normalizatsiya qiling, foydalanuvchi kodlar to'plamida mavjudligini tekshiring va muvaffaqiyatli foydalanishdan keyin o'chiring.`,
+			hint2: `validateBackupCode uchun kodni uppercase ga normalizatsiya qiling, foydalanuvchi practixr to'plamida mavjudligini tekshiring va muvaffaqiyatli foydalanishdan keyin o'chiring.`,
 			whyItMatters: `MFA akkaunt buzilish xavfini sezilarli darajada kamaytiradi.`
 		}
 	}

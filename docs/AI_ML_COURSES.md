@@ -1,7 +1,7 @@
 # AI/ML Courses - Research & Planning
 
 **Research Date:** December 2024 - January 2025
-**Target Platform:** KODLA Coding Education Platform
+**Target Platform:** Practix Coding Education Platform
 
 ---
 

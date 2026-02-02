@@ -1274,7 +1274,7 @@ func fibonacci(n int) int {
 **Qachon Qayta Urinmaslik Kerak:**
 - **Idempotentlik Muammolari:** Operatsiya qayta urinish uchun xavfsiz emas
 - **Doimiy Xatolar:** Noto'g'ri so'rov, auth muvaffaqiyatsizligi
-- **Mijoz Xatolari:** 4xx status kodlari
+- **Mijoz Xatolari:** 4xx status practixri
 - **Vaqtga Bog'liq:** Tez tugashi kerak bo'lgan operatsiyalar
 
 RetryInterceptor siz mijozlar retry mantiqini o'zlari amalga oshirishi kerak—kod dublikatlari va izchil bo'lmagan xatti-harakatlar.`,

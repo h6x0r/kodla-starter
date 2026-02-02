@@ -1,8 +1,8 @@
 {
-  "name": "kodla-server",
+  "name": "practix-server",
   "version": "0.0.1",
-  "description": "KODLA EdTech Backend API",
-  "author": "KODLA Engineering",
+  "description": "Practix EdTech Backend API",
+  "author": "Practix Engineering",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {

@@ -225,7 +225,7 @@ func (o *IntOptional) IsPresent() bool {
 
 func (o *IntOptional) Get() (int, bool) {
 	if !o.IsPresent() { // guard against absent value
-		return 0 // return zero value as safe default
+		return 0, false // return zero value as safe default
 	}
 	return *o.value, true // dereference to extract actual integer with success flag
 }

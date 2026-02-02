@@ -101,7 +101,7 @@ AI'ın destekleyici bir mentor gibi **arkadaşça, cesaretlendirici bir tonda** 
 
 ## Hedefiniz
 
-Şunları yapan bir kodlama mentoru promptu tasarlayın:
+Şunları yapan bir practixma mentoru promptu tasarlayın:
 1. Sıcak, cesaretlendirici bir dil kullanır
 2. Küçük başarıları kutlar
 3. Sert olmadan yapıcı geri bildirim sağlar

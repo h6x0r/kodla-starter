@@ -23,6 +23,9 @@ playwright-results/
 test-results/
 .playwright-mcp/
 
+# E2E extracted data (regenerated at runtime)
+e2e/data/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

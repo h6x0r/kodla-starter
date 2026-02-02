@@ -2,9 +2,9 @@
 <img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
-# KODLA - Interactive Coding Platform
+# Practix - Interactive Coding Platform
 
-Learn Go and Java through hands-on coding exercises with real-time code execution.
+Learn programming through hands-on coding exercises with real-time code execution.
 
 ## Features
 
@@ -64,7 +64,7 @@ make vet            # Type-check both apps
 
 Create `server/.env`:
 ```env
-DATABASE_URL="postgresql://kodla_user:kodla_secure_password@db:5432/kodla_db"
+DATABASE_URL="postgresql://practix_user:practix_secure_password@db:5432/practix_db"
 JWT_SECRET="your-secret"
 GEMINI_API_KEY="your-google-ai-key"
 ```

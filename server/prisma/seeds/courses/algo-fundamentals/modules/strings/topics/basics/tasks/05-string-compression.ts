@@ -289,7 +289,7 @@ Chiqish: "a6"
 **Xotira murakkabligi:** O(n) natija uchun`,
 			hint1: `Indeks 1 dan boshlab takrorlang, har bir belgini oldingi bilan solishtiring. Belgilar mos kelganda ortadigan count o'zgaruvchisini kuzating.`,
 			hint2: `Belgilar farq qilganda (yoki satr oxirida), oldingi belgi va str(count) ni natija ro'yxatiga qo'shing. Samaradorlik uchun oxirida "".join() dan foydalaning.`,
-			whyItMatters: `Uzunlik seriyalarini kodlash asosiy siqish texnikasi.
+			whyItMatters: `Uzunlik seriyalarini practixsh asosiy siqish texnikasi.
 
 **Bu nima uchun muhim:**
 
@@ -301,7 +301,7 @@ RLE haqiqiy siqishda ishlatiladi:
 - Oddiy o'yin ma'lumotlari`,
 			solutionCode: `def compress(s: str) -> str:
     """
-    Satrni uzunlik seriyalarini kodlash yordamida siqadi.
+    Satrni uzunlik seriyalarini practixsh yordamida siqadi.
     Agar siqilgan kichikroq bo'lmasa aslini qaytaradi.
 
     Args:

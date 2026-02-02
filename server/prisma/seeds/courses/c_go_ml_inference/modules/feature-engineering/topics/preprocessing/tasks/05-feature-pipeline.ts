@@ -712,7 +712,7 @@ ML inference uchun bir nechta transformatsiyalarni birlashtiruvchi composable fe
 
 3. **O'rnatilgan bosqichlar**:
    - \`NumericScaler\` - Min-max yoki standart masshtablash
-   - \`OneHotEncoder\` - Kategorik featurelarni one-hot kodlash
+   - \`OneHotEncoder\` - Kategorik featurelarni one-hot practixsh
    - \`TextTokenizer\` - Matnni token IDlariga aylantirish
    - \`FeatureSelector\` - Ma'lum featurelarni tanlash
    - \`MissingValueHandler\` - Yo'qolgan qiymatlarni boshqarish

@@ -387,8 +387,8 @@ List<String> result = decoder.decode("The quick", 20);
 - **Универсальность**: Используется в переводе, суммаризации, чатботах`,
 		},
 		uz: {
-			title: 'Beam Search dekodlash',
-			description: `# Beam Search dekodlash
+			title: 'Beam Search depractixsh',
+			description: `# Beam Search depractixsh
 
 Matn generatsiyasi sifatini yaxshilash uchun beam search ni amalga oshiring.
 
@@ -410,7 +410,7 @@ List<String> result = decoder.decode("The quick", 20);
 			hint2: "Qisqa ketma-ketliklarni afzal ko'rmaslik uchun uzunlik normalizatsiyasini qo'llang",
 			whyItMatters: `Beam search neyron matn generatsiyasi uchun zarur:
 
-- **Sifat**: Ochko'z dekodlashdan yaxshiroq natijalar
+- **Sifat**: Ochko'z depractixshdan yaxshiroq natijalar
 - **Xilma-xillik**: Bir nechta kandidat ketma-ketliklarni qaytaradi
 - **Nazorat**: Nur kengligi sifat va tezlik o'rtasidagi kelishuv
 - **Universal**: Tarjima, xulosa chiqarish va chatbotlarda ishlatiladi`,

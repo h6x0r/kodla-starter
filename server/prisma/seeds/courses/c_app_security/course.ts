@@ -15,7 +15,7 @@ export const courseMeta: CourseMeta = {
 		},
 		uz: {
 			title: 'Ilova xavfsizligi',
-			description: 'Ilova xavfsizligini o\'rganing: CIA Triad, OWASP Top 10, Autentifikatsiya/Avtorizatsiya, Kriptografiya, Xavfsiz kodlash va Intervyuga tayyorgarlik. Ilovalaringizni haqiqiy tahdidlardan himoya qiling.'
+			description: 'Ilova xavfsizligini o\'rganing: CIA Triad, OWASP Top 10, Autentifikatsiya/Avtorizatsiya, Kriptografiya, Xavfsiz practixsh va Intervyuga tayyorgarlik. Ilovalaringizni haqiqiy tahdidlardan himoya qiling.'
 		}
 	}
 };

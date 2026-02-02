@@ -595,7 +595,7 @@ handler := LoggingMiddleware(
 )
 \`\`\``,
 			hint1: "Rate limiting uchun token bucket algoritmidan foydalaning",
-			hint2: "Logging uchun status kodlarini ushlash uchun ResponseWriter ni o'rang",
+			hint2: "Logging uchun status practixrini ushlash uchun ResponseWriter ni o'rang",
 			whyItMatters: `Middleware production ML xizmatlari uchun zarur:
 
 - **Kuzatuvchanlik**: Debugging uchun logging va tracing

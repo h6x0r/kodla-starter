@@ -114,7 +114,7 @@ func Test4RequireQueryParamWhitespaceParam(t *testing.T) {
 	handler := RequireQueryParam("id", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
-	req := httptest.NewRequest("GET", "/test?id=   ", nil)
+	req := httptest.NewRequest("GET", "/test?id=%20%20%20", nil)
 	rec := httptest.NewRecorder()
 	handler.ServeHTTP(rec, req)
 	if rec.Code != http.StatusBadRequest {
@@ -190,7 +190,7 @@ func Test10RequireQueryParamValueWithSpaces(t *testing.T) {
 	handler := RequireQueryParam("id", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))
-	req := httptest.NewRequest("GET", "/test?id=  123  ", nil)
+	req := httptest.NewRequest("GET", "/test?id=%20%20123%20%20", nil)
 	rec := httptest.NewRecorder()
 	handler.ServeHTTP(rec, req)
 	if rec.Code != http.StatusOK {

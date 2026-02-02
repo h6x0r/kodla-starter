@@ -225,7 +225,7 @@ func Test5(t *testing.T) {
 	var c Counter
 	c.Inc(123.5)
 	result := RenderCounter("my_metric", &c)
-	if result != "my_metric 123.5\n" {
+	if result != "my_metric 123.5\\n" {
 		t.Errorf("expected 'my_metric 123.5\\n', got '%s'", result)
 	}
 }
@@ -233,7 +233,7 @@ func Test5(t *testing.T) {
 func Test6(t *testing.T) {
 	// RenderCounter handles nil counter
 	result := RenderCounter("empty_metric", nil)
-	if result != "empty_metric 0\n" {
+	if result != "empty_metric 0\\n" {
 		t.Errorf("expected 'empty_metric 0\\n', got '%s'", result)
 	}
 }
@@ -278,7 +278,7 @@ func Test10(t *testing.T) {
 	var c Counter
 	c.Inc(42)
 	result := RenderCounter("test_metric", &c)
-	if !strings.HasSuffix(result, "\n") {
+	if !strings.HasSuffix(result, "\\n") {
 		t.Errorf("output should end with newline, got '%s'", result)
 	}
 }

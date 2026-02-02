@@ -1082,7 +1082,7 @@ type Selection struct {
 
 // Memento holatni o'raydi - serializatsiya qilinishi mumkin
 type Memento struct {
-	state []byte	// JSON-kodlangan holat
+	state []byte	// JSON-practixngan holat
 }
 
 func (m *Memento) GetState() (*DocumentState, error) {	// holatni deserializatsiya qilish

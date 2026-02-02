@@ -530,7 +530,7 @@ JWT - ikki tomon o'rtasida da'volarni uzatishning ixcham, URL-xavfsiz usuli. JWT
 2. Umumiy JWT hujumlarini aniqlash
 3. Xavfsizlik eng yaxshi amaliyotlarini ta'minlash
 4. Xavfsiz token yaratish bo'yicha tavsiyalar`,
-			hint1: `parseToken uchun '.' bo'yicha ajrating, keyin har bir Base64URL qismini dekodlang.`,
+			hint1: `parseToken uchun '.' bo'yicha ajrating, keyin har bir Base64URL qismini depractixng.`,
 			hint2: `detectAttacks uchun avval tokenni parsing qiling, keyin tekshiring: algorithm 'none', zaif algoritmlar, muddati o'tgan tokenlar.`,
 			whyItMatters: `JWT zaifliklari yirik ilovalarda autentifikatsiyani chetlab o'tishga olib keldi.`
 		}

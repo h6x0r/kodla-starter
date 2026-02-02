@@ -102,7 +102,7 @@ describe('bugReportService', () => {
         metadata: {
           userCode: 'console.log("test")',
           browserInfo: 'Chrome 120',
-          url: 'https://kodla.dev/tasks/hello-world',
+          url: 'https://practix.dev/tasks/hello-world',
         },
       };
 
@@ -116,7 +116,7 @@ describe('bugReportService', () => {
         metadata: {
           userCode: 'console.log("test")',
           browserInfo: 'Chrome 120',
-          url: 'https://kodla.dev/tasks/hello-world',
+          url: 'https://practix.dev/tasks/hello-world',
         },
       });
 

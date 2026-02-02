@@ -32,22 +32,42 @@ func GetUser(id string) (*User, error) {
 - Must create new AppError instance`,
 	initialCode: `package errorsx
 
+import "fmt"
+
 type AppError struct {
 	Code string
 	Op   string
 	Err  error
 }
 
+// Error implements error interface
+func (e *AppError) Error() string {
+	if e == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("op=%s, code=%s, err=%v", e.Op, e.Code, e.Err)
+}
+
 // TODO: Implement Wrap function
-func Wrap($2) error {
+func Wrap(op string, err error) error {
 	return nil // TODO: Implement
 }`,
 	solutionCode: `package errorsx
+
+import "fmt"
 
 type AppError struct {
 	Code string
 	Op   string
 	Err  error
+}
+
+// Error implements error interface
+func (e *AppError) Error() string {
+	if e == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("op=%s, code=%s, err=%v", e.Op, e.Code, e.Err)
 }
 
 func Wrap(op string, err error) error {
@@ -294,10 +314,20 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 **nil Preservation:** Возврат nil для nil входа критичен - это предотвращает создание объектов ошибок когда ошибки нет, что превратило бы успешные случаи в ошибки.`,
 			solutionCode: `package errorsx
 
+import "fmt"
+
 type AppError struct {
 	Code string
 	Op   string
 	Err  error
+}
+
+// Error implements error interface
+func (e *AppError) Error() string {
+	if e == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("op=%s, code=%s, err=%v", e.Op, e.Code, e.Err)
 }
 
 func Wrap(op string, err error) error {
@@ -381,10 +411,20 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 **nil Preservation:** nil kirish uchun nil qaytarish muhim - bu xato yo'q bo'lganda xato obyektlarini yaratishni oldini oladi, bu muvaffaqiyatli holatlarni xatolarga aylantiradi.`,
 			solutionCode: `package errorsx
 
+import "fmt"
+
 type AppError struct {
 	Code string
 	Op   string
 	Err  error
+}
+
+// Error implements error interface
+func (e *AppError) Error() string {
+	if e == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("op=%s, code=%s, err=%v", e.Op, e.Code, e.Err)
 }
 
 func Wrap(op string, err error) error {

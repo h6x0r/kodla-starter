@@ -397,13 +397,13 @@ List<String> tags = tagger.predict("The cat sat");
 			title: 'HMM POS Tagger',
 			description: `# HMM POS Tagger
 
-Viterbi dekodlash bilan POS teglash uchun Hidden Markov Model ni amalga oshiring.
+Viterbi depractixsh bilan POS teglash uchun Hidden Markov Model ni amalga oshiring.
 
 ## Topshiriq
 
 HMMga asoslangan POS tagger yarating:
 - O'tish va emissiya ehtimolliklarini o'rgatish
-- Dekodlash uchun Viterbi algoritmini amalga oshirish
+- Depractixsh uchun Viterbi algoritmini amalga oshirish
 - Smoothing bilan noma'lum so'zlarni qayta ishlash
 
 ## Misol

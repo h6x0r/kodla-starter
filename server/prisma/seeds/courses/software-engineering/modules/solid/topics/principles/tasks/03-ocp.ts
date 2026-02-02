@@ -520,7 +520,7 @@ func (pp *PaymentProcessor) Process(method PaymentMethod, amount float64) error 
 
 **Hozirgi muammo:**
 
-Qattiq kodlangan to'lov usullari bilan PaymentProcessor yangi to'lov turlarini qo'shish uchun mavjud kodni o'zgartirishni talab qiladi.
+Qattiq practixngan to'lov usullari bilan PaymentProcessor yangi to'lov turlarini qo'shish uchun mavjud kodni o'zgartirishni talab qiladi.
 
 **Sizning vazifangiz:**
 

@@ -525,7 +525,7 @@ func TestWeatherService_GetTemperature(t *testing.T) {
 2. Maxsus \`RoundTripFunc\` turini amalga oshiring
 3. Oldindan belgilangan HTTP javoblarini qaytaradigan mock yarating
 4. Haqiqiy HTTP so'rovlarsiz servisni test qiling
-5. Turli status kodlari va javoblarni simulyatsiya qiling
+5. Turli status practixri va javoblarni simulyatsiya qiling
 
 **Misol:**
 \`\`\`go

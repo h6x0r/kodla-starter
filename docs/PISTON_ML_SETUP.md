@@ -37,8 +37,8 @@ EOF
 
 ```bash
 # Build and install in Piston
-docker exec kodla_piston ppman install python
-docker exec kodla_piston pip install -r requirements.txt
+docker exec practix_piston ppman install python
+docker exec practix_piston pip install -r requirements.txt
 ```
 
 ### Option 2: Pre-built Docker Image (Quick Setup)

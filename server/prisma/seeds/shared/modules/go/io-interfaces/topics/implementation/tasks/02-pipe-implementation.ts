@@ -141,13 +141,16 @@ import (
 	"sync"
 )
 
+var errClosedPipe = errors.New("io: read/write on closed pipe")
+
 type pipe struct {
-	wrCh   chan []byte	// Data from writer to reader
-	rdCh   chan int	// Acknowledgment from reader to writer
-	once   sync.Once	// Ensure close happens once
-	err    error	// Error to propagate to reader
-	wrMu   sync.Mutex	// Protects write state
-	rdMu   sync.Mutex	// Protects read state
+	wrCh    chan []byte  // Data from writer to reader
+	rdCh    chan int     // Acknowledgment from reader to writer
+	err     error        // Error to propagate to reader
+	closeMu sync.Mutex   // Protects closed state
+	wrMu    sync.Mutex   // Protects write operations
+	rdMu    sync.Mutex   // Protects read operations
+	closed  bool         // Tracks if pipe is closed
 }
 
 type PipeReader struct {
@@ -161,8 +164,11 @@ func (r *PipeReader) Read(b []byte) (n int, err error) {
 	// Receive data from writer
 	data, ok := <-r.p.wrCh
 	if !ok {
-		// Writer closed the channel
-		return 0, r.p.err
+		// Pipe is closed, return stored error
+		r.p.closeMu.Lock()
+		err := r.p.err
+		r.p.closeMu.Unlock()
+		return 0, err
 	}
 
 	// Copy data to buffer
@@ -175,9 +181,14 @@ func (r *PipeReader) Read(b []byte) (n int, err error) {
 }
 
 func (r *PipeReader) Close() error {
-	r.p.once.Do(func() {
+	r.p.closeMu.Lock()
+	defer r.p.closeMu.Unlock()
+
+	if !r.p.closed {
+		r.p.closed = true
+		r.p.err = errClosedPipe
 		close(r.p.wrCh)
-	})
+	}
 	return nil
 }
 
@@ -189,27 +200,32 @@ func (w *PipeWriter) Write(b []byte) (n int, err error) {
 	w.p.wrMu.Lock()
 	defer w.p.wrMu.Unlock()
 
+	// Check if pipe is closed before attempting write
+	w.p.closeMu.Lock()
+	if w.p.closed {
+		w.p.closeMu.Unlock()
+		return 0, errClosedPipe
+	}
+	w.p.closeMu.Unlock()
+
 	// Make a copy to avoid data race
 	data := make([]byte, len(b))
 	copy(data, b)
 
-	// Send data to reader
-	select {
-	case w.p.wrCh <- data:
-		// Wait for reader to acknowledge
-		n = <-w.p.rdCh
-		return n, nil
-	case <-func() chan struct{} {
-		// Check if pipe is closed
-		if w.p.err != nil {
-			ch := make(chan struct{})
-			close(ch)
-			return ch
+	// Handle panic from sending on closed channel (race condition)
+	defer func() {
+		if r := recover(); r != nil {
+			n = 0
+			err = errClosedPipe
 		}
-		return make(chan struct{})
-	}():
-		return 0, errors.New("io: write on closed pipe")
-	}
+	}()
+
+	// Send data to reader
+	w.p.wrCh <- data
+
+	// Wait for reader to acknowledge
+	n = <-w.p.rdCh
+	return n, nil
 }
 
 func (w *PipeWriter) Close() error {
@@ -221,10 +237,14 @@ func (w *PipeWriter) CloseWithError(err error) error {
 		err = io.EOF
 	}
 
-	w.p.once.Do(func() {
+	w.p.closeMu.Lock()
+	defer w.p.closeMu.Unlock()
+
+	if !w.p.closed {
+		w.p.closed = true
 		w.p.err = err
 		close(w.p.wrCh)
-	})
+	}
 
 	return nil
 }
@@ -1055,13 +1075,16 @@ import (
 	"sync"
 )
 
+var errClosedPipe = errors.New("io: read/write on closed pipe")
+
 type pipe struct {
-	wrCh   chan []byte	// Данные от writer к reader
-	rdCh   chan int	// Подтверждение от reader к writer
-	once   sync.Once	// Убедиться что close происходит один раз
-	err    error	// Ошибка для распространения на reader
-	wrMu   sync.Mutex	// Защита состояния записи
-	rdMu   sync.Mutex	// Защита состояния чтения
+	wrCh    chan []byte  // Данные от writer к reader
+	rdCh    chan int     // Подтверждение от reader к writer
+	err     error        // Ошибка для распространения на reader
+	closeMu sync.Mutex   // Защита состояния закрытия
+	wrMu    sync.Mutex   // Защита операций записи
+	rdMu    sync.Mutex   // Защита операций чтения
+	closed  bool         // Отслеживание закрытия pipe
 }
 
 type PipeReader struct {
@@ -1075,8 +1098,11 @@ func (r *PipeReader) Read(b []byte) (n int, err error) {
 	// Получить данные от writer
 	data, ok := <-r.p.wrCh
 	if !ok {
-		// Writer закрыл канал
-		return 0, r.p.err
+		// Pipe закрыт, вернуть сохранённую ошибку
+		r.p.closeMu.Lock()
+		err := r.p.err
+		r.p.closeMu.Unlock()
+		return 0, err
 	}
 
 	// Скопировать данные в буфер
@@ -1089,9 +1115,14 @@ func (r *PipeReader) Read(b []byte) (n int, err error) {
 }
 
 func (r *PipeReader) Close() error {
-	r.p.once.Do(func() {
+	r.p.closeMu.Lock()
+	defer r.p.closeMu.Unlock()
+
+	if !r.p.closed {
+		r.p.closed = true
+		r.p.err = errClosedPipe
 		close(r.p.wrCh)
-	})
+	}
 	return nil
 }
 
@@ -1103,27 +1134,32 @@ func (w *PipeWriter) Write(b []byte) (n int, err error) {
 	w.p.wrMu.Lock()
 	defer w.p.wrMu.Unlock()
 
+	// Проверить закрыт ли pipe перед попыткой записи
+	w.p.closeMu.Lock()
+	if w.p.closed {
+		w.p.closeMu.Unlock()
+		return 0, errClosedPipe
+	}
+	w.p.closeMu.Unlock()
+
 	// Сделать копию чтобы избежать гонки данных
 	data := make([]byte, len(b))
 	copy(data, b)
 
-	// Отправить данные reader
-	select {
-	case w.p.wrCh <- data:
-		// Ждать подтверждения от reader
-		n = <-w.p.rdCh
-		return n, nil
-	case <-func() chan struct{} {
-		// Проверить закрыт ли pipe
-		if w.p.err != nil {
-			ch := make(chan struct{})
-			close(ch)
-			return ch
+	// Обработка паники при отправке в закрытый канал (гонка)
+	defer func() {
+		if r := recover(); r != nil {
+			n = 0
+			err = errClosedPipe
 		}
-		return make(chan struct{})
-	}():
-		return 0, errors.New("io: write on closed pipe")
-	}
+	}()
+
+	// Отправить данные reader
+	w.p.wrCh <- data
+
+	// Ждать подтверждения от reader
+	n = <-w.p.rdCh
+	return n, nil
 }
 
 func (w *PipeWriter) Close() error {
@@ -1135,10 +1171,14 @@ func (w *PipeWriter) CloseWithError(err error) error {
 		err = io.EOF
 	}
 
-	w.p.once.Do(func() {
+	w.p.closeMu.Lock()
+	defer w.p.closeMu.Unlock()
+
+	if !w.p.closed {
+		w.p.closed = true
 		w.p.err = err
 		close(w.p.wrCh)
-	})
+	}
 
 	return nil
 }
@@ -1500,13 +1540,16 @@ import (
 	"sync"
 )
 
+var errClosedPipe = errors.New("io: read/write on closed pipe")
+
 type pipe struct {
-	wrCh   chan []byte	// Writer dan reader ga ma'lumotlar
-	rdCh   chan int	// Reader dan writer ga tasdiqlash
-	once   sync.Once	// Yopish bir marta sodir bo'lishini ta'minlash
-	err    error	// Reader ga tarqatish uchun xato
-	wrMu   sync.Mutex	// Yozish holatini himoyalash
-	rdMu   sync.Mutex	// O'qish holatini himoyalash
+	wrCh    chan []byte  // Writer dan reader ga ma'lumotlar
+	rdCh    chan int     // Reader dan writer ga tasdiqlash
+	err     error        // Reader ga tarqatish uchun xato
+	closeMu sync.Mutex   // Yopilish holatini himoyalash
+	wrMu    sync.Mutex   // Yozish operatsiyalarini himoyalash
+	rdMu    sync.Mutex   // O'qish operatsiyalarini himoyalash
+	closed  bool         // Pipe yopilganligini kuzatish
 }
 
 type PipeReader struct {
@@ -1520,8 +1563,11 @@ func (r *PipeReader) Read(b []byte) (n int, err error) {
 	// Writer dan ma'lumot olish
 	data, ok := <-r.p.wrCh
 	if !ok {
-		// Writer kanalni yopdi
-		return 0, r.p.err
+		// Pipe yopildi, saqlangan xatoni qaytarish
+		r.p.closeMu.Lock()
+		err := r.p.err
+		r.p.closeMu.Unlock()
+		return 0, err
 	}
 
 	// Ma'lumotlarni buferga nusxalash
@@ -1534,9 +1580,14 @@ func (r *PipeReader) Read(b []byte) (n int, err error) {
 }
 
 func (r *PipeReader) Close() error {
-	r.p.once.Do(func() {
+	r.p.closeMu.Lock()
+	defer r.p.closeMu.Unlock()
+
+	if !r.p.closed {
+		r.p.closed = true
+		r.p.err = errClosedPipe
 		close(r.p.wrCh)
-	})
+	}
 	return nil
 }
 
@@ -1548,27 +1599,32 @@ func (w *PipeWriter) Write(b []byte) (n int, err error) {
 	w.p.wrMu.Lock()
 	defer w.p.wrMu.Unlock()
 
+	// Yozishga urinishdan oldin pipe yopilganini tekshirish
+	w.p.closeMu.Lock()
+	if w.p.closed {
+		w.p.closeMu.Unlock()
+		return 0, errClosedPipe
+	}
+	w.p.closeMu.Unlock()
+
 	// Ma'lumot poygasidan qochish uchun nusxa yaratish
 	data := make([]byte, len(b))
 	copy(data, b)
 
-	// Reader ga ma'lumot yuborish
-	select {
-	case w.p.wrCh <- data:
-		// Reader dan tasdiqni kutish
-		n = <-w.p.rdCh
-		return n, nil
-	case <-func() chan struct{} {
-		// Pipe yopilganini tekshirish
-		if w.p.err != nil {
-			ch := make(chan struct{})
-			close(ch)
-			return ch
+	// Yopilgan kanalga yuborishdagi panikani qayta ishlash (poyga holati)
+	defer func() {
+		if r := recover(); r != nil {
+			n = 0
+			err = errClosedPipe
 		}
-		return make(chan struct{})
-	}():
-		return 0, errors.New("io: write on closed pipe")
-	}
+	}()
+
+	// Reader ga ma'lumot yuborish
+	w.p.wrCh <- data
+
+	// Reader dan tasdiqni kutish
+	n = <-w.p.rdCh
+	return n, nil
 }
 
 func (w *PipeWriter) Close() error {
@@ -1580,10 +1636,14 @@ func (w *PipeWriter) CloseWithError(err error) error {
 		err = io.EOF
 	}
 
-	w.p.once.Do(func() {
+	w.p.closeMu.Lock()
+	defer w.p.closeMu.Unlock()
+
+	if !w.p.closed {
+		w.p.closed = true
 		w.p.err = err
 		close(w.p.wrCh)
-	})
+	}
 
 	return nil
 }

@@ -241,7 +241,8 @@ export class CodeScannerService {
   ];
 
   constructor(private configService: ConfigService) {
-    this.enabled = this.configService.get<boolean>('MALICIOUS_CODE_CHECK', true);
+    const configValue = this.configService.get<string>('MALICIOUS_CODE_CHECK', 'true');
+    this.enabled = configValue !== 'false' && configValue !== '0';
     this.logger.log(`Code scanner ${this.enabled ? 'enabled' : 'disabled'}`);
   }
 

@@ -313,15 +313,15 @@ double[][] encodings = pe.getEncoding(100);
 - **Обобщаемость**: Работает для последовательностей длиннее обучающих`,
 		},
 		uz: {
-			title: 'Pozitsion kodlash',
-			description: `# Pozitsion kodlash
+			title: 'Pozitsion practixsh',
+			description: `# Pozitsion practixsh
 
-Ketma-ketlikdagi pozitsiya ma'lumotlari uchun pozitsion kodlashlarni amalga oshiring.
+Ketma-ketlikdagi pozitsiya ma'lumotlari uchun pozitsion practixshlarni amalga oshiring.
 
 ## Topshiriq
 
-Pozitsion kodlashni yarating:
-- Sinusoidal kodlash
+Pozitsion practixshni yarating:
+- Sinusoidal practixsh
 - Embeddinglarga qo'shish
 - O'zgaruvchan ketma-ketlik uzunligini boshqarish
 
@@ -333,11 +333,11 @@ double[][] encodings = pe.getEncoding(100);
 \`\`\``,
 			hint1: "Juft o'lchamlar uchun sin, toq o'lchamlar uchun cos dan foydalaning",
 			hint2: "Maxraj 10000^(2i/d) har bir o'lcham uchun turli chastotalarni yaratadi",
-			whyItMatters: `Pozitsion kodlash ketma-ketlikni tushunishni yoqadi:
+			whyItMatters: `Pozitsion practixsh ketma-ketlikni tushunishni yoqadi:
 
 - **Tartib muhim**: "it odamni tislaydi" "odam itni tislaydi" dan farq qiladi
 - **Rekurrentsiya kerak emas**: Transformerlar barcha pozitsiyalarni parallel qayta ishlaydi
-- **Nisbiy pozitsiyalar**: Sinusoidal kodlashlar nisbiy masofalarni oladi
+- **Nisbiy pozitsiyalar**: Sinusoidal practixshlar nisbiy masofalarni oladi
 - **Umumlashtiriladi**: O'qitishdan uzunroq ketma-ketliklar uchun ishlaydi`,
 		},
 	},

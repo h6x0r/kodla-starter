@@ -907,7 +907,7 @@ func (h *LoggingHandler) Handle(request *Request) string {
 LoggingHandler hech qachon zanjirni to'xtatmaydi - u har doim keyingi ishlov beruvchiga uzatadi.`,
 			whyItMatters: `## Chain of Responsibility nima uchun kerak
 
-**Muammo:** Qadamlar orasida qattiq bog'lanish bilan qattiq kodlangan qayta ishlash mantiqI.
+**Muammo:** Qadamlar orasida qattiq bog'lanish bilan qattiq practixngan qayta ishlash mantiqI.
 
 \`\`\`go
 // Chain siz - monolit qayta ishlash

@@ -529,7 +529,7 @@ Sog'liq tekshiruvi handlerlarini yarating:
 - Jonlilik tekshiruvi (/healthz)
 - Tayyorlik tekshiruvi (/ready)
 - Model mavjudligini tekshirish
-- Tegishli status kodlarini qaytarish
+- Tegishli status practixrini qaytarish
 
 ## Misol
 

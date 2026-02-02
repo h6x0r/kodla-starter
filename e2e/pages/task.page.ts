@@ -73,6 +73,14 @@ export class TaskPage {
   async goto(courseSlug: string, taskSlug: string) {
     await this.page.goto(`/course/${courseSlug}/task/${taskSlug}`);
     await this.page.waitForSelector('.monaco-editor', { timeout: 30000 });
+    // Wait for Monaco to be fully initialized and exposed on window
+    await this.page.waitForFunction(
+      () => {
+        const editor = (window as any).monacoEditor;
+        return editor !== undefined && typeof editor.setValue === 'function';
+      },
+      { timeout: 15000 },
+    );
   }
 
   async gotoById(taskSlug: string) {

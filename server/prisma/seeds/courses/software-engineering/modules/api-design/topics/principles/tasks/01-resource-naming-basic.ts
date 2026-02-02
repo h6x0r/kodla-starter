@@ -724,7 +724,7 @@ func SetupRoutes(r chi.Router) {
 
 func GetUsers(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")  // Har doim birinchi content type ni o\'rnating
-	json.NewEncoder(w).Encode(users)  // Slice ni to\'g\'ridan-to\'g\'ri javobga kodlang
+	json.NewEncoder(w).Encode(users)  // Slice ni to\'g\'ridan-to\'g\'ri javobga practixng
 }
 
 func GetUser(w http.ResponseWriter, r *http.Request) {

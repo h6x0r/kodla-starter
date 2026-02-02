@@ -369,7 +369,7 @@ func (s *Service) GetUser(id string) (*User, error) {
     return user, err
 }
 
-// HTTP handler - status kodlariga moslashtirish
+// HTTP handler - status practixriga moslashtirish
 func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
     user, err := h.service.GetUser(id)
     if err != nil {
@@ -390,7 +390,7 @@ func (h *Handler) GetUser(w http.ResponseWriter, r *http.Request) {
 \`\`\`
 
 **Amaliy foydalari:**
-- **HTTP status kodlari:** Xatolarni status kodlariga oson moslashtirish
+- **HTTP status practixri:** Xatolarni status practixriga oson moslashtirish
 - **Retry logikasi:** Xato turiga qarab qayta urinish haqida qaror qabul qilish
 - **Circuit Breakers:** Muayyan xato turlari uchun zanjirlarni ochish
 - **Metrikalar:** Semantik tur bo'yicha xatolarni sanash

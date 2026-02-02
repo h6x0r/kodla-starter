@@ -69,8 +69,8 @@ async function bootstrap() {
   // Swagger/OpenAPI documentation (only in development)
   if (process.env.NODE_ENV !== 'production') {
     const config = new DocumentBuilder()
-      .setTitle('Kodla API')
-      .setDescription('Kodla Learning Platform API - Interactive coding education platform')
+      .setTitle('Practix API')
+      .setDescription('Practix Learning Platform API - Interactive coding education platform')
       .setVersion('1.0')
       .addBearerAuth(
         {

@@ -529,7 +529,7 @@ func ProxyHandler(target string) http.Handler {
 - **Mikroservislar:** Har bir servis faqat o'zining lokal yo'llarini ko'radi
 
 **Yo'llarni ishlash:**
-- **Path vs RawPath:** RawPath kodlangan belgilarni saqlaydi (%20, etc.)
+- **Path vs RawPath:** RawPath practixngan belgilarni saqlaydi (%20, etc.)
 - **TrimPrefix Safety:** Haqiqiy prefiks olib tashlanganini aniqlash uchun uzunlikni tekshirish
 - **Clone Request:** Asl requestning mutatsiyasidan qochish
 

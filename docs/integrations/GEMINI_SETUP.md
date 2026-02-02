@@ -9,7 +9,7 @@
 1. [Обзор Gemini API](#обзор-gemini-api)
 2. [Получение API ключа](#получение-api-ключа)
 3. [Тарифы и лимиты](#тарифы-и-лимиты)
-4. [Интеграция в Kodla](#интеграция-в-kodla)
+4. [Интеграция в Practix](#интеграция-в-practix)
 5. [Мониторинг использования](#мониторинг-использования)
 6. [Troubleshooting](#troubleshooting)
 
@@ -28,7 +28,7 @@
 | Gemini 1.5 Flash | 1M tokens | Быстрая | $0.075/1M | $0.30/1M | Legacy |
 | Gemini 1.5 Pro | 2M tokens | Средняя | $1.25/1M | $5.00/1M | Legacy |
 
-### Почему Gemini 2.0 Flash для Kodla
+### Почему Gemini 2.0 Flash для Practix
 
 - **Низкая стоимость** — $0.075/1M input tokens (в 16 раз дешевле GPT-4)
 - **Высокая скорость** — отклик < 1 сек для типичных запросов
@@ -49,7 +49,7 @@
 ### Шаг 2: Создание проекта
 
 1. В верхней панели нажмите **Select a project** → **New Project**
-2. Введите название проекта: `kodla-production`
+2. Введите название проекта: `practix-production`
 3. Выберите организацию (опционально)
 4. Нажмите **Create**
 
@@ -57,8 +57,8 @@
 ┌─────────────────────────────────────┐
 │ New Project                         │
 ├─────────────────────────────────────┤
-│ Project name: kodla-production      │
-│ Project ID: kodla-production-xxxxx  │
+│ Project name: practix-production      │
+│ Project ID: practix-production-xxxxx  │
 │ Location: No organization           │
 │                                     │
 │ [Create]                            │
@@ -73,13 +73,13 @@
 2. Войдите с тем же Google аккаунтом
 3. Нажмите **Get API key** в левом меню
 4. Нажмите **Create API key**
-5. Выберите проект `kodla-production`
+5. Выберите проект `practix-production`
 6. Скопируйте ключ (начинается с `AIza...`)
 
 **Вариант B: Через Google Cloud Console**
 
 1. Перейдите в [console.cloud.google.com](https://console.cloud.google.com/)
-2. Выберите проект `kodla-production`
+2. Выберите проект `practix-production`
 3. Перейдите в **APIs & Services** → **Library**
 4. Найдите **Generative Language API**
 5. Нажмите **Enable**
@@ -104,7 +104,7 @@
 ┌─────────────────────────────────────────────────┐
 │ API Key Settings                                │
 ├─────────────────────────────────────────────────┤
-│ Name: kodla-production-key                      │
+│ Name: practix-production-key                      │
 │                                                 │
 │ Application restrictions:                       │
 │ ○ None                                          │
@@ -165,7 +165,7 @@
 | Tier 1 ($0+) | 1,000 | 4M | Unlimited |
 | Tier 2 ($250+) | 2,000 | 4M | Unlimited |
 
-### Расчёт для Kodla
+### Расчёт для Practix
 
 **Предположения:**
 - 1000 активных пользователей/день
@@ -187,7 +187,7 @@ Monthly total: ~$22.50
 
 ---
 
-## Интеграция в Kodla
+## Интеграция в Practix
 
 ### Конфигурация
 
@@ -287,7 +287,7 @@ curl -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0
 3. Условие: > 10,000 запросов за 5 минут
 4. Уведомление: Email, Slack, PagerDuty
 
-### Kodla Admin Dashboard
+### Practix Admin Dashboard
 
 В админ панели (`/admin`) есть секция **AI Usage**:
 - Daily usage by user tier
@@ -423,7 +423,7 @@ for await (const chunk of result.stream) {
 - [ ] Ключ ограничен по IP и API
 - [ ] Биллинг настроен и привязана карта
 - [ ] Бюджетные алерты настроены ($50, $100)
-- [ ] Rate limiting на уровне приложения (Kodla уже делает)
+- [ ] Rate limiting на уровне приложения (Practix уже делает)
 - [ ] Мониторинг в Cloud Console настроен
 - [ ] Fallback модель определена (gemini-1.5-flash)
 - [ ] Error handling и retry logic реализованы

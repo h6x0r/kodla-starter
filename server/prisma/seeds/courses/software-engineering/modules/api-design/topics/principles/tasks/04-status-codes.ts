@@ -527,11 +527,11 @@ func HandleDatabaseOperation(w http.ResponseWriter, r *http.Request, simulateErr
 }`
 		},
 		uz: {
-			title: 'HTTP holat kodlari',
-			description: `Turli API stsenariylari uchun to\'g\'ri HTTP holat kodlarini amalga oshiring.`,
+			title: 'HTTP holat practixri',
+			description: `Turli API stsenariylari uchun to\'g\'ri HTTP holat practixrini amalga oshiring.`,
 			hint1: `HandleCreateUser uchun: json.Decode xatosini tekshiring (400), email bo\'sh emasligini tekshiring (400), existingUsers map ni tekshiring (409), muvaffaqiyat 201 qaytaradi.`,
 			hint2: `HandleGetProtectedResource uchun: r.Header.Get("Authorization") bo\'sh ekanligini tekshiring (401), token formatini tekshiring (401), admin ekanligini tekshiring (403), resurs mavjudligini tekshiring (404).`,
-			whyItMatters: `To\'g\'ri HTTP holat kodlari API ni o\'z-o\'zidan hujjatlashtiradi va mijozlarga xatolarni to\'g\'ri qayta ishlash imkonini beradi.`,
+			whyItMatters: `To\'g\'ri HTTP holat practixri API ni o\'z-o\'zidan hujjatlashtiradi va mijozlarga xatolarni to\'g\'ri qayta ishlash imkonini beradi.`,
 			solutionCode: `package api
 
 import (

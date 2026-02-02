@@ -35,7 +35,7 @@ export const DEMO_USERS = [
  */
 export const E2E_TEST_USERS = [
 	{
-		email: 'e2e-test@kodla.dev',
+		email: 'e2e-test@practix.dev',
 		name: 'E2E Test User',
 		password: 'TestPassword123!',
 		xp: 500,
@@ -47,7 +47,7 @@ export const E2E_TEST_USERS = [
 		role: 'USER' as const,
 	},
 	{
-		email: 'e2e-premium@kodla.dev',
+		email: 'e2e-premium@practix.dev',
 		name: 'E2E Premium User',
 		password: 'PremiumPassword123!',
 		xp: 2000,
@@ -59,7 +59,7 @@ export const E2E_TEST_USERS = [
 		role: 'USER' as const,
 	},
 	{
-		email: 'e2e-admin@kodla.dev',
+		email: 'e2e-admin@practix.dev',
 		name: 'E2E Admin User',
 		password: 'AdminPassword123!',
 		xp: 5000,
@@ -515,7 +515,7 @@ export async function seedE2ETestUsers(prismaClient?: PrismaClient): Promise<voi
 
 	// Create global premium subscription for premium test user
 	const premiumUser = await db.user.findUnique({
-		where: { email: 'e2e-premium@kodla.dev' },
+		where: { email: 'e2e-premium@practix.dev' },
 	});
 
 	if (premiumUser) {
@@ -540,7 +540,7 @@ export async function seedE2ETestUsers(prismaClient?: PrismaClient): Promise<voi
 						endDate: new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000),
 					},
 				});
-				console.log('   💎 Created global premium subscription for e2e-premium@kodla.dev');
+				console.log('   💎 Created global premium subscription for e2e-premium@practix.dev');
 			}
 		}
 	}

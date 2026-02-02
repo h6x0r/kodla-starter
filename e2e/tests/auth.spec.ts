@@ -80,7 +80,7 @@ test.describe('Authentication', () => {
       await expect(page).toHaveURL(/\/login/);
 
       // Login manually (not using auth helper which expects dashboard redirect)
-      await page.fill('[data-testid="email-input"]', 'e2e-test@kodla.dev');
+      await page.fill('[data-testid="email-input"]', 'e2e-test@practix.dev');
       await page.fill('[data-testid="password-input"]', 'TestPassword123!');
       await page.click('[data-testid="login-button"]');
 

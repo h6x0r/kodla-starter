@@ -404,7 +404,7 @@ Sentence embeddinglar bilan semantik o'xshashlikdan foydalanib QA tizimini yarat
 ## Topshiriq
 
 Semantik QA tizimini amalga oshiring:
-- Savol va passagelarni embeddingga kodlash
+- Savol va passagelarni embeddingga practixsh
 - Semantik jihatdan o'xshash passagelarni topish
 - Qayta ifodalangan savollarni qayta ishlash
 - Javoblarni semantik relevantlik bo'yicha tartiblash

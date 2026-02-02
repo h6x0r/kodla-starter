@@ -209,10 +209,10 @@ func (g *Gauge) Value() float64 {
 
 func RenderGauge(name string, g *Gauge) string {
 	if g == nil {                                    // handle nil gauge gracefully
-		return fmt.Sprintf("%s 0\n", name)           // return zero for missing gauge
+		return fmt.Sprintf("%s 0\\n", name)           // return zero for missing gauge
 	}
 	value := g.Value()                               // read value using thread-safe method
-	return fmt.Sprintf("%s %g\n", name, value)       // format as prometheus gauge line
+	return fmt.Sprintf("%s %g\\n", name, value)       // format as prometheus gauge line
 }`,
 	testCode: `package metricsx
 
@@ -284,7 +284,7 @@ func Test7(t *testing.T) {
 	var g Gauge
 	g.Set(123.5)
 	result := RenderGauge("my_gauge", &g)
-	if result != "my_gauge 123.5\n" {
+	if result != "my_gauge 123.5\\n" {
 		t.Errorf("expected 'my_gauge 123.5\\n', got '%s'", result)
 	}
 }
@@ -292,7 +292,7 @@ func Test7(t *testing.T) {
 func Test8(t *testing.T) {
 	// RenderGauge handles nil
 	result := RenderGauge("empty_gauge", nil)
-	if result != "empty_gauge 0\n" {
+	if result != "empty_gauge 0\\n" {
 		t.Errorf("expected 'empty_gauge 0\\n', got '%s'", result)
 	}
 }
@@ -319,7 +319,7 @@ func Test10(t *testing.T) {
 	var g Gauge
 	g.Set(42)
 	result := RenderGauge("test", &g)
-	if !strings.HasSuffix(result, "\n") {
+	if !strings.HasSuffix(result, "\\n") {
 		t.Error("output should end with newline")
 	}
 }

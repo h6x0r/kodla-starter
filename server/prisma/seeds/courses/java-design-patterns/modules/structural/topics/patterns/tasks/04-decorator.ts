@@ -837,14 +837,14 @@ class EncryptionDecorator extends DataSourceDecorator {	// Shifrlash dekoratori
 
     @Override
     public void writeData(String data) {	// yozishdan oldin shifrlash
-        String encrypted = Base64.getEncoder().encodeToString(data.getBytes());	// Base64 ga kodlash
+        String encrypted = Base64.getEncoder().encodeToString(data.getBytes());	// Base64 ga practixsh
         super.writeData(encrypted);	// shifrlangan ma'lumotni yozish
     }
 
     @Override
     public String readData() {	// o'qishdan keyin deshifrlash
         String data = super.readData();	// shifrlangan ma'lumotni o'qish
-        return new String(Base64.getDecoder().decode(data));	// Base64 dan dekodlash
+        return new String(Base64.getDecoder().decode(data));	// Base64 dan depractixsh
     }
 }
 

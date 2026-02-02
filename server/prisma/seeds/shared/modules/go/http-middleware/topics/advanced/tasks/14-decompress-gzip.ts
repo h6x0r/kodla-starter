@@ -807,7 +807,7 @@ func SafeDecompression(maxSize int64) func(http.Handler) http.Handler {
     }
 }
 
-// Ko'p kodlash qo'llab-quvvatlash (gzip, deflate, br)
+// Ko'p practixsh qo'llab-quvvatlash (gzip, deflate, br)
 func AutoDecompress(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
         encoding := r.Header.Get("Content-Encoding")
@@ -881,7 +881,7 @@ func DecompressGZIP(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(http.ResponseWriter, *http.Request) {})
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if !strings.EqualFold(r.Header.Get("Content-Encoding"), "gzip") {	// gzip kodlanganligini tekshirish (katta-kichik harflarni inobatga olmasdan)
+		if !strings.EqualFold(r.Header.Get("Content-Encoding"), "gzip") {	// gzip practixnganligini tekshirish (katta-kichik harflarni inobatga olmasdan)
 			next.ServeHTTP(w, r)	// gzip emas, o'tkazish
 			return
 		}

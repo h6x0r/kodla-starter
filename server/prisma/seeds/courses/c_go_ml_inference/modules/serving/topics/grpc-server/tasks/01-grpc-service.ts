@@ -635,7 +635,7 @@ ML inference uchun gRPC xizmatini amalga oshiring.
 gRPC inference xizmatini yarating:
 - So'rov/javob uchun protobuf xabarlarini aniqlash
 - Unary va streaming inference ni amalga oshirish
-- To'g'ri gRPC status kodlari bilan xatolarni qayta ishlash
+- To'g'ri gRPC status practixri bilan xatolarni qayta ishlash
 - So'rov metama'lumotlarini qo'llab-quvvatlash
 
 ## Misol
@@ -646,7 +646,7 @@ service InferenceService {
   rpc StreamPredict(stream PredictRequest) returns (stream PredictResponse);
 }
 \`\`\``,
-			hint1: "To'g'ri xatolarni qayta ishlash uchun gRPC status kodlaridan foydalaning",
+			hint1: "To'g'ri xatolarni qayta ishlash uchun gRPC status practixridan foydalaning",
 			hint2: "Resurslarning tugashini oldini olish uchun concurrency limitlarini amalga oshiring",
 			whyItMatters: `gRPC yuqori unumdor ML serving ni ta'minlaydi:
 

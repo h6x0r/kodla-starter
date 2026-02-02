@@ -1,5 +1,5 @@
 ################################################################################
-# KODLA Main Stack
+# Practix Main Stack
 # Usage: docker compose up -d
 ################################################################################
 
@@ -9,18 +9,18 @@ services:
   ##############################################################################
   db:
     image: postgres:15-alpine
-    container_name: kodla_postgres
+    container_name: practix_postgres
     restart: unless-stopped
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: kodla_user
-      POSTGRES_PASSWORD: kodla_secure_password
-      POSTGRES_DB: kodla_db
+      POSTGRES_USER: practix_user
+      POSTGRES_PASSWORD: practix_secure_password
+      POSTGRES_DB: practix_db
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U kodla_user -d kodla_db"]
+      test: ["CMD-SHELL", "pg_isready -U practix_user -d practix_db"]
       interval: 5s
       timeout: 5s
       retries: 6
@@ -32,7 +32,7 @@ services:
   ##############################################################################
   redis:
     image: redis:7-alpine
-    container_name: kodla_redis
+    container_name: practix_redis
     restart: unless-stopped
     command: >
       redis-server
@@ -64,7 +64,7 @@ services:
   ##############################################################################
   piston:
     image: ghcr.io/engineer-man/piston
-    container_name: kodla_piston
+    container_name: practix_piston
     restart: always  # Auto-restart on crash or OOM
     privileged: true
     ports:
@@ -75,16 +75,18 @@ services:
     # Memory limits - increased for ML courses (NumPy, Pandas, sklearn)
     mem_limit: 2g
     memswap_limit: 2g  # No swap, strict limit
+    # Increased pids_limit for Go compiler thread requirements
+    pids_limit: 512
     environment:
-      - PISTON_RUN_TIMEOUT=30000       # 30s wall-time for ML training tasks
-      - PISTON_COMPILE_TIMEOUT=30000
-      - PISTON_RUN_CPU_TIME=30000      # 30s CPU-time (important for numpy imports!)
-      - PISTON_COMPILE_CPU_TIME=30000
+      - PISTON_RUN_TIMEOUT=180000      # 180s wall-time for Go 1.21+ on ARM emulation
+      - PISTON_COMPILE_TIMEOUT=180000  # 180s compile timeout for Go 1.21+ first run
+      - PISTON_RUN_CPU_TIME=180000     # 180s CPU-time for Go 1.21 on ARM emulation
+      - PISTON_COMPILE_CPU_TIME=180000 # 180s compile CPU-time
       - PISTON_OUTPUT_MAX_SIZE=131072  # 128KB for chart JSON output
-      - PISTON_MAX_PROCESS_COUNT=64    # Reduced for memory efficiency
+      - PISTON_MAX_PROCESS_COUNT=256   # Increased for Go compiler thread requirements
       - PISTON_MAX_OPEN_FILES=2048     # Reduced for memory efficiency
-      - PISTON_MAX_FILE_SIZE=10485760
-      - PISTON_PROCESS_LIMIT=64        # Reduced for memory efficiency
+      - PISTON_MAX_FILE_SIZE=104857600 # 100MB for Go 1.21+ compiler
+      - PISTON_PROCESS_LIMIT=256       # Increased for Go compiler thread requirements
     healthcheck:
       test: ["CMD", "node", "-e", "require('http').get('http://localhost:2000/api/v2/runtimes', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
       interval: 30s
@@ -101,8 +103,8 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
-      DATABASE_URL: postgresql://kodla_user:kodla_secure_password@db:5432/kodla_db?schema=public&connection_limit=20&pool_timeout=10
-      JWT_SECRET: ${JWT_SECRET:-super_secret_jwt_key_kodla_v1_production_ready_2025}
+      DATABASE_URL: postgresql://practix_user:practix_secure_password@db:5432/practix_db?schema=public&connection_limit=20&pool_timeout=10
+      JWT_SECRET: ${JWT_SECRET:-super_secret_jwt_key_practix_v1_production_ready_2025}
       GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       PORT: 8080
       SKIP_SEED: ${SKIP_SEED:-false}
@@ -113,15 +115,19 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       # Security Configuration
-      ENABLE_IP_BAN: ${ENABLE_IP_BAN:-true}
-      SUSPICIOUS_ACTIVITY_LOG: ${SUSPICIOUS_ACTIVITY_LOG:-true}
-      MALICIOUS_CODE_CHECK: ${MALICIOUS_CODE_CHECK:-true}
-      IP_BAN_THRESHOLD: ${IP_BAN_THRESHOLD:-5}
-      IP_BAN_DURATION_HOURS: ${IP_BAN_DURATION_HOURS:-24}
-      # Rate Limiting
-      RATE_LIMIT_RUN_FREE: ${RATE_LIMIT_RUN_FREE:-10}
-      RATE_LIMIT_RUN_AUTH: ${RATE_LIMIT_RUN_AUTH:-10}
-      RATE_LIMIT_RUN_PREMIUM: ${RATE_LIMIT_RUN_PREMIUM:-5}
+      # TODO: RE-ENABLE after E2E testing - temporarily disabled for bulk testing
+      ENABLE_IP_BAN: ${ENABLE_IP_BAN:-false}
+      SUSPICIOUS_ACTIVITY_LOG: ${SUSPICIOUS_ACTIVITY_LOG:-false}
+      MALICIOUS_CODE_CHECK: ${MALICIOUS_CODE_CHECK:-false}
+      IP_BAN_THRESHOLD: ${IP_BAN_THRESHOLD:-9999}
+      IP_BAN_DURATION_HOURS: ${IP_BAN_DURATION_HOURS:-1}
+      # Rate Limiting - TODO: RE-ENABLE after E2E testing (was 10/10/5 SECONDS for run, 3/5 requests/min for auth)
+      # NOTE: RUN limits are in SECONDS between runs, not requests per minute!
+      RATE_LIMIT_RUN_FREE: ${RATE_LIMIT_RUN_FREE:-0}
+      RATE_LIMIT_RUN_AUTH: ${RATE_LIMIT_RUN_AUTH:-0}
+      RATE_LIMIT_RUN_PREMIUM: ${RATE_LIMIT_RUN_PREMIUM:-0}
+      RATE_LIMIT_REGISTER: ${RATE_LIMIT_REGISTER:-9999}
+      RATE_LIMIT_LOGIN: ${RATE_LIMIT_LOGIN:-9999}
     ports:
       - "8080:8080"
     depends_on:

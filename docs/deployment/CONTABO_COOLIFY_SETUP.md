@@ -1,4 +1,4 @@
-# Деплой Kodla на Contabo + Coolify
+# Деплой Practix на Contabo + Coolify
 
 > Полная инструкция по настройке production-ready окружения на Contabo VPS
 
@@ -11,7 +11,7 @@
 3. [Шаг 2: Первичная настройка сервера](#шаг-2-первичная-настройка-сервера)
 4. [Шаг 3: Установка Coolify](#шаг-3-установка-coolify)
 5. [Шаг 4: Настройка домена](#шаг-4-настройка-домена)
-6. [Шаг 5: Деплой Kodla](#шаг-5-деплой-kodla)
+6. [Шаг 5: Деплой Practix](#шаг-5-деплой-practix)
 7. [Шаг 6: Настройка Piston](#шаг-6-настройка-piston)
 8. [Шаг 7: Seed базы данных](#шаг-7-seed-базы-данных)
 9. [Шаг 8: Мониторинг и бэкапы](#шаг-8-мониторинг-и-бэкапы)
@@ -40,7 +40,7 @@
 | Нет API/CLI | Ручное создание через UI |
 | Сеть иногда нестабильна | Cloudflare как прокси |
 
-### Рекомендуемые планы для Kodla
+### Рекомендуемые планы для Practix
 
 | План | vCPU | RAM | SSD | Цена | Для кого |
 |------|------|-----|-----|------|----------|
@@ -164,20 +164,20 @@ ufw status
 
 ```bash
 # Создать пользователя
-adduser kodla
+adduser practix
 
 # Добавить в sudo
-usermod -aG sudo kodla
+usermod -aG sudo practix
 
 # Скопировать SSH ключи
-mkdir -p /home/kodla/.ssh
-cp ~/.ssh/authorized_keys /home/kodla/.ssh/
-chown -R kodla:kodla /home/kodla/.ssh
-chmod 700 /home/kodla/.ssh
-chmod 600 /home/kodla/.ssh/authorized_keys
+mkdir -p /home/practix/.ssh
+cp ~/.ssh/authorized_keys /home/practix/.ssh/
+chown -R practix:practix /home/practix/.ssh
+chmod 700 /home/practix/.ssh
+chmod 600 /home/practix/.ssh/authorized_keys
 
 # Проверить вход
-# В новом терминале: ssh kodla@YOUR_SERVER_IP
+# В новом терминале: ssh practix@YOUR_SERVER_IP
 ```
 
 ### 2.4 Настройка SSH (безопасность)
@@ -262,7 +262,7 @@ Please visit http://YOUR_IP:8000 to get started.
 
 3. **Settings** → **Configuration**:
    - Instance URL: `http://YOUR_SERVER_IP:8000`
-   - Instance Name: `Kodla Production`
+   - Instance Name: `Practix Production`
 
 4. **Sources** → **Add Source** → **GitHub**:
    - Нажать "Register GitHub App"
@@ -321,12 +321,12 @@ ufw delete allow 8000/tcp
 
 ---
 
-## Шаг 5: Деплой Kodla
+## Шаг 5: Деплой Practix
 
 ### 5.1 Создание проекта
 
 1. **Projects** → **Add Project**
-   - Name: `Kodla`
+   - Name: `Practix`
 
 2. Создать **Production** environment
 
@@ -336,10 +336,10 @@ ufw delete allow 8000/tcp
 
 2. Настройки:
    ```
-   Name: kodla-postgres
+   Name: practix-postgres
    Version: 15
-   Database: kodla
-   Username: kodla
+   Database: practix
+   Username: practix
    Password: [Generate & Save!]
    ```
 
@@ -350,7 +350,7 @@ ufw delete allow 8000/tcp
 
 5. Сохранить Internal URL:
    ```
-   postgresql://kodla:PASSWORD@kodla-postgres:5432/kodla
+   postgresql://practix:PASSWORD@practix-postgres:5432/practix
    ```
 
 ### 5.3 Redis
@@ -359,7 +359,7 @@ ufw delete allow 8000/tcp
 
 2. Настройки:
    ```
-   Name: kodla-redis
+   Name: practix-redis
    Version: 7-alpine
    Password: [Generate & Save!]
    ```
@@ -372,17 +372,17 @@ ufw delete allow 8000/tcp
 
 5. Сохранить Internal URL:
    ```
-   redis://:PASSWORD@kodla-redis:6379
+   redis://:PASSWORD@practix-redis:6379
    ```
 
 ### 5.4 Backend (NestJS)
 
 1. **Add Resource** → **Application** → **GitHub**
 
-2. Выбрать `kodla-starter` репозиторий
+2. Выбрать `practix-starter` репозиторий
 
 3. **General**:
-   - Name: `kodla-backend`
+   - Name: `practix-backend`
    - Branch: `master`
 
 4. **Build**:
@@ -396,10 +396,10 @@ ufw delete allow 8000/tcp
    PORT=8080
 
    # Database
-   DATABASE_URL=postgresql://kodla:PASSWORD@kodla-postgres:5432/kodla
+   DATABASE_URL=postgresql://practix:PASSWORD@practix-postgres:5432/practix
 
    # Redis
-   REDIS_URL=redis://:PASSWORD@kodla-redis:6379
+   REDIS_URL=redis://:PASSWORD@practix-redis:6379
 
    # JWT (generate secure key!)
    JWT_SECRET=your-super-secret-key-at-least-32-characters-long
@@ -409,10 +409,10 @@ ufw delete allow 8000/tcp
    GEMINI_API_KEY=your-gemini-api-key
 
    # Piston
-   PISTON_URL=http://kodla-piston:2000
+   PISTON_URL=http://practix-piston:2000
 
    # CORS
-   FRONTEND_URL=https://kodla.uz
+   FRONTEND_URL=https://practix.uz
 
    # Optional: Payments
    PAYME_MERCHANT_ID=
@@ -424,7 +424,7 @@ ufw delete allow 8000/tcp
 
 6. **Network**:
    - Port: `8080`
-   - Domain: `api.kodla.uz`
+   - Domain: `api.practix.uz`
 
 7. **Health Check**:
    - Path: `/health`
@@ -442,10 +442,10 @@ ufw delete allow 8000/tcp
 
 1. **Add Resource** → **Application** → **GitHub**
 
-2. Выбрать `kodla-starter` репозиторий
+2. Выбрать `practix-starter` репозиторий
 
 3. **General**:
-   - Name: `kodla-frontend`
+   - Name: `practix-frontend`
    - Branch: `master`
 
 4. **Build**:
@@ -455,13 +455,13 @@ ufw delete allow 8000/tcp
 
 5. **Build Arguments**:
    ```
-   VITE_API_URL=https://api.kodla.uz
+   VITE_API_URL=https://api.practix.uz
    VITE_APP_ENV=production
    ```
 
 6. **Network**:
    - Port: `80`
-   - Domain: `kodla.uz`
+   - Domain: `practix.uz`
 
 7. **Resources**:
    - CPU Limit: `0.5`
@@ -477,14 +477,14 @@ ufw delete allow 8000/tcp
 
 1. **Add Resource** → **Docker Compose**
 
-2. **Name:** `kodla-piston`
+2. **Name:** `practix-piston`
 
 3. **Docker Compose:**
    ```yaml
    services:
      piston:
        image: ghcr.io/engineer-man/piston:latest
-       container_name: kodla-piston
+       container_name: practix-piston
        restart: unless-stopped
        privileged: true
        ports:
@@ -520,17 +520,17 @@ ssh root@YOUR_SERVER_IP
 docker ps | grep piston
 
 # Установить языки (один за одним, чтобы не перегружать)
-docker exec kodla-piston piston ppman install python
-docker exec kodla-piston piston ppman install node
-docker exec kodla-piston piston ppman install typescript
-docker exec kodla-piston piston ppman install go
-docker exec kodla-piston piston ppman install java
-docker exec kodla-piston piston ppman install gcc
-docker exec kodla-piston piston ppman install g++
-docker exec kodla-piston piston ppman install rust
+docker exec practix-piston piston ppman install python
+docker exec practix-piston piston ppman install node
+docker exec practix-piston piston ppman install typescript
+docker exec practix-piston piston ppman install go
+docker exec practix-piston piston ppman install java
+docker exec practix-piston piston ppman install gcc
+docker exec practix-piston piston ppman install g++
+docker exec practix-piston piston ppman install rust
 
 # Проверить
-docker exec kodla-piston piston ppman list
+docker exec practix-piston piston ppman list
 ```
 
 ### 6.3 Тест Piston
@@ -579,7 +579,7 @@ docker exec -it CONTAINER_ID sh -c "npx prisma migrate deploy && npm run seed"
 
 ```bash
 # Проверить что курсы загрузились
-curl https://api.kodla.uz/courses | jq '.length'
+curl https://api.practix.uz/courses | jq '.length'
 # Должно быть ~21
 ```
 
@@ -604,7 +604,7 @@ iotop
 
 **Вариант A: Через Coolify**
 
-1. **kodla-postgres** → **Backups**
+1. **practix-postgres** → **Backups**
 2. Enable Scheduled Backups
 3. Schedule: `0 3 * * *` (3:00 AM daily)
 4. Retention: 7 days
@@ -616,24 +616,24 @@ iotop
 mkdir -p /backups
 
 # Создать скрипт
-cat > /usr/local/bin/backup-kodla.sh << 'EOF'
+cat > /usr/local/bin/backup-practix.sh << 'EOF'
 #!/bin/bash
 DATE=$(date +%Y%m%d_%H%M%S)
 BACKUP_DIR=/backups
 
 # PostgreSQL backup
-docker exec kodla-postgres pg_dump -U kodla kodla | gzip > $BACKUP_DIR/kodla_$DATE.sql.gz
+docker exec practix-postgres pg_dump -U practix practix | gzip > $BACKUP_DIR/practix_$DATE.sql.gz
 
 # Keep only last 7 days
 find $BACKUP_DIR -name "*.sql.gz" -mtime +7 -delete
 
-echo "Backup completed: kodla_$DATE.sql.gz"
+echo "Backup completed: practix_$DATE.sql.gz"
 EOF
 
-chmod +x /usr/local/bin/backup-kodla.sh
+chmod +x /usr/local/bin/backup-practix.sh
 
 # Добавить в cron
-echo "0 3 * * * root /usr/local/bin/backup-kodla.sh" >> /etc/crontab
+echo "0 3 * * * root /usr/local/bin/backup-practix.sh" >> /etc/crontab
 ```
 
 ### 8.3 Uptime мониторинг
@@ -642,7 +642,7 @@ echo "0 3 * * * root /usr/local/bin/backup-kodla.sh" >> /etc/crontab
 
 1. Зарегистрироваться на [betteruptime.com](https://betteruptime.com)
 2. Add monitor:
-   - URL: `https://api.kodla.uz/health`
+   - URL: `https://api.practix.uz/health`
    - Check frequency: 1 minute
 3. Настроить уведомления (email/Telegram)
 
@@ -755,14 +755,14 @@ swapon /swapfile2
 ```bash
 # Проверить статус
 docker ps | grep piston
-docker logs kodla-piston
+docker logs practix-piston
 
 # Проверить privileged mode
-docker inspect kodla-piston | grep -i privileged
+docker inspect practix-piston | grep -i privileged
 # Должно быть true
 
 # Перезапустить
-docker restart kodla-piston
+docker restart practix-piston
 ```
 
 ### Проблема: Сеть нестабильна
@@ -791,10 +791,10 @@ docker builder prune -af
 
 ```bash
 # Проверить PostgreSQL
-docker logs kodla-postgres
+docker logs practix-postgres
 
 # Увеличить connections в Coolify:
-# kodla-postgres → Variables → POSTGRES_MAX_CONNECTIONS=200
+# practix-postgres → Variables → POSTGRES_MAX_CONNECTIONS=200
 ```
 
 ---

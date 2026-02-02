@@ -16,8 +16,8 @@ export const secureCodingModule: Module = {
 			description: 'Изучите безопасное кодирование: валидация ввода, кодирование вывода, обработка ошибок, логирование и безопасный дизайн API.'
 		},
 		uz: {
-			title: 'Xavfsiz kodlash amaliyotlari',
-			description: 'Xavfsiz kodlashni o\'rganing: kirishni tekshirish, chiqishni kodlash, xatolarni qayta ishlash, loglash va xavfsiz API dizayni.'
+			title: 'Xavfsiz practixsh amaliyotlari',
+			description: 'Xavfsiz practixshni o\'rganing: kirishni tekshirish, chiqishni practixsh, xatolarni qayta ishlash, loglash va xavfsiz API dizayni.'
 		}
 	}
 };

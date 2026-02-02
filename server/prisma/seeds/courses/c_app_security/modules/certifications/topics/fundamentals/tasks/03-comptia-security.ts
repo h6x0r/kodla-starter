@@ -1447,7 +1447,7 @@ CompTIA Security+ охватывает 5 доменов:
 		},
 		uz: {
 			title: 'CompTIA Security+ Amaliyoti',
-			description: `CompTIA Security+ (SY0-701) konsepsiyalarini kodlash orqali mashq qiling.
+			description: `CompTIA Security+ (SY0-701) konsepsiyalarini practixsh orqali mashq qiling.
 
 **Security+ Domenlari:**
 

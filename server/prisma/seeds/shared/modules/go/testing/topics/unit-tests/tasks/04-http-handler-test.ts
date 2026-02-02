@@ -458,7 +458,7 @@ handler.ServeHTTP(rec, req)
 
 **Ishlab chiqarish patterni:**
 Handler testlari quyidagilarni ushlaydi:
-- **Status kodlar:** Mavjud bo'lmagan resurslar uchun 200 o'rniga 404 qaytarish
+- **Status practixr:** Mavjud bo'lmagan resurslar uchun 200 o'rniga 404 qaytarish
 - **Headerlar:** CORS yo'q, noto'g'ri Content-Type
 - **JSON sxema:** Fieldlarda xatolar, noto'g'ri turlar
 - **Xato holatlari:** Noto'g'ri kirishda panic

@@ -15,8 +15,7 @@ Generic functions allow you to write a single function that works with multiple 
 **Task:** Implement a generic \`Min\` function that takes two values of the same type and returns the smaller one. The type must be comparable using the \`<\` operator.
 
 **Requirements:**
-- Use type parameter \`T\` with \`constraints.Ordered\` constraint
-- Import \`"golang.org/x/exp/constraints"\` package
+- Use type parameter \`T\` with \`Ordered\` constraint (defined below)
 - Compare the two values and return the smaller one
 - The function should work with int, float64, string, etc.
 
@@ -28,18 +27,30 @@ fmt.Println(Min("b", "a"))   // Output: "a"
 \`\`\``,
     initialCode: `package generics
 
-import "golang.org/x/exp/constraints"
+// Ordered is a constraint that permits any ordered type
+type Ordered interface {
+	~int | ~int8 | ~int16 | ~int32 | ~int64 |
+	~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr |
+	~float32 | ~float64 |
+	~string
+}
 
 // TODO: Implement a generic Min function that returns the smaller of two values
-func Min[T constraints.Ordered](a, b T) T {
+func Min[T Ordered](a, b T) T {
     panic("TODO: implement Min function")
 }`,
     solutionCode: `package generics
 
-import "golang.org/x/exp/constraints"
+// Ordered is a constraint that permits any ordered type
+type Ordered interface {
+	~int | ~int8 | ~int16 | ~int32 | ~int64 |
+	~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr |
+	~float32 | ~float64 |
+	~string
+}
 
 // Min returns the smaller of two values
-func Min[T constraints.Ordered](a, b T) T {
+func Min[T Ordered](a, b T) T {
     if a < b {
         return a
     }
@@ -187,10 +198,16 @@ maxStr := Max("abc", "xyz")  // T = string
             title: 'Основы обобщённых функций',
             solutionCode: `package generics
 
-import "golang.org/x/exp/constraints"
+// Ordered is a constraint that permits any ordered type
+type Ordered interface {
+	~int | ~int8 | ~int16 | ~int32 | ~int64 |
+	~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr |
+	~float32 | ~float64 |
+	~string
+}
 
 // Min возвращает меньшее из двух значений
-func Min[T constraints.Ordered](a, b T) T {
+func Min[T Ordered](a, b T) T {
     if a < b {
         return a
     }
@@ -260,10 +277,16 @@ maxStr := Max("abc", "xyz")  // T = string
             title: 'Generic funksiya asoslari',
             solutionCode: `package generics
 
-import "golang.org/x/exp/constraints"
+// Ordered is a constraint that permits any ordered type
+type Ordered interface {
+	~int | ~int8 | ~int16 | ~int32 | ~int64 |
+	~uint | ~uint8 | ~uint16 | ~uint32 | ~uint64 | ~uintptr |
+	~float32 | ~float64 |
+	~string
+}
 
 // Min ikkita qiymatdan kichigini qaytaradi
-func Min[T constraints.Ordered](a, b T) T {
+func Min[T Ordered](a, b T) T {
     if a < b {
         return a
     }

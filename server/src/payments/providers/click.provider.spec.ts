@@ -198,11 +198,11 @@ describe('ClickProvider', () => {
       const url = provider.generatePaymentLink(
         'order-123',
         49900,
-        'https://kodla.dev/success',
+        'https://practix.dev/success',
       );
 
       expect(url).toContain('return_url=');
-      expect(url).toContain(encodeURIComponent('https://kodla.dev/success'));
+      expect(url).toContain(encodeURIComponent('https://practix.dev/success'));
     });
 
     it('should work without return_url', () => {

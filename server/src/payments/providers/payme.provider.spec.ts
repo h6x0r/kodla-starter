@@ -180,11 +180,11 @@ describe('PaymeProvider', () => {
       const url = provider.generatePaymentLink(
         'order-123',
         4990000,
-        'https://kodla.dev/success'
+        'https://practix.dev/success'
       );
 
       expect(url).toContain('callback=');
-      expect(url).toContain(encodeURIComponent('https://kodla.dev/success'));
+      expect(url).toContain(encodeURIComponent('https://practix.dev/success'));
     });
 
     it('should encode parameters in base64', () => {

@@ -1,5 +1,5 @@
 {
-  "name": "codemastery-edtech",
+  "name": "practix",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -13,7 +13,12 @@
     "e2e": "playwright test",
     "e2e:ui": "playwright test --ui",
     "e2e:headed": "playwright test --headed",
-    "e2e:report": "playwright show-report"
+    "e2e:report": "playwright show-report",
+    "e2e:extract-solutions": "cd server && npx tsx prisma/extract-solutions.ts",
+    "e2e:validate": "npm run e2e:extract-solutions && playwright test --grep 'task-validation'",
+    "e2e:validate:quick": "E2E_TIER=QUICK npm run e2e:validate",
+    "e2e:validate:daily": "E2E_TIER=DAILY npm run e2e:validate",
+    "e2e:validate:full": "E2E_TIER=FULL npm run e2e:validate"
   },
   "dependencies": {
     "@google/genai": "^1.30.0",

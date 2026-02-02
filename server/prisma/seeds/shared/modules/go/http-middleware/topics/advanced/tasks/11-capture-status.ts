@@ -579,7 +579,7 @@ handler := CaptureStatus(StatusKey, http.HandlerFunc(func(w http.ResponseWriter,
 - Agar handler WriteHeader ni chaqirmasa, standart 200 bo'lishi kerak`,
 			hint1: `http.ResponseWriter ni ichiga oluvchi va status uchun *int field qo'shuvchi struct yarating. WriteHeader va Write metodlarini override qiling.`,
 			hint2: `Response yozilgandan keyin ham o'qilishi uchun status pointerini kontekstda saqlang.`,
-			whyItMatters: `CaptureStatus response status kodlarini butun middleware zanjiri bo'ylab mavjud qilish orqali loglash, metrikalar va monitoring imkonini beradi.
+			whyItMatters: `CaptureStatus response status practixrini butun middleware zanjiri bo'ylab mavjud qilish orqali loglash, metrikalar va monitoring imkonini beradi.
 
 **Nima uchun Capture Status:**
 - **Request loglash:** Response statusni o'z ichiga olgan to'liq request ma'lumotini loglash

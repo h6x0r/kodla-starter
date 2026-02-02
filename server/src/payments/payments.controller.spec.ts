@@ -332,14 +332,14 @@ describe('PaymentsController', () => {
           orderType: OrderType.SUBSCRIPTION,
           planId: 'plan-global',
           provider: PaymentProvider.PAYME,
-          returnUrl: 'https://kodla.dev/payments/success',
+          returnUrl: 'https://practix.dev/payments/success',
         }
       );
 
       expect(mockPaymentsService.createCheckout).toHaveBeenCalledWith(
         'user-123',
         expect.objectContaining({
-          returnUrl: 'https://kodla.dev/payments/success',
+          returnUrl: 'https://practix.dev/payments/success',
         })
       );
     });

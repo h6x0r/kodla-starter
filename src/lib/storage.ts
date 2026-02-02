@@ -125,17 +125,17 @@ export const storage = {
 
   // Language preference
   getLanguage(): string | null {
-    return localStorage.getItem('kodla_language');
+    return localStorage.getItem('practix_language');
   },
 
   setLanguage(lang: string): void {
-    localStorage.setItem('kodla_language', lang);
+    localStorage.setItem('practix_language', lang);
   },
 
   // Timer/Stopwatch state
   getTimerState(): TimerState | null {
     try {
-      const data = localStorage.getItem('kodla_timer_state');
+      const data = localStorage.getItem('practix_timer_state');
       return data ? JSON.parse(data) : null;
     } catch {
       return null;
@@ -143,14 +143,14 @@ export const storage = {
   },
 
   setTimerState(state: TimerState): void {
-    localStorage.setItem('kodla_timer_state', JSON.stringify(state));
+    localStorage.setItem('practix_timer_state', JSON.stringify(state));
   },
 
   removeTimerState(): void {
-    localStorage.removeItem('kodla_timer_state');
+    localStorage.removeItem('practix_timer_state');
   },
 
-  // Clear all KODLA-related storage
+  // Clear all Practix-related storage
   clearAll(): void {
     Object.values(STORAGE_KEYS).forEach(key => {
       if (!key.endsWith('_')) {
@@ -164,8 +164,8 @@ export const storage = {
       .forEach(key => localStorage.removeItem(key));
 
     // Clear other storage keys
-    localStorage.removeItem('kodla_language');
-    localStorage.removeItem('kodla_timer_state');
+    localStorage.removeItem('practix_language');
+    localStorage.removeItem('practix_timer_state');
   }
 };
 

@@ -364,13 +364,13 @@ describe('PaymentsService', () => {
         orderType: OrderType.SUBSCRIPTION,
         planId: 'plan-global',
         provider: PaymentProvider.PAYME,
-        returnUrl: 'https://kodla.dev/payments/success',
+        returnUrl: 'https://practix.dev/payments/success',
       });
 
       expect(mockPaymeProvider.generatePaymentLink).toHaveBeenCalledWith(
         mockPayment.id,
         mockPlan.priceMonthly,
-        'https://kodla.dev/payments/success'
+        'https://practix.dev/payments/success'
       );
     });
   });

@@ -97,7 +97,10 @@ export const ResultsTab: React.FC<ResultsTabProps> = memo(({
             {!isRunLoading && runResult && (
               <>
                 {/* Status Badge */}
-                <span className={`text-xs font-semibold px-2 py-0.5 rounded ${
+                <span
+                  data-testid="run-status-badge"
+                  data-status={isPassed ? 'passed' : isError ? 'error' : 'failed'}
+                  className={`text-xs font-semibold px-2 py-0.5 rounded ${
                   isPassed
                     ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
                     : isError
@@ -108,7 +111,12 @@ export const ResultsTab: React.FC<ResultsTabProps> = memo(({
                 </span>
 
                 {/* Test Count */}
-                <span className="text-xs text-gray-500 dark:text-gray-400">
+                <span
+                  data-testid="tests-count"
+                  data-passed={runResult.testsPassed}
+                  data-total={runResult.testsTotal}
+                  className="text-xs text-gray-500 dark:text-gray-400"
+                >
                   {runResult.testsPassed}/{runResult.testsTotal} {tUI('task.testsPassed')}
                 </span>
 
@@ -144,7 +152,7 @@ export const ResultsTab: React.FC<ResultsTabProps> = memo(({
             <div className="space-y-2">
               {/* Success Message */}
               {isPassed && (
-                <div className="flex items-center gap-2 text-green-600 dark:text-green-400 mb-3">
+                <div data-testid="all-tests-passed" className="flex items-center gap-2 text-green-600 dark:text-green-400 mb-3">
                   <IconCheck className="w-5 h-5" />
                   <span className="text-sm font-medium">{tUI('task.allTestsPassed')}</span>
                 </div>
@@ -177,6 +185,8 @@ export const ResultsTab: React.FC<ResultsTabProps> = memo(({
                     return (
                       <div
                         key={idx}
+                        data-testid={`test-case-${idx + 1}`}
+                        data-passed={tc.passed}
                         className={`rounded-lg border overflow-hidden transition-all ${
                           tc.passed
                             ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/50'
@@ -184,50 +194,51 @@ export const ResultsTab: React.FC<ResultsTabProps> = memo(({
                         }`}
                       >
                         <button
+                          data-testid={`test-case-${idx + 1}-toggle`}
                           onClick={() => hasDetails && toggleTest(idx)}
                           className={`w-full flex items-center gap-2 px-3 py-2 text-left ${hasDetails ? 'cursor-pointer hover:bg-black/5 dark:hover:bg-white/5' : ''}`}
                         >
                           {tc.passed ? (
-                            <IconCheck className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" />
+                            <IconCheck className="w-4 h-4 text-green-600 dark:text-green-400 flex-shrink-0" data-testid={`test-case-${idx + 1}-passed-icon`} />
                           ) : (
-                            <IconX className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0" />
+                            <IconX className="w-4 h-4 text-red-600 dark:text-red-400 flex-shrink-0" data-testid={`test-case-${idx + 1}-failed-icon`} />
                           )}
-                          <span className={`text-xs font-bold ${tc.passed ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
+                          <span data-testid={`test-case-${idx + 1}-label`} className={`text-xs font-bold ${tc.passed ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
                             Test {idx + 1}
                           </span>
                           {hasDetails && (
-                            <IconChevronDown className={`w-3.5 h-3.5 ml-auto text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                            <IconChevronDown data-testid={`test-case-${idx + 1}-chevron`} className={`w-3.5 h-3.5 ml-auto text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
                           )}
                         </button>
 
                         {isExpanded && hasDetails && (
-                          <div className="px-3 pb-3 pt-1 border-t border-gray-200 dark:border-gray-700/50 space-y-2">
+                          <div data-testid={`test-case-${idx + 1}-details`} className="px-3 pb-3 pt-1 border-t border-gray-200 dark:border-gray-700/50 space-y-2">
                             {tc.input && (
-                              <div>
+                              <div data-testid={`test-case-${idx + 1}-input`}>
                                 <div className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1 font-semibold">
                                   Input
                                 </div>
                                 <div className="bg-white dark:bg-[#0d1117] rounded border border-gray-200 dark:border-gray-700 p-2">
-                                  <code className="text-[11px] font-mono text-gray-800 dark:text-gray-200 break-all whitespace-pre-wrap">
+                                  <code data-testid={`test-case-${idx + 1}-input-value`} className="text-[11px] font-mono text-gray-800 dark:text-gray-200 break-all whitespace-pre-wrap">
                                     {tc.input}
                                   </code>
                                 </div>
                               </div>
                             )}
                             {tc.expectedOutput && (
-                              <div>
+                              <div data-testid={`test-case-${idx + 1}-expected`}>
                                 <div className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1 font-semibold">
                                   Expected Output
                                 </div>
                                 <div className="bg-white dark:bg-[#0d1117] rounded border border-green-200 dark:border-green-800/50 p-2">
-                                  <code className="text-[11px] font-mono text-green-700 dark:text-green-400 break-all">
+                                  <code data-testid={`test-case-${idx + 1}-expected-value`} className="text-[11px] font-mono text-green-700 dark:text-green-400 break-all">
                                     {tc.expectedOutput}
                                   </code>
                                 </div>
                               </div>
                             )}
                             {tc.actualOutput && (
-                              <div>
+                              <div data-testid={`test-case-${idx + 1}-actual`}>
                                 <div className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1 font-semibold">
                                   Actual Output
                                 </div>
@@ -236,7 +247,7 @@ export const ResultsTab: React.FC<ResultsTabProps> = memo(({
                                     ? 'border-green-200 dark:border-green-800/50'
                                     : 'border-red-200 dark:border-red-800/50'
                                 }`}>
-                                  <code className={`text-[11px] font-mono break-all ${
+                                  <code data-testid={`test-case-${idx + 1}-actual-value`} className={`text-[11px] font-mono break-all ${
                                     tc.passed
                                       ? 'text-green-700 dark:text-green-400'
                                       : 'text-red-600 dark:text-red-400'
@@ -247,12 +258,12 @@ export const ResultsTab: React.FC<ResultsTabProps> = memo(({
                               </div>
                             )}
                             {tc.error && !tc.actualOutput && (
-                              <div>
+                              <div data-testid={`test-case-${idx + 1}-error`}>
                                 <div className="text-[10px] uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-1 font-semibold">
                                   Error
                                 </div>
                                 <div className="bg-white dark:bg-[#0d1117] rounded border border-red-200 dark:border-red-800/50 p-2">
-                                  <code className="text-[11px] font-mono text-red-600 dark:text-red-400 break-all">
+                                  <code data-testid={`test-case-${idx + 1}-error-value`} className="text-[11px] font-mono text-red-600 dark:text-red-400 break-all">
                                     {tc.error}
                                   </code>
                                 </div>

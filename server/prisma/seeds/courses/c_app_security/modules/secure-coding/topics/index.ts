@@ -15,8 +15,8 @@ export const fundamentalsTopic: Topic = {
 			description: 'Валидация ввода, кодирование вывода, обработка ошибок, безопасное логирование и безопасность API.',
 		},
 		uz: {
-			title: 'Xavfsiz kodlash asoslari',
-			description: 'Kirishni tekshirish, chiqishni kodlash, xatolarni qayta ishlash, xavfsiz loglash va API xavfsizligi.',
+			title: 'Xavfsiz practixsh asoslari',
+			description: 'Kirishni tekshirish, chiqishni practixsh, xatolarni qayta ishlash, xavfsiz loglash va API xavfsizligi.',
 		},
 	},
 };

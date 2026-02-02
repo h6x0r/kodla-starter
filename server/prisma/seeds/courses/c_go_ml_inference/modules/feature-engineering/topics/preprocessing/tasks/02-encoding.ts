@@ -459,16 +459,16 @@ encoded := encoder.Transform("cat")
 - **Консистентность**: Одинаковое кодирование при обучении и инференсе`,
 		},
 		uz: {
-			title: 'Kategorik kodlash',
-			description: `# Kategorik kodlash
+			title: 'Kategorik practixsh',
+			description: `# Kategorik practixsh
 
-Go da ML inference uchun kategorik kodlashni amalga oshiring.
+Go da ML inference uchun kategorik practixshni amalga oshiring.
 
 ## Topshiriq
 
 Enkoderlarni yarating:
-- One-hot kodlashni amalga oshirish
-- Label kodlashni amalga oshirish
+- One-hot practixshni amalga oshirish
+- Label practixshni amalga oshirish
 - Noma'lum kategoriyalarni qayta ishlash
 - Teskari o'zgartirishlarni qo'llab-quvvatlash
 
@@ -480,14 +480,14 @@ encoder.Fit(categories)
 encoded := encoder.Transform("cat")
 // Returns: [1, 0, 0] for categories ["cat", "dog", "bird"]
 \`\`\``,
-			hint1: "One-hot kodlash kategoriya indeksida 1 bilan binary vektor yaratadi",
-			hint2: "Label kodlash kategoriyalarga ketma-ket butun sonlar tayinlaydi",
-			whyItMatters: `Kategorik kodlash ma'lumotlar va modellarni bog'laydi:
+			hint1: "One-hot practixsh kategoriya indeksida 1 bilan binary vektor yaratadi",
+			hint2: "Label practixsh kategoriyalarga ketma-ket butun sonlar tayinlaydi",
+			whyItMatters: `Kategorik practixsh ma'lumotlar va modellarni bog'laydi:
 
 - **Model muvofiqligi**: ML modellar raqamli kirishlarni talab qiladi
-- **Ma'lumotni saqlash**: Kodlash kategoriya semantikasini ushlaydi
+- **Ma'lumotni saqlash**: Practixsh kategoriya semantikasini ushlaydi
 - **Noma'lumni qayta ishlash**: Ishlab chiqarish yangi kategoriyalarni qayta ishlashi kerak
-- **Izchillik**: O'qitish va inference da bir xil kodlash`,
+- **Izchillik**: O'qitish va inference da bir xil practixsh`,
 		},
 	},
 };

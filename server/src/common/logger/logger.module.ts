@@ -15,7 +15,7 @@ const productionFormat = winston.format.combine(
 const developmentFormat = winston.format.combine(
   winston.format.timestamp(),
   winston.format.errors({ stack: true }),
-  nestWinstonModuleUtilities.format.nestLike('KODLA', {
+  nestWinstonModuleUtilities.format.nestLike('PRACTIX', {
     colors: true,
     prettyPrint: true,
     processId: true,

@@ -1,6 +1,6 @@
 # Add or Migrate Task Command
 
-This command helps Claude add new tasks or migrate existing tasks to the kodla-starter platform.
+This command helps Claude add new tasks or migrate existing tasks to the practix-starter platform.
 
 ## Task Structure
 
@@ -98,14 +98,14 @@ After adding/modifying tasks:
 
 ```bash
 # Reset database and reseed
-docker exec kodla_postgres psql -U kodla_user -d kodla_db -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO kodla_user;"
+docker exec practix_postgres psql -U practix_user -d practix_db -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO practix_user;"
 
 # Rebuild and restart backend
 docker compose build backend --no-cache
 docker compose up -d
 
 # Wait for seed to complete
-docker logs kodla-starter-backend-1 --tail 50
+docker logs practix-starter-backend-1 --tail 50
 ```
 
 ## Files to Modify

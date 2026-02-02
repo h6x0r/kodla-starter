@@ -832,7 +832,7 @@ class DocumentProcessor {
     public void process(String type) {
         Document doc;
         if (type.equals("pdf")) {
-            doc = new PDFDocument();	// qattiq kodlangan bog'liqlik
+            doc = new PDFDocument();	// qattiq practixngan bog'liqlik
         } else if (type.equals("word")) {
             doc = new WordDocument();	// yana bir qattiq bog'liqlik
         } else {

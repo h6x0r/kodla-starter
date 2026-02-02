@@ -277,16 +277,16 @@ TransformProcess tp2 = new TransformProcess.Builder(schema)
 - **Выбор важен**: Неправильное кодирование может ухудшить модель`,
 		},
 		uz: {
-			title: 'Kategorik kodlash',
-			description: `# Kategorik kodlash
+			title: 'Kategorik practixsh',
+			description: `# Kategorik practixsh
 
 Kategorik xususiyatlarni raqamli ko'rinishga aylantiring.
 
 ## Topshiriq
 
-Kodlash strategiyalarini amalga oshiring:
-- One-hot kodlash
-- Label kodlash
+Practixsh strategiyalarini amalga oshiring:
+- One-hot practixsh
+- Label practixsh
 - Noma'lum kategoriyalarni boshqarish
 
 ## Misol
@@ -304,12 +304,12 @@ TransformProcess tp2 = new TransformProcess.Builder(schema)
 \`\`\``,
 			hint1: "categoricalToOneHot() har bir kategoriya uchun binary ustunlar yaratadi",
 			hint2: "categoricalToInteger() kategoriyalarni ketma-ket butun sonlarga xaritalashtiradi",
-			whyItMatters: `Kategorik ma'lumotlar bilan ML uchun kodlash muhim:
+			whyItMatters: `Kategorik ma'lumotlar bilan ML uchun practixsh muhim:
 
 - **Algoritm muvofiqligi**: Ko'p algoritmlarga raqamli kirish kerak
 - **One-hot**: Tartib taxmini yo'q, lekin o'lchamni oshiradi
-- **Label kodlash**: Ixcham, lekin tartibni bildiradi
-- **Tanlov muhim**: Noto'g'ri kodlash model samaradorligiga zarar yetkazishi mumkin`,
+- **Label practixsh**: Ixcham, lekin tartibni bildiradi
+- **Tanlov muhim**: Noto'g'ri practixsh model samaradorligiga zarar yetkazishi mumkin`,
 		},
 	},
 };

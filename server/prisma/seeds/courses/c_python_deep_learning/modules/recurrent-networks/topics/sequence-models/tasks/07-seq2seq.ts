@@ -222,7 +222,7 @@ Ketma-ketlikdan-ketma-ketlikka vazifalari uchun encoder-decoder arxitekturasini 
 ## Topshiriq
 
 Ikki sinf amalga oshiring:
-1. \`Encoder\` - Kirish ketma-ketligini kontekstga kodlaydigan LSTM
+1. \`Encoder\` - Kirish ketma-ketligini kontekstga practixydigan LSTM
 2. \`Decoder\` - Kontekstdan chiqish ketma-ketligini yaratadigan LSTM
 
 ## Misol

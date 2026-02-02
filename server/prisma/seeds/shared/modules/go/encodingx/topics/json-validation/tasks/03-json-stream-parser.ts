@@ -1094,7 +1094,7 @@ func isLevelHigherOrEqual(entryLevel, minLevel string) bool {
 **4-6 Daraja (O'rta) — Filtrlangan oqim qayta ishlash:**
 4. **ParseFilteredStream(r io.Reader, minLevel string) ([]LogEntry, error)** — Log darajasi bo'yicha pars va filtrlash
 5. **Daraja solishtirish mantiqi** — ERROR > WARN > INFO > DEBUG
-6. **Noto'g'ri yozuvlarni o'tkazib yuborish** — Dekodlash xatolarida davom etish, xato sonini kuzatish
+6. **Noto'g'ri yozuvlarni o'tkazib yuborish** — Depractixsh xatolarida davom etish, xato sonini kuzatish
 
 **7-8 Daraja (O'rta+) — Agregatsiya va statistika:**
 7. **StreamStats struct** — Total, ByLevel map, Errors soni
@@ -1159,14 +1159,14 @@ stats, _ := ComputeStreamStats(strings.NewReader(invalidInput))
 
 **Cheklovlar:**
 - LogEntry: Timestamp (int64), Level (string), Message (string)
-- ParseStream: json.Decoder dan foydalaning, massiv ochilish qavsini dekodlang, keyin alohida yozuvlarni dekodlash tsikli
+- ParseStream: json.Decoder dan foydalaning, massiv ochilish qavsini depractixng, keyin alohida yozuvlarni depractixsh tsikli
 - ParseFilteredStream: Faqat level >= minLevel bo'lgan yozuvlarni kiriting
 - Daraja ierarxiyasi: ERROR > WARN > INFO > DEBUG
 - ComputeStreamStats: Barcha yozuvlarni xotirada saqlamamasligi kerak (faqat hisoblagichlar)
 - StreamStats: Total yozuvlar, ByLevel map[string]int, Errors soni
 - Pars paytida noto'g'ri yozuvlarni o'tkazib yuboring, Errors hisoblagichini oshiring`,
-			hint1: `ParseStream: json.NewDecoder(r) yarating, ochilish qavsini o'qish uchun dec.Token() ni chaqiring, dec.More() to'g'ri bo'lguncha tsikl, dec.Decode(&entry) bilan yozuvni dekodlang, slice ga qo'shing. Oxirida dec.Token() bilan yopilish qavsini o'qing.`,
-			hint2: `ParseFilteredStream: ParseStream bilan bir xil, lekin qo'shishdan oldin if isLevelHigherOrEqual(entry.Level, minLevel) ni qo'shing. ComputeStreamStats: ByLevel map bilan stats ni ishga tushiring, ParseStream kabi tsikl, lekin yozuvlarni saqlash o'rniga faqat stats.Total va stats.ByLevel[entry.Level] ni oshiring. Dekodlash xatosida stats.Errors ni oshiring va davom eting (qaytmang).`,
+			hint1: `ParseStream: json.NewDecoder(r) yarating, ochilish qavsini o'qish uchun dec.Token() ni chaqiring, dec.More() to'g'ri bo'lguncha tsikl, dec.Decode(&entry) bilan yozuvni depractixng, slice ga qo'shing. Oxirida dec.Token() bilan yopilish qavsini o'qing.`,
+			hint2: `ParseFilteredStream: ParseStream bilan bir xil, lekin qo'shishdan oldin if isLevelHigherOrEqual(entry.Level, minLevel) ni qo'shing. ComputeStreamStats: ByLevel map bilan stats ni ishga tushiring, ParseStream kabi tsikl, lekin yozuvlarni saqlash o'rniga faqat stats.Total va stats.ByLevel[entry.Level] ni oshiring. Depractixsh xatosida stats.Errors ni oshiring va davom eting (qaytmang).`,
 			whyItMatters: `JSON oqim parsi katta ma'lumotlar to'plamlarini samarali qayta ishlash uchun muhimdir, bu ilovalarга mavjud xotiradan kattaroq fayllarni yuqori ishlashni saqlab qolgan holda qayta ishlash imkonini beradi.
 
 **Nima uchun bu muhim:**
@@ -1313,10 +1313,10 @@ func ParseStream(r io.Reader) ([]LogEntry, error) {
 	var entries []LogEntry
 	for dec.More() { // massiv elementlari qolgan paytgacha tsikl
 		var entry LogEntry
-		if err := dec.Decode(&entry); err != nil { // oqimdan keyingi yozuvni inkremental dekodlash
+		if err := dec.Decode(&entry); err != nil { // oqimdan keyingi yozuvni inkremental depractixsh
 			return nil, err
 		}
-		entries = append(entries, entry) // dekodlangan yozuvni natija slice ga to'plash
+		entries = append(entries, entry) // depractixngan yozuvni natija slice ga to'plash
 	}
 
 	if _, err := dec.Token(); err != nil { // massivdan yopilish qavsi ] ni olish
@@ -1362,7 +1362,7 @@ func ComputeStreamStats(r io.Reader) (StreamStats, error) {
 
 	for dec.More() { // boshqa elementlar bo'lmaguncha oqimni qayta ishlash
 		var entry LogEntry
-		if err := dec.Decode(&entry); err != nil { // keyingi yozuvni dekodlashga harakat qilish
+		if err := dec.Decode(&entry); err != nil { // keyingi yozuvni depractixshga harakat qilish
 			stats.Errors++ // noto'g'ri yozuvlarni kuzatish lekin qayta ishlashni davom ettirish
 			continue // bu yozuvni o'tkazib yuboring va keyingisiga o'ting
 		}

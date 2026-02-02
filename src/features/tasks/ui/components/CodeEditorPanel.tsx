@@ -73,6 +73,9 @@ export const CodeEditorPanel = memo(({
   const handleEditorMount = useCallback((editorInstance: editor.IStandaloneCodeEditor, monaco: Monaco) => {
     editorRef.current = editorInstance;
     editorInstance.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {});
+
+    // Expose editor on window for E2E testing
+    (window as any).monacoEditor = editorInstance;
   }, []);
 
   // Editor options

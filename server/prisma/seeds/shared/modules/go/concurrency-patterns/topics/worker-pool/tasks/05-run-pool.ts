@@ -140,7 +140,7 @@ func TestRunPool1(t *testing.T) {
 	var counter int32
 
 	for i := 0; i < 10; i++ {
-		jobs[i] = func(ctx context.Context) error {
+		jobs <- func(ctx context.Context) error {
 			atomic.AddInt32(&counter, 1)
 			return nil
 		}
@@ -163,7 +163,7 @@ func TestRunPool2(t *testing.T) {
 	var counter int32
 
 	for i := 0; i < 5; i++ {
-		jobs[i] = func(ctx context.Context) error {
+		jobs <- func(ctx context.Context) error {
 			atomic.AddInt32(&counter, 1)
 			return nil
 		}
@@ -294,7 +294,7 @@ func TestRunPool8(t *testing.T) {
 	jobs := make(chan Job, 100)
 
 	for i := 0; i < 100; i++ {
-		jobs[i] = func(ctx context.Context) error {
+		jobs <- func(ctx context.Context) error {
 			time.Sleep(50 * time.Millisecond)
 			return nil
 		}

@@ -38,7 +38,7 @@ export class AiService {
   private readonly LIMIT_GLOBAL_PREMIUM = 50; // Global premium subscription
 
   // Optimized prompt for Flash-Lite: concise, instruction-following
-  private readonly PROMPT_TEMPLATE = `You are KODLA AI Tutor for \${language}.
+  private readonly PROMPT_TEMPLATE = `You are PRACTIX AI Tutor for \${language}.
 
 RULES:
 - NEVER give complete solution code

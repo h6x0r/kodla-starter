@@ -28,7 +28,7 @@ describe('Payment Webhooks Integration', () => {
     CLICK_SECRET_KEY: 'test-click-secret',
     CLICK_MERCHANT_USER_ID: '1',
     CLICK_TEST_MODE: 'true',
-    APP_URL: 'https://kodla.dev',
+    APP_URL: 'https://practix.dev',
   };
 
   const mockPrismaService = {

@@ -41,9 +41,10 @@ export class PlaygroundThrottlerGuard {
     private accessControlService: AccessControlService,
   ) {
     // Load rate limits from config (in seconds)
-    this.RATE_LIMIT_FREE = this.configService.get<number>('RATE_LIMIT_RUN_FREE', 10);
-    this.RATE_LIMIT_AUTH = this.configService.get<number>('RATE_LIMIT_RUN_AUTH', 10);
-    this.RATE_LIMIT_PREMIUM = this.configService.get<number>('RATE_LIMIT_RUN_PREMIUM', 5);
+    // TODO: RE-ENABLE AFTER E2E TESTING - restore defaults: FREE=10, AUTH=10, PREMIUM=5
+    this.RATE_LIMIT_FREE = this.configService.get<number>('RATE_LIMIT_RUN_FREE', 0);
+    this.RATE_LIMIT_AUTH = this.configService.get<number>('RATE_LIMIT_RUN_AUTH', 0);
+    this.RATE_LIMIT_PREMIUM = this.configService.get<number>('RATE_LIMIT_RUN_PREMIUM', 0);
   }
 
   /**

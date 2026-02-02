@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document describes the payment system architecture for KODLA platform, including integration with Uzbekistan payment providers (Payme, Click) and legal requirements.
+This document describes the payment system architecture for Practix platform, including integration with Uzbekistan payment providers (Payme, Click) and legal requirements.
 
 ---
 

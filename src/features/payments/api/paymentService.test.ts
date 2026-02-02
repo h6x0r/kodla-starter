@@ -219,14 +219,14 @@ describe('paymentService', () => {
         orderType: 'subscription',
         planId: 'global-premium',
         provider: 'payme',
-        returnUrl: 'https://kodla.dev/payments/success',
+        returnUrl: 'https://practix.dev/payments/success',
       });
 
       expect(api.post).toHaveBeenCalledWith('/payments/checkout', {
         orderType: 'subscription',
         planId: 'global-premium',
         provider: 'payme',
-        returnUrl: 'https://kodla.dev/payments/success',
+        returnUrl: 'https://practix.dev/payments/success',
       });
       expect(result.paymentUrl).toContain('payme.uz');
     });

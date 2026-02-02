@@ -1,5 +1,5 @@
 /**
- * KODLA Platform Database Seeder
+ * Practix Platform Database Seeder
  * Seeds all courses from the new /courses structure
  *
  * Courses:
@@ -625,7 +625,7 @@ async function updateAlexStats(): Promise<void> {
  * Main seeding function
  */
 async function main() {
-	console.log('🌱 Starting KODLA seed...');
+	console.log('🌱 Starting Practix seed...');
 	console.log(`📚 Found ${ALL_COURSES.length} courses to seed\n`);
 
 	// Seed test users first

@@ -338,7 +338,7 @@ func CalculateDiscount(originalPrice float64) float64 {
 			title: 'Yaxshi va yomon izohlar',
 			description: `Foydali izohlar va shovqin izohlarini farqlashni o'rganing. Yomon izohlarni o'chiring va kodni o'z-o'zini tushuntiradigan qiling.`,
 			hint1: `Kod nima qilishini takrorlaydigan izohlarni o'chiring. Kod allaqachon buni ko'rsatyapti.`,
-			hint2: `Barcha izohga olingan kodni o'chiring. O'zgaruvchi nomlarini yaxshilang. TODO izohni saqlang va qattiq kodlangan chegirma haqida ogohlantirish qo'shing.`,
+			hint2: `Barcha izohga olingan kodni o'chiring. O'zgaruvchi nomlarini yaxshilang. TODO izohni saqlang va qattiq practixngan chegirma haqida ogohlantirish qo'shing.`,
 			whyItMatters: `Yomon izohlar kodni chalkashtirib yuboradi va eskiradi, yaxshi izohlar esa qimmatli kontekst beradi.`,
 			solutionCode: `package principles
 
@@ -380,7 +380,7 @@ func ProcessUser(user *User) error {
 }
 
 // CalculateDiscount asl narxga 10% chegirma qo'llaydi
-// OGOHLANTIRISH: Chegirma stavkasi qattiq kodlangan. TODO: v2.0 da sozlanishi mumkin qiling
+// OGOHLANTIRISH: Chegirma stavkasi qattiq practixngan. TODO: v2.0 da sozlanishi mumkin qiling
 func CalculateDiscount(originalPrice float64) float64 {
 	const discountRate = 0.9 // 10% chegirma
 	return originalPrice * discountRate
