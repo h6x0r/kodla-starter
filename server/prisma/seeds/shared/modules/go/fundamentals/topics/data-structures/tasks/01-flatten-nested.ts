@@ -1,12 +1,14 @@
-import { Task } from '../../../../types';
+import { Task } from "../../../../types";
 
 export const task: Task = {
-	slug: 'go-fundamentals-flatten-nested',
-	title: 'Flatten Nested Slices',
-	difficulty: 'medium',	tags: ['go', 'recursion', 'slices', 'type-switch'],
-	estimatedTime: '20m',	isPremium: false,
-	youtubeUrl: '',
-	description: `Implement **FlattenUnknown** that flattens nested slices of unknown depth into a flat slice of integers.
+  slug: "go-fundamentals-flatten-nested",
+  title: "Flatten Nested Slices",
+  difficulty: "medium",
+  tags: ["go", "recursion", "slices", "type-switch"],
+  estimatedTime: "20m",
+  isPremium: false,
+  youtubeUrl: "",
+  description: `Implement **FlattenUnknown** that flattens nested slices of unknown depth into a flat slice of integers.
 
 **Requirements:**
 1. Create function \`FlattenUnknown(input []any) []int\`
@@ -22,38 +24,34 @@ export const task: Task = {
 result := FlattenUnknown([]any{1, []any{2, 3}, []any{4, []any{5, 6}}})
 // result = []int{1, 2, 3, 4, 5, 6}
 \`\`\``,
-	initialCode: `package main
+  initialCode: `package main
 
 // TODO: Implement FlattenUnknown
 func FlattenUnknown(input []any) []int {
 	// TODO: Implement
 }`,
-	solutionCode: `package main
+  solutionCode: `package main
 
 func FlattenUnknown(input []any) []int {
 	if len(input) == 0 {                                    // Handle empty input
 		return nil                                      // Return nil for empty
 	}
 	out := make([]int, 0, len(input))                       // Result slice
-	in := make([]any, 0, len(input))                        // Working queue
-	in = append(in, input...)                               // Initialize queue with input
-	idx := 0                                                // Current position
-	for {
-		if idx >= len(in) {                             // All elements processed
-			break                                   // Exit loop
+	var flatten func(items []any)                           // Recursive helper
+	flatten = func(items []any) {
+		for _, item := range items {                    // Iterate items
+			switch val := item.(type) {             // Type switch
+			case int:                               // Direct integer
+				out = append(out, val)          // Add to result
+			case []any:                             // Nested slice
+				flatten(val)                    // Recurse into nested
+			}
 		}
-		switch val := in[idx].(type) {                  // Type switch on element
-		case int:                                       // Direct integer
-			out = append(out, val)                  // Add to result
-		case []any:                                     // Nested slice
-			in = append(in, val...)                 // Flatten into queue
-		default:                                        // Ignore other types
-		}
-		idx++                                           // Move to next element
 	}
-	return out                                              // Return flattened result
+	flatten(input)                                          // Start flattening
+	return out                                              // Return result
 }`,
-	testCode: `package main
+  testCode: `package main
 
 import (
 	"reflect"
@@ -148,9 +146,9 @@ func Test10(t *testing.T) {
 		t.Errorf("expected %v, got %v", expected, result)
 	}
 }`,
-	hint1: `Use a type switch to check if element is int or []any, then handle each case appropriately.`,
-			hint2: `Create a working queue: append nested slices to the queue and continue processing iteratively to handle arbitrary depth.`,
-			whyItMatters: `FlattenUnknown demonstrates recursive data structure handling and type assertions, essential for processing unknown nested data.
+  hint1: `Use a type switch to check if element is int or []any, then handle each case appropriately.`,
+  hint2: `Create a working queue: append nested slices to the queue and continue processing iteratively to handle arbitrary depth.`,
+  whyItMatters: `FlattenUnknown demonstrates recursive data structure handling and type assertions, essential for processing unknown nested data.
 
 **Why Flatten Nested:**
 - **Dynamic Data:** Handle JSON/config with unknown nesting
@@ -221,11 +219,12 @@ func (n *NestedData) ExtractInts() []int {
 - **Tree Flattening:** Convert tree structures to flat lists
 - **Data Extraction:** Pull specific types from mixed structures
 
-Without proper nested data handling, you'd need custom parsers for each nesting level or risk stack overflow with naive recursion.`,	order: 0,
-	translations: {
-		ru: {
-			title: 'Развёртывание вложенных срезов',
-			description: `Реализуйте **FlattenUnknown**, который разворачивает вложенные срезы неизвестной глубины в плоский срез целых чисел.
+Without proper nested data handling, you'd need custom parsers for each nesting level or risk stack overflow with naive recursion.`,
+  order: 0,
+  translations: {
+    ru: {
+      title: "Развёртывание вложенных срезов",
+      description: `Реализуйте **FlattenUnknown**, который разворачивает вложенные срезы неизвестной глубины в плоский срез целых чисел.
 
 **Требования:**
 1. Создайте функцию \`FlattenUnknown(input []any) []int\`
@@ -241,9 +240,9 @@ Without proper nested data handling, you'd need custom parsers for each nesting 
 result := FlattenUnknown([]any{1, []any{2, 3}, []any{4, []any{5, 6}}})
 // result = []int{1, 2, 3, 4, 5, 6}
 \`\`\``,
-			hint1: `Используйте type switch для проверки является ли элемент int или []any, затем обработайте каждый случай соответственно.`,
-			hint2: `Создайте рабочую очередь: добавляйте вложенные срезы в очередь и продолжайте обработку итеративно для обработки произвольной глубины.`,
-			whyItMatters: `FlattenUnknown демонстрирует обработку рекурсивных структур данных и утверждения типов, необходимые для обработки неизвестных вложенных данных.
+      hint1: `Используйте type switch для проверки является ли элемент int или []any, затем обработайте каждый случай соответственно.`,
+      hint2: `Создайте рабочую очередь: добавляйте вложенные срезы в очередь и продолжайте обработку итеративно для обработки произвольной глубины.`,
+      whyItMatters: `FlattenUnknown демонстрирует обработку рекурсивных структур данных и утверждения типов, необходимые для обработки неизвестных вложенных данных.
 
 **Почему Flatten Nested:**
 - **Динамические данные:** Обработка JSON/конфигураций с неизвестной вложенностью
@@ -315,35 +314,31 @@ func (n *NestedData) ExtractInts() []int {
 - **Извлечение данных:** Выделение специфических типов из смешанных структур
 
 Без правильной обработки вложенных данных вам потребовались бы пользовательские парсеры для каждого уровня вложенности или риск переполнения стека с наивной рекурсией.`,
-			solutionCode: `package main
+      solutionCode: `package main
 
 func FlattenUnknown(input []any) []int {
 	if len(input) == 0 {                                    // Обработка пустого ввода
 		return nil                                      // Вернуть nil для пустого
 	}
 	out := make([]int, 0, len(input))                       // Срез результата
-	in := make([]any, 0, len(input))                        // Рабочая очередь
-	in = append(in, input...)                               // Инициализация очереди с вводом
-	idx := 0                                                // Текущая позиция
-	for {
-		if idx >= len(in) {                             // Все элементы обработаны
-			break                                   // Выход из цикла
+	var flatten func(items []any)                           // Рекурсивный хелпер
+	flatten = func(items []any) {
+		for _, item := range items {                    // Итерация элементов
+			switch val := item.(type) {             // Type switch
+			case int:                               // Прямое целое число
+				out = append(out, val)          // Добавить в результат
+			case []any:                             // Вложенный срез
+				flatten(val)                    // Рекурсия во вложенный
+			}
 		}
-		switch val := in[idx].(type) {                  // Type switch на элемент
-		case int:                                       // Прямое целое число
-			out = append(out, val)                  // Добавить в результат
-		case []any:                                     // Вложенный срез
-			in = append(in, val...)                 // Развернуть в очередь
-		default:                                        // Игнорировать другие типы
-		}
-		idx++                                           // Переместить к следующему элементу
 	}
-	return out                                              // Вернуть развёрнутый результат
-}`
-		},
-		uz: {
-			title: 'Ichma-ich massivlarni tekislash',
-			description: `Noma'lum chuqurlikdagi ichma-ich massivlarni tekis butun sonlar massiviga aylantiradigan **FlattenUnknown** ni amalga oshiring.
+	flatten(input)                                          // Начать развёртывание
+	return out                                              // Вернуть результат
+}`,
+    },
+    uz: {
+      title: "Ichma-ich massivlarni tekislash",
+      description: `Noma'lum chuqurlikdagi ichma-ich massivlarni tekis butun sonlar massiviga aylantiradigan **FlattenUnknown** ni amalga oshiring.
 
 **Talablar:**
 1. \`FlattenUnknown(input []any) []int\` funksiyasini yarating
@@ -359,9 +354,9 @@ func FlattenUnknown(input []any) []int {
 result := FlattenUnknown([]any{1, []any{2, 3}, []any{4, []any{5, 6}}})
 // result = []int{1, 2, 3, 4, 5, 6}
 \`\`\``,
-			hint1: `Element int yoki []any ekanligini tekshirish uchun type switch dan foydalaning, keyin har bir holatni tegishli tarzda ishlang.`,
-			hint2: `Ish navbatini yarating: ichki massivlarni navbatga qo'shing va ixtiyoriy chuqurlikni qayta ishlash uchun iterativ ravishda davom eting.`,
-			whyItMatters: `FlattenUnknown rekursiv ma'lumotlar strukturasini va turi tasdiqlarini qayta ishlashni ko'rsatadi, noma'lum ichki ma'lumotlarni qayta ishlash uchun zarur.
+      hint1: `Element int yoki []any ekanligini tekshirish uchun type switch dan foydalaning, keyin har bir holatni tegishli tarzda ishlang.`,
+      hint2: `Ish navbatini yarating: ichki massivlarni navbatga qo'shing va ixtiyoriy chuqurlikni qayta ishlash uchun iterativ ravishda davom eting.`,
+      whyItMatters: `FlattenUnknown rekursiv ma'lumotlar strukturasini va turi tasdiqlarini qayta ishlashni ko'rsatadi, noma'lum ichki ma'lumotlarni qayta ishlash uchun zarur.
 
 **Nima uchun Flatten Nested:**
 - **Dinamik ma'lumotlar:** Noma'lum joylashish bilan JSON/config ni qayta ishlash
@@ -433,33 +428,29 @@ func (n *NestedData) ExtractInts() []int {
 - **Ma'lumot ajratib olish:** Aralash tuzilmalardan aniq turlarni olish
 
 To'g'ri ichma-ich ma'lumotlarni qayta ishlashsiz, har bir joylashish darajasi uchun maxsus parserlar kerak bo'ladi yoki oddiy rekursiya bilan stek to'lib ketish xavfi bor.`,
-			solutionCode: `package main
+      solutionCode: `package main
 
 func FlattenUnknown(input []any) []int {
 	if len(input) == 0 {                                    // Bo'sh kirishni ishlash
 		return nil                                      // Bo'sh uchun nil qaytarish
 	}
 	out := make([]int, 0, len(input))                       // Natija slayi
-	in := make([]any, 0, len(input))                        // Ish navbati
-	in = append(in, input...)                               // Navbatni kirish bilan boshlash
-	idx := 0                                                // Joriy pozitsiya
-	for {
-		if idx >= len(in) {                             // Barcha elementlar qayta ishlangan
-			break                                   // Tsikldan chiqish
-		}
-		switch val := in[idx].(type) {                  // Elementga type switch
-		case int:                                       // To'g'ridan-to'g'ri butun son
-			out = append(out, val)                  // Natijaga qo'shish
-		case []any:                                     // Ichki massiv
-			in = append(in, val...)                 // Navbatga tekislash
-		default:                                        // Boshqa tiplarni e'tiborsiz qoldirish
-		}
-		idx++                                           // Keyingi elementga o'tish
-	}
-	return out                                              // Tekislangan natijani qaytarish
-}`
+	var flatten func(items []any)                           // Rekursiv yordamchi
+	flatten = func(items []any) {
+		for _, item := range items {                    // Elementlarni iteratsiya
+			switch val := item.(type) {             // Type switch
+			case int:                               // To'g'ridan-to'g'ri butun son
+				out = append(out, val)          // Natijaga qo'shish
+			case []any:                             // Ichki massiv
+				flatten(val)                    // Ichki massivga rekursiya
+			}
 		}
 	}
+	flatten(input)                                          // Tekislashni boshlash
+	return out                                              // Natijani qaytarish
+}`,
+    },
+  },
 };
 
 export default task;
