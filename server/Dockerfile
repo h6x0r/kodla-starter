@@ -3,8 +3,11 @@
 FROM node:20-bullseye AS builder
 WORKDIR /app
 
+# Ensure devDependencies are installed (needed for @nestjs/cli build)
+ENV NODE_ENV=development
+
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --include=dev
 
 COPY tsconfig.json ./
 COPY prisma ./prisma
