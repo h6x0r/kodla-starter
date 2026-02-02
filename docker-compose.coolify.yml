@@ -15,6 +15,12 @@
 # - GEMINI_API_KEY: (optional) For AI Tutor
 # - REDIS_HOST: Redis hostname
 # - REDIS_PORT: Redis port (usually 6379)
+#
+# IMPORTANT: Piston timeout configuration
+# The PISTON_* environment variables MUST be set correctly for Go/Java support:
+# - PISTON_COMPILE_TIMEOUT=180000 (180s for Go 1.21+ compilation)
+# - PISTON_RUN_TIMEOUT=180000 (180s for complex test execution)
+# Backend auto-detects these limits at startup and adapts accordingly.
 ################################################################################
 
 services:
@@ -45,7 +51,14 @@ services:
       - PISTON_MAX_FILE_SIZE=104857600
       - PISTON_PROCESS_LIMIT=256
     healthcheck:
-      test: ["CMD", "wget", "-q", "--spider", "http://localhost:2000/api/v2/runtimes"]
+      test:
+        [
+          "CMD",
+          "wget",
+          "-q",
+          "--spider",
+          "http://localhost:2000/api/v2/runtimes",
+        ]
       interval: 30s
       timeout: 10s
       retries: 5

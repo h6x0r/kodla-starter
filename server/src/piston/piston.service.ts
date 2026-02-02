@@ -1,8 +1,13 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import axios, { AxiosInstance } from 'axios';
-import * as http from 'http';
-import * as https from 'https';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import axios, { AxiosInstance } from "axios";
+import * as http from "http";
+import * as https from "https";
 
 /**
  * Piston Language Runtime Configuration
@@ -41,9 +46,9 @@ export interface PistonExecuteResponse {
     code: number;
     signal: string | null;
     output: string;
-    memory?: number;      // Memory usage in bytes
-    cpu_time?: number;    // CPU time in milliseconds
-    wall_time?: number;   // Wall clock time in milliseconds
+    memory?: number; // Memory usage in bytes
+    cpu_time?: number; // CPU time in milliseconds
+    wall_time?: number; // Wall clock time in milliseconds
   };
   compile?: {
     stdout: string;
@@ -61,7 +66,7 @@ export interface PistonExecuteResponse {
  * Normalized execution result (compatible with existing API)
  */
 export interface ExecutionResult {
-  status: 'passed' | 'failed' | 'error' | 'timeout' | 'compileError';
+  status: "passed" | "failed" | "error" | "timeout" | "compileError";
   statusId: number;
   description: string;
   stdout: string;
@@ -88,69 +93,100 @@ export interface LanguageConfig {
 
 export const LANGUAGES: Record<string, LanguageConfig> = {
   go: {
-    pistonName: 'go',
-    name: 'Go',
-    extension: '.go',
-    monacoId: 'go',
+    pistonName: "go",
+    name: "Go",
+    extension: ".go",
+    monacoId: "go",
     timeLimit: 180000, // Go 1.21+ on ARM emulation needs ~60s for compilation
     memoryLimit: 512 * 1024 * 1024, // 512MB for Go 1.21+ compiler
   },
   java: {
-    pistonName: 'java',
-    name: 'Java',
-    extension: '.java',
-    monacoId: 'java',
+    pistonName: "java",
+    name: "Java",
+    extension: ".java",
+    monacoId: "java",
     timeLimit: 60000, // Java needs more time for compilation on ARM
     memoryLimit: 512 * 1024 * 1024,
   },
   javascript: {
-    pistonName: 'javascript',
-    name: 'JavaScript',
-    extension: '.js',
-    monacoId: 'javascript',
+    pistonName: "javascript",
+    name: "JavaScript",
+    extension: ".js",
+    monacoId: "javascript",
     timeLimit: 5000,
     memoryLimit: 256 * 1024 * 1024,
   },
   typescript: {
-    pistonName: 'typescript',
-    name: 'TypeScript',
-    extension: '.ts',
-    monacoId: 'typescript',
+    pistonName: "typescript",
+    name: "TypeScript",
+    extension: ".ts",
+    monacoId: "typescript",
     timeLimit: 10000,
     memoryLimit: 256 * 1024 * 1024,
   },
   python: {
-    pistonName: 'python',
-    name: 'Python',
-    extension: '.py',
-    monacoId: 'python',
+    pistonName: "python",
+    name: "Python",
+    extension: ".py",
+    monacoId: "python",
     timeLimit: 10000,
     memoryLimit: 256 * 1024 * 1024,
   },
   rust: {
-    pistonName: 'rust',
-    name: 'Rust',
-    extension: '.rs',
-    monacoId: 'rust',
+    pistonName: "rust",
+    name: "Rust",
+    extension: ".rs",
+    monacoId: "rust",
     timeLimit: 10000,
     memoryLimit: 256 * 1024 * 1024,
   },
   cpp: {
-    pistonName: 'c++',
-    name: 'C++',
-    extension: '.cpp',
-    monacoId: 'cpp',
+    pistonName: "c++",
+    name: "C++",
+    extension: ".cpp",
+    monacoId: "cpp",
     timeLimit: 5000,
     memoryLimit: 256 * 1024 * 1024,
   },
   c: {
-    pistonName: 'c',
-    name: 'C',
-    extension: '.c',
-    monacoId: 'c',
+    pistonName: "c",
+    name: "C",
+    extension: ".c",
+    monacoId: "c",
     timeLimit: 5000,
     memoryLimit: 256 * 1024 * 1024,
   },
+};
+
+/**
+ * Piston server limits (detected at runtime)
+ */
+export interface PistonLimits {
+  compileTimeout: number; // Max compile timeout in ms
+  runTimeout: number; // Max run timeout in ms
+  memoryLimit: number; // Max memory limit in bytes
+  detected: boolean; // Whether limits were successfully detected
+}
+
+/**
+ * Default Piston limits (conservative fallback)
+ * These are used when we can't detect the actual Piston limits
+ */
+const DEFAULT_PISTON_LIMITS: PistonLimits = {
+  compileTimeout: 10000, // 10 seconds - safe default
+  runTimeout: 10000, // 10 seconds - safe default
+  memoryLimit: 256 * 1024 * 1024, // 256MB
+  detected: false,
+};
+
+/**
+ * Recommended Piston limits for production
+ * Used for logging warnings when actual limits are lower
+ */
+const RECOMMENDED_PISTON_LIMITS = {
+  compileTimeout: 180000, // 180 seconds for Go/Java compilation
+  runTimeout: 60000, // 60 seconds for test execution
+  memoryLimit: 512 * 1024 * 1024, // 512MB
 };
 
 @Injectable()
@@ -162,9 +198,10 @@ export class PistonService implements OnModuleInit, OnModuleDestroy {
   private readonly httpsAgent: https.Agent;
   private availableRuntimes: PistonRuntime[] = [];
   private isAvailable = false;
+  private pistonLimits: PistonLimits = { ...DEFAULT_PISTON_LIMITS };
 
   constructor(private config: ConfigService) {
-    this.pistonUrl = this.config.get('PISTON_URL') || 'http://piston:2000';
+    this.pistonUrl = this.config.get("PISTON_URL") || "http://piston:2000";
 
     // Create HTTP agents with connection pooling for better performance
     this.httpAgent = new http.Agent({
@@ -187,22 +224,25 @@ export class PistonService implements OnModuleInit, OnModuleDestroy {
       httpAgent: this.httpAgent,
       httpsAgent: this.httpsAgent,
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
     });
 
-    this.logger.log(`Piston configured: ${this.pistonUrl} (connection pooling enabled)`);
+    this.logger.log(
+      `Piston configured: ${this.pistonUrl} (connection pooling enabled)`,
+    );
   }
 
   async onModuleDestroy() {
     // Destroy HTTP agents to close all open connections
     this.httpAgent.destroy();
     this.httpsAgent.destroy();
-    this.logger.log('HTTP agents destroyed');
+    this.logger.log("HTTP agents destroyed");
   }
 
   async onModuleInit() {
     await this.loadRuntimes();
+    await this.detectPistonLimits();
   }
 
   /**
@@ -210,14 +250,113 @@ export class PistonService implements OnModuleInit, OnModuleDestroy {
    */
   async loadRuntimes(): Promise<void> {
     try {
-      const response = await this.client.get<PistonRuntime[]>('/runtimes');
+      const response = await this.client.get<PistonRuntime[]>("/runtimes");
       this.availableRuntimes = response.data;
       this.isAvailable = true;
-      this.logger.log(`Piston ready: ${this.availableRuntimes.length} runtimes available`);
+      this.logger.log(
+        `Piston ready: ${this.availableRuntimes.length} runtimes available`,
+      );
     } catch (error) {
       this.isAvailable = false;
-      this.logger.warn('Piston not available - will use mock mode');
+      this.logger.warn("Piston not available - will use mock mode");
     }
+  }
+
+  /**
+   * Detect Piston server limits by making test requests
+   * Uses incremental testing to find the actual compile_timeout limit
+   */
+  async detectPistonLimits(): Promise<void> {
+    if (!this.isAvailable) {
+      this.logger.warn("Piston not available, using default limits");
+      return;
+    }
+
+    try {
+      // Test with increasing timeouts to find the limit
+      // Piston returns 400 if timeout exceeds configured limit
+      const testTimeouts = [10000, 30000, 60000, 120000, 180000, 300000];
+      let maxCompileTimeout = DEFAULT_PISTON_LIMITS.compileTimeout;
+      let maxRunTimeout = DEFAULT_PISTON_LIMITS.runTimeout;
+
+      for (const timeout of testTimeouts) {
+        try {
+          // Test with a simple Python print to minimize execution time
+          await this.client.post("/execute", {
+            language: "python",
+            version: "*",
+            files: [{ content: 'print("limit_test")' }],
+            compile_timeout: timeout,
+            run_timeout: timeout,
+          });
+          maxCompileTimeout = timeout;
+          maxRunTimeout = timeout;
+        } catch (error: any) {
+          const errorMessage = error?.response?.data?.message || "";
+          // If we get "cannot exceed" error, we found the limit
+          if (errorMessage.includes("cannot exceed")) {
+            break;
+          }
+          // Other errors - continue testing
+          if (error?.response?.status !== 400) {
+            break;
+          }
+        }
+      }
+
+      this.pistonLimits = {
+        compileTimeout: maxCompileTimeout,
+        runTimeout: maxRunTimeout,
+        memoryLimit: RECOMMENDED_PISTON_LIMITS.memoryLimit,
+        detected: true,
+      };
+
+      this.logger.log(
+        `Piston limits detected: compile=${maxCompileTimeout}ms, run=${maxRunTimeout}ms`,
+      );
+
+      // Warn if limits are lower than recommended
+      if (maxCompileTimeout < RECOMMENDED_PISTON_LIMITS.compileTimeout) {
+        this.logger.warn(
+          `⚠️ Piston compile_timeout (${maxCompileTimeout}ms) is lower than recommended ` +
+            `(${RECOMMENDED_PISTON_LIMITS.compileTimeout}ms). Go and Java compilation may timeout. ` +
+            `Set PISTON_COMPILE_TIMEOUT=${RECOMMENDED_PISTON_LIMITS.compileTimeout} in Piston container.`,
+        );
+      }
+      if (maxRunTimeout < RECOMMENDED_PISTON_LIMITS.runTimeout) {
+        this.logger.warn(
+          `⚠️ Piston run_timeout (${maxRunTimeout}ms) is lower than recommended ` +
+            `(${RECOMMENDED_PISTON_LIMITS.runTimeout}ms). Complex tests may timeout. ` +
+            `Set PISTON_RUN_TIMEOUT=${RECOMMENDED_PISTON_LIMITS.runTimeout} in Piston container.`,
+        );
+      }
+    } catch (error) {
+      this.logger.warn("Failed to detect Piston limits, using defaults");
+    }
+  }
+
+  /**
+   * Get current Piston limits (for health checks and debugging)
+   */
+  getPistonLimits(): PistonLimits {
+    return { ...this.pistonLimits };
+  }
+
+  /**
+   * Calculate effective timeout for a language
+   * Returns the minimum of desired timeout and Piston limit
+   */
+  private getEffectiveTimeout(language: string): {
+    compile: number;
+    run: number;
+  } {
+    const langConfig = this.getLanguageConfig(language);
+    const desiredTimeout = langConfig?.timeLimit || 10000;
+
+    return {
+      compile: Math.min(desiredTimeout, this.pistonLimits.compileTimeout),
+      run: Math.min(desiredTimeout, this.pistonLimits.runTimeout),
+    };
   }
 
   /**
@@ -239,8 +378,9 @@ export class PistonService implements OnModuleInit, OnModuleDestroy {
     if (!langConfig) return false;
 
     return this.availableRuntimes.some(
-      runtime => runtime.language === langConfig.pistonName ||
-                 runtime.aliases?.includes(langConfig.pistonName)
+      (runtime) =>
+        runtime.language === langConfig.pistonName ||
+        runtime.aliases?.includes(langConfig.pistonName),
     );
   }
 
@@ -255,19 +395,20 @@ export class PistonService implements OnModuleInit, OnModuleDestroy {
    * Get language config by name/key
    */
   getLanguageConfig(language: string): LanguageConfig | null {
-    const key = language.toLowerCase().replace(/\s+/g, '');
+    const key = language.toLowerCase().replace(/\s+/g, "");
 
     if (LANGUAGES[key]) return LANGUAGES[key];
 
     // Alias matching
-    if (key.includes('java') && !key.includes('script')) return LANGUAGES.java;
-    if (key.includes('go') || key === 'golang') return LANGUAGES.go;
-    if (key.includes('python') || key === 'py') return LANGUAGES.python;
-    if (key.includes('javascript') || key === 'js' || key === 'node') return LANGUAGES.javascript;
-    if (key.includes('typescript') || key === 'ts') return LANGUAGES.typescript;
-    if (key.includes('rust') || key === 'rs') return LANGUAGES.rust;
-    if (key === 'c++' || key === 'cpp') return LANGUAGES.cpp;
-    if (key === 'c') return LANGUAGES.c;
+    if (key.includes("java") && !key.includes("script")) return LANGUAGES.java;
+    if (key.includes("go") || key === "golang") return LANGUAGES.go;
+    if (key.includes("python") || key === "py") return LANGUAGES.python;
+    if (key.includes("javascript") || key === "js" || key === "node")
+      return LANGUAGES.javascript;
+    if (key.includes("typescript") || key === "ts") return LANGUAGES.typescript;
+    if (key.includes("rust") || key === "rs") return LANGUAGES.rust;
+    if (key === "c++" || key === "cpp") return LANGUAGES.cpp;
+    if (key === "c") return LANGUAGES.c;
 
     return null;
   }
@@ -291,18 +432,20 @@ export class PistonService implements OnModuleInit, OnModuleDestroy {
     // Check availability first - return user-friendly error if unavailable
     const available = await this.checkHealth();
     if (!available) {
-      this.logger.warn('Piston unavailable, returning service unavailable error');
+      this.logger.warn(
+        "Piston unavailable, returning service unavailable error",
+      );
       return this.serviceUnavailableResult();
     }
 
     // Build combined code based on language
     let combinedCode: string;
 
-    if (language === 'python' || language === 'py') {
+    if (language === "python" || language === "py") {
       combinedCode = this.buildPythonTestCode(solutionCode, testCode, maxTests);
-    } else if (language === 'go' || language === 'golang') {
+    } else if (language === "go" || language === "golang") {
       combinedCode = this.buildGoTestCode(solutionCode, testCode, maxTests);
-    } else if (language === 'java') {
+    } else if (language === "java") {
       combinedCode = this.buildJavaTestCode(solutionCode, testCode);
     } else {
       combinedCode = solutionCode;
@@ -320,8 +463,8 @@ export class PistonService implements OnModuleInit, OnModuleDestroy {
     // Python: def test_xxx(self): or def test_xxx():
     const pythonMatches = testCode.match(/def\s+(test_\w+)/g);
     if (pythonMatches) {
-      pythonMatches.forEach(m => {
-        const name = m.replace(/def\s+/, '');
+      pythonMatches.forEach((m) => {
+        const name = m.replace(/def\s+/, "");
         testNames.push(name);
       });
     }
@@ -329,24 +472,25 @@ export class PistonService implements OnModuleInit, OnModuleDestroy {
     // Go: func TestXxx(t *testing.T)
     const goMatches = testCode.match(/func\s+(Test\w+)/g);
     if (goMatches) {
-      goMatches.forEach(m => {
-        const name = m.replace(/func\s+/, '');
+      goMatches.forEach((m) => {
+        const name = m.replace(/func\s+/, "");
         testNames.push(name);
       });
     }
 
     // Java: @Test methods or void test methods
-    const javaMatches = testCode.match(/@Test[\s\S]*?(?:public|private|protected)?\s*void\s+(\w+)/g);
+    const javaMatches = testCode.match(
+      /@Test[\s\S]*?(?:public|private|protected)?\s*void\s+(\w+)/g,
+    );
     if (javaMatches) {
-      javaMatches.forEach(m => {
+      javaMatches.forEach((m) => {
         const nameMatch = m.match(/void\s+(\w+)/);
         if (nameMatch) testNames.push(nameMatch[1]);
       });
     }
 
-    return testNames.length > 0 ? testNames : ['test_1', 'test_2', 'test_3'];
+    return testNames.length > 0 ? testNames : ["test_1", "test_2", "test_3"];
   }
-
 
   /**
    * Build Python code that runs tests without pytest dependency
@@ -354,24 +498,35 @@ export class PistonService implements OnModuleInit, OnModuleDestroy {
    * Output is clean JSON for parsing
    * @param maxTests - Optional limit on number of tests to run
    */
-  private buildPythonTestCode(solutionCode: string, testCode: string, maxTests?: number): string {
+  private buildPythonTestCode(
+    solutionCode: string,
+    testCode: string,
+    maxTests?: number,
+  ): string {
     // Remove pytest/solution imports and unittest.main() block from test code
     const cleanedTestCode = testCode
-      .replace(/^import pytest.*$/gm, '')
-      .replace(/^from pytest import.*$/gm, '')
-      .replace(/^from solution import.*$/gm, '')
-      .replace(/^import solution.*$/gm, '')
+      .replace(/^import pytest.*$/gm, "")
+      .replace(/^from pytest import.*$/gm, "")
+      .replace(/^from solution import.*$/gm, "")
+      .replace(/^import solution.*$/gm, "")
       // Remove if __name__ == '__main__': unittest.main() block (single or multi-line)
-      .replace(/if\s+__name__\s*==\s*['"]__main__['"]\s*:\s*\n?\s*unittest\.main\(\)/gm, '')
-      .replace(/if\s+__name__\s*==\s*['"]__main__['"]\s*:\s*unittest\.main\(\)/gm, '');
+      .replace(
+        /if\s+__name__\s*==\s*['"]__main__['"]\s*:\s*\n?\s*unittest\.main\(\)/gm,
+        "",
+      )
+      .replace(
+        /if\s+__name__\s*==\s*['"]__main__['"]\s*:\s*unittest\.main\(\)/gm,
+        "",
+      );
 
-    const maxTestsLimit = maxTests ? `methods = methods[:${maxTests}]  # Quick mode: limit to ${maxTests} tests` : '';
+    const maxTestsLimit = maxTests
+      ? `methods = methods[:${maxTests}]  # Quick mode: limit to ${maxTests} tests`
+      : "";
 
     // Escape strings for Python multiline strings
     // Replace backslashes first, then triple quotes
-    const escapePython = (s: string) => s
-      .replace(/\\/g, '\\\\')
-      .replace(/"""/g, '\\"\\"\\"');
+    const escapePython = (s: string) =>
+      s.replace(/\\/g, "\\\\").replace(/"""/g, '\\"\\"\\"');
 
     const escapedTestCode = escapePython(cleanedTestCode);
     const escapedSolutionCode = escapePython(solutionCode);
@@ -776,23 +931,33 @@ if __name__ == "__main__":
    * Output is clean JSON for parsing
    * @param maxTests - Optional limit on number of tests to run
    */
-  private buildGoTestCode(solutionCode: string, testCode: string, maxTests?: number): string {
+  private buildGoTestCode(
+    solutionCode: string,
+    testCode: string,
+    maxTests?: number,
+  ): string {
     // For Go, we need to combine into a single file with test runner
     // Remove package declarations AND all import statements from solution code
+    // Replace testing types with our mock types
     // Note: Using Go 1.21+ which supports 'any' keyword natively
     const cleanSolution = solutionCode
-      .replace(/^package\s+\w+\s*$/gm, '')
-      .replace(/import\s*\([\s\S]*?\)/g, '')  // Remove multi-line import blocks
-      .replace(/import\s+"[^"]+"/g, '')       // Remove single-line imports
+      .replace(/^package\s+\w+\s*$/gm, "")
+      .replace(/import\s*\([\s\S]*?\)/g, "") // Remove multi-line import blocks
+      .replace(/import\s+"[^"]+"/g, "") // Remove single-line imports
+      .replace(/\*testing\.T/g, "*T")
+      .replace(/\*testing\.B/g, "*B")
+      .replace(/\*testing\.M/g, "*M")
       .trim();
 
     // Remove package declaration AND all import statements from test code
     // Note: Using Go 1.21+ which supports 'any' keyword natively
     const cleanTests = testCode
-      .replace(/^package\s+\w+\s*$/gm, '')
-      .replace(/import\s*\([\s\S]*?\)/g, '')  // Remove multi-line import blocks
-      .replace(/import\s+"[^"]+"/g, '')       // Remove single-line imports
-      .replace(/\*testing\.T/g, '*T')
+      .replace(/^package\s+\w+\s*$/gm, "")
+      .replace(/import\s*\([\s\S]*?\)/g, "") // Remove multi-line import blocks
+      .replace(/import\s+"[^"]+"/g, "") // Remove single-line imports
+      .replace(/\*testing\.T/g, "*T")
+      .replace(/\*testing\.B/g, "*B")
+      .replace(/\*testing\.M/g, "*M")
       .trim();
 
     // Extract imports from BOTH solution and test code (excluding "testing")
@@ -801,12 +966,12 @@ if __name__ == "__main__":
     const candidateImports = [...new Set([...solutionImports, ...testImports])];
 
     // Filter to only imports that are actually used in the cleaned code
-    const combinedCode = cleanSolution + '\n' + cleanTests;
-    const additionalImports = candidateImports.filter(imp => {
+    const combinedCode = cleanSolution + "\n" + cleanTests;
+    const additionalImports = candidateImports.filter((imp) => {
       // Get the package name (last part of import path)
-      const pkgName = imp.split('/').pop() || imp;
+      const pkgName = imp.split("/").pop() || imp;
       // Check if package name is used in the code (as identifier)
-      const usagePattern = new RegExp(`\\b${pkgName}\\.`, 'g');
+      const usagePattern = new RegExp(`\\b${pkgName}\\.`, "g");
       return usagePattern.test(combinedCode);
     });
 
@@ -814,18 +979,22 @@ if __name__ == "__main__":
     const testFunctions = this.extractGoTestFunctionsWithDescriptions(testCode);
 
     // Apply maxTests limit
-    const testsToRun = maxTests ? testFunctions.slice(0, maxTests) : testFunctions;
+    const testsToRun = maxTests
+      ? testFunctions.slice(0, maxTests)
+      : testFunctions;
 
     // Generate runTest calls with descriptions
-    const testCalls = testsToRun.map(t => {
-      const escapedDesc = t.description.replace(/"/g, '\\"');
-      return `    runTest("${t.name}", ${t.name}, "${escapedDesc}")`;
-    }).join('\n');
+    const testCalls = testsToRun
+      .map((t) => {
+        const escapedDesc = t.description.replace(/"/g, '\\"');
+        return `    runTest("${t.name}", ${t.name}, "${escapedDesc}")`;
+      })
+      .join("\n");
 
     // Build complete import list (base + additional from tests)
-    const baseImports = ['encoding/json', 'fmt', 'os', 'regexp'];
+    const baseImports = ["encoding/json", "fmt", "os", "regexp"];
     const allImports = [...new Set([...baseImports, ...additionalImports])];
-    const importBlock = allImports.map(i => `    "${i}"`).join('\n');
+    const importBlock = allImports.map((i) => `    "${i}"`).join("\n");
 
     return `package main
 
@@ -1054,9 +1223,9 @@ ${testCalls}
       const importBlock = multiImportMatch[1];
       const packageMatches = importBlock.match(/"([^"]+)"/g);
       if (packageMatches) {
-        packageMatches.forEach(pkg => {
-          const cleanPkg = pkg.replace(/"/g, '');
-          if (cleanPkg !== 'testing') {
+        packageMatches.forEach((pkg) => {
+          const cleanPkg = pkg.replace(/"/g, "");
+          if (cleanPkg !== "testing") {
             imports.push(cleanPkg);
           }
         });
@@ -1066,9 +1235,9 @@ ${testCalls}
     // Match single-line imports: import "pkg"
     const singleImportMatches = code.match(/import\s+"([^"]+)"/g);
     if (singleImportMatches) {
-      singleImportMatches.forEach(match => {
+      singleImportMatches.forEach((match) => {
         const pkgMatch = match.match(/"([^"]+)"/);
-        if (pkgMatch && pkgMatch[1] !== 'testing') {
+        if (pkgMatch && pkgMatch[1] !== "testing") {
           imports.push(pkgMatch[1]);
         }
       });
@@ -1082,14 +1251,18 @@ ${testCalls}
    * Validates function names to prevent code injection
    */
   private extractGoTestFunctions(testCode: string): string[] {
-    return this.extractGoTestFunctionsWithDescriptions(testCode).map(t => t.name);
+    return this.extractGoTestFunctionsWithDescriptions(testCode).map(
+      (t) => t.name,
+    );
   }
 
   /**
    * Extract Go test function names with descriptions from comments
    * Validates function names to prevent code injection
    */
-  private extractGoTestFunctionsWithDescriptions(testCode: string): { name: string; description: string }[] {
+  private extractGoTestFunctionsWithDescriptions(
+    testCode: string,
+  ): { name: string; description: string }[] {
     const functions: { name: string; description: string }[] = [];
     // Match comments followed by test functions
     const regex = /(?:\/\/\s*(.+?)\s*\n\s*)?func\s+(Test\w+)\s*\(/g;
@@ -1097,13 +1270,19 @@ ${testCalls}
     const validNamePattern = /^Test[A-Za-z0-9_]+$/;
     // Blacklist dangerous keywords that could indicate injection attempts
     const dangerousPatterns = [
-      /os\./i, /exec\./i, /syscall\./i, /unsafe\./i,
-      /runtime\./i, /reflect\./i, /eval/i, /import/i
+      /os\./i,
+      /exec\./i,
+      /syscall\./i,
+      /unsafe\./i,
+      /runtime\./i,
+      /reflect\./i,
+      /eval/i,
+      /import/i,
     ];
 
     let match;
     while ((match = regex.exec(testCode)) !== null) {
-      const comment = match[1] || '';
+      const comment = match[1] || "";
       const funcName = match[2];
 
       // Validate function name format
@@ -1113,21 +1292,27 @@ ${testCalls}
       }
 
       // Check for dangerous patterns in function name
-      const hasDangerousPattern = dangerousPatterns.some(pattern => pattern.test(funcName));
+      const hasDangerousPattern = dangerousPatterns.some((pattern) =>
+        pattern.test(funcName),
+      );
       if (hasDangerousPattern) {
-        this.logger.warn(`Potentially dangerous test function name rejected: ${funcName}`);
+        this.logger.warn(
+          `Potentially dangerous test function name rejected: ${funcName}`,
+        );
         continue;
       }
 
       // Limit function name length to prevent buffer overflow attempts
       if (funcName.length > 100) {
-        this.logger.warn(`Test function name too long, rejected: ${funcName.substring(0, 20)}...`);
+        this.logger.warn(
+          `Test function name too long, rejected: ${funcName.substring(0, 20)}...`,
+        );
         continue;
       }
 
       // Extract description from comment (remove Test1: prefix if present)
       let description = comment;
-      const colonIdx = comment.indexOf(':');
+      const colonIdx = comment.indexOf(":");
       if (colonIdx > 0 && colonIdx < 10) {
         description = comment.substring(colonIdx + 1).trim();
       }
@@ -1145,40 +1330,42 @@ ${testCalls}
   private buildJavaTestCode(solutionCode: string, testCode: string): string {
     // Extract test class names from test code
     const testClasses = this.extractJavaTestClasses(testCode);
-    this.logger.debug(`Java test classes found: ${testClasses.join(', ')}`);
+    this.logger.debug(`Java test classes found: ${testClasses.join(", ")}`);
 
     // Clean imports from solution code (we add them in the template)
     const cleanSolution = solutionCode
-      .replace(/import\s+java\.util\.\*;/gm, '')
-      .replace(/import\s+java\.util\.ArrayList;/gm, '')
-      .replace(/import\s+java\.util\.List;/gm, '')
-      .replace(/import\s+java\.util\.Map;/gm, '')
-      .replace(/import\s+java\.util\.HashMap;/gm, '')
-      .replace(/import\s+java\.util\.Set;/gm, '')
-      .replace(/import\s+java\.util\.HashSet;/gm, '')
+      .replace(/import\s+java\.util\.\*;/gm, "")
+      .replace(/import\s+java\.util\.ArrayList;/gm, "")
+      .replace(/import\s+java\.util\.List;/gm, "")
+      .replace(/import\s+java\.util\.Map;/gm, "")
+      .replace(/import\s+java\.util\.HashMap;/gm, "")
+      .replace(/import\s+java\.util\.Set;/gm, "")
+      .replace(/import\s+java\.util\.HashSet;/gm, "")
       .trim();
 
     // Clean imports and annotations from test code
     // Also make test classes implement Testable interface
     // And redirect assertion calls to our Assert class
     const cleanTests = testCode
-      .replace(/import\s+org\.junit.*$/gm, '')
-      .replace(/import\s+static\s+org\.junit.*$/gm, '')
-      .replace(/import\s+java\.util\.\*;/gm, '')
-      .replace(/import\s+java\.util\.List;/gm, '')
-      .replace(/import\s+java\.util\.ArrayList;/gm, '')
-      .replace(/class\s+(Test\d+)\s*\{/g, 'class $1 implements Testable {')
-      .replace(/@Test\s*/g, '')
+      .replace(/import\s+org\.junit.*$/gm, "")
+      .replace(/import\s+static\s+org\.junit.*$/gm, "")
+      .replace(/import\s+java\.util\.\*;/gm, "")
+      .replace(/import\s+java\.util\.List;/gm, "")
+      .replace(/import\s+java\.util\.ArrayList;/gm, "")
+      .replace(/class\s+(Test\d+)\s*\{/g, "class $1 implements Testable {")
+      .replace(/@Test\s*/g, "")
       // Replace assertion calls with Assert.* (only if not already prefixed)
-      .replace(/(?<!Assert\.)assertEquals\(/g, 'Assert.assertEquals(')
-      .replace(/(?<!Assert\.)assertTrue\(/g, 'Assert.assertTrue(')
-      .replace(/(?<!Assert\.)assertFalse\(/g, 'Assert.assertFalse(')
-      .replace(/(?<!Assert\.)assertNull\(/g, 'Assert.assertNull(')
-      .replace(/(?<!Assert\.)assertNotNull\(/g, 'Assert.assertNotNull(')
+      .replace(/(?<!Assert\.)assertEquals\(/g, "Assert.assertEquals(")
+      .replace(/(?<!Assert\.)assertTrue\(/g, "Assert.assertTrue(")
+      .replace(/(?<!Assert\.)assertFalse\(/g, "Assert.assertFalse(")
+      .replace(/(?<!Assert\.)assertNull\(/g, "Assert.assertNull(")
+      .replace(/(?<!Assert\.)assertNotNull\(/g, "Assert.assertNotNull(")
       .trim();
 
     // Generate test execution calls
-    const testCalls = testClasses.map(name => `        runTest("${name}", new ${name}());`).join('\n');
+    const testCalls = testClasses
+      .map((name) => `        runTest("${name}", new ${name}());`)
+      .join("\n");
 
     // IMPORTANT: public class Main MUST be first for Piston to find main() method
     // Simplified test runner with JSON output and expected/output capture
@@ -1314,7 +1501,9 @@ class Assert {
 ${cleanTests}
 `;
     // Debug: log generated code length
-    this.logger.debug(`Generated Java code length: ${result.length} chars, test calls: ${testCalls.length} chars`);
+    this.logger.debug(
+      `Generated Java code length: ${result.length} chars, test calls: ${testCalls.length} chars`,
+    );
     return result;
   }
 
@@ -1349,62 +1538,77 @@ ${cleanTests}
     // Check availability - return user-friendly error if unavailable
     const available = await this.checkHealth();
     if (!available) {
-      this.logger.warn('Piston unavailable, returning service unavailable error');
+      this.logger.warn(
+        "Piston unavailable, returning service unavailable error",
+      );
       return this.serviceUnavailableResult();
     }
 
     try {
       const startTime = Date.now();
 
+      // Get effective timeouts respecting Piston server limits
+      const effectiveTimeout = this.getEffectiveTimeout(language);
+      const effectiveMemory = Math.min(
+        langConfig.memoryLimit,
+        this.pistonLimits.memoryLimit,
+      );
+
       const request: PistonExecuteRequest = {
         language: langConfig.pistonName,
-        version: '*', // Use latest available version
+        version: "*", // Use latest available version
         files: [{ content: code }],
-        stdin: stdin || '',
-        compile_timeout: langConfig.timeLimit, // For compiled languages like Java/Go
-        run_timeout: langConfig.timeLimit,
-        run_memory_limit: langConfig.memoryLimit,
+        stdin: stdin || "",
+        compile_timeout: effectiveTimeout.compile,
+        run_timeout: effectiveTimeout.run,
+        run_memory_limit: effectiveMemory,
       };
 
-      this.logger.debug(`Executing ${langConfig.name} code via Piston`);
+      this.logger.debug(
+        `Executing ${langConfig.name} code via Piston ` +
+          `(compile=${effectiveTimeout.compile}ms, run=${effectiveTimeout.run}ms)`,
+      );
 
       const response = await this.client.post<PistonExecuteResponse>(
-        '/execute',
+        "/execute",
         request,
       );
 
       const elapsed = ((Date.now() - startTime) / 1000).toFixed(3);
       return this.parseResponse(response.data, elapsed);
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
       const errorCode = (error as any)?.code;
       const statusCode = (error as any)?.response?.status;
       this.logger.error(`Piston execution failed: ${errorMessage}`);
 
       // Check for timeout
-      if (errorCode === 'ECONNABORTED' || errorMessage?.includes('timeout')) {
+      if (errorCode === "ECONNABORTED" || errorMessage?.includes("timeout")) {
         return {
-          status: 'timeout',
+          status: "timeout",
           statusId: 5,
-          description: 'Time Limit Exceeded',
-          stdout: '',
-          stderr: 'Your code took too long to execute',
-          compileOutput: '',
-          time: '-',
+          description: "Time Limit Exceeded",
+          stdout: "",
+          stderr: "Your code took too long to execute",
+          compileOutput: "",
+          time: "-",
           memory: 0,
           exitCode: null,
-          message: 'Execution timed out. Try optimizing your code.',
+          message: "Execution timed out. Try optimizing your code.",
         };
       }
 
       // Check for 400 error (usually means language not available)
       if (statusCode === 400) {
         this.logger.warn(`Language runtime not available: ${langConfig.name}`);
-        return this.errorResult(`Language ${langConfig.name} is temporarily unavailable. Please try again later.`);
+        return this.errorResult(
+          `Language ${langConfig.name} is temporarily unavailable. Please try again later.`,
+        );
       }
 
       // Connection errors - return user-friendly message
-      if (errorCode === 'ECONNREFUSED' || errorCode === 'ENOTFOUND') {
+      if (errorCode === "ECONNREFUSED" || errorCode === "ENOTFOUND") {
         this.logger.warn(`Piston connection failed`);
         return this.serviceUnavailableResult();
       }
@@ -1420,23 +1624,27 @@ ${cleanTests}
    */
   private serviceUnavailableResult(): ExecutionResult {
     return {
-      status: 'error',
+      status: "error",
       statusId: 13,
-      description: 'Service Temporarily Unavailable',
-      stdout: '',
-      stderr: '',
-      compileOutput: '',
-      time: '-',
+      description: "Service Temporarily Unavailable",
+      stdout: "",
+      stderr: "",
+      compileOutput: "",
+      time: "-",
       memory: 0,
       exitCode: null,
-      message: 'Code execution service is temporarily unavailable. Please try again in a few minutes.',
+      message:
+        "Code execution service is temporarily unavailable. Please try again in a few minutes.",
     };
   }
 
   /**
    * Parse Piston response to normalized format
    */
-  private parseResponse(response: PistonExecuteResponse, fallbackTime: string): ExecutionResult {
+  private parseResponse(
+    response: PistonExecuteResponse,
+    fallbackTime: string,
+  ): ExecutionResult {
     const run = response.run;
     const compile = response.compile;
 
@@ -1452,16 +1660,16 @@ ${cleanTests}
     // Check for compilation error
     if (compile && compile.code !== 0) {
       return {
-        status: 'compileError',
+        status: "compileError",
         statusId: 6,
-        description: 'Compilation Error',
-        stdout: '',
-        stderr: '',
+        description: "Compilation Error",
+        stdout: "",
+        stderr: "",
         compileOutput: this.truncateOutput(compile.stderr || compile.output),
-        time: '-',
+        time: "-",
         memory: 0,
         exitCode: compile.code,
-        message: 'Compilation failed',
+        message: "Compilation failed",
       };
     }
 
@@ -1469,16 +1677,18 @@ ${cleanTests}
     // Special case: If we got valid output before timeout/kill, treat as success
     // This handles cases like numpy imports that produce output but get killed during cleanup
     const hasValidOutput = run.stdout && run.stdout.trim().length > 0;
-    const isTimeoutWithOutput = run.signal === 'SIGKILL' && hasValidOutput;
+    const isTimeoutWithOutput = run.signal === "SIGKILL" && hasValidOutput;
 
     if ((run.code !== 0 || run.signal) && !isTimeoutWithOutput) {
       return {
-        status: 'error',
+        status: "error",
         statusId: 11,
-        description: run.signal ? `Signal: ${run.signal}` : 'Runtime Error',
+        description: run.signal ? `Signal: ${run.signal}` : "Runtime Error",
         stdout: this.truncateOutput(run.stdout),
         stderr: this.truncateOutput(run.stderr),
-        compileOutput: compile?.output ? this.truncateOutput(compile.output) : '',
+        compileOutput: compile?.output
+          ? this.truncateOutput(compile.output)
+          : "",
         time,
         memory,
         exitCode: run.code,
@@ -1488,12 +1698,12 @@ ${cleanTests}
 
     // Success
     return {
-      status: 'passed',
+      status: "passed",
       statusId: 3,
-      description: 'Accepted',
+      description: "Accepted",
       stdout: this.truncateOutput(run.stdout),
       stderr: this.truncateOutput(run.stderr),
-      compileOutput: compile?.output ? this.truncateOutput(compile.output) : '',
+      compileOutput: compile?.output ? this.truncateOutput(compile.output) : "",
       time,
       memory,
       exitCode: run.code,
@@ -1505,13 +1715,13 @@ ${cleanTests}
    */
   private errorResult(message: string): ExecutionResult {
     return {
-      status: 'error',
+      status: "error",
       statusId: 13,
-      description: 'Error',
-      stdout: '',
+      description: "Error",
+      stdout: "",
       stderr: message,
-      compileOutput: '',
-      time: '-',
+      compileOutput: "",
+      time: "-",
       memory: 0,
       exitCode: null,
       message,
@@ -1522,8 +1732,8 @@ ${cleanTests}
    * Helper: Truncate long output
    */
   private truncateOutput(output: string, maxLength = 10000): string {
-    if (!output) return '';
+    if (!output) return "";
     if (output.length <= maxLength) return output;
-    return output.substring(0, maxLength) + '\n\n... [Output truncated]';
+    return output.substring(0, maxLength) + "\n\n... [Output truncated]";
   }
 }
