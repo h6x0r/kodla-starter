@@ -161,7 +161,22 @@ export const SolutionExplanationTab = ({ task }: SolutionExplanationTabProps) =>
 
   const handleCopyCode = async () => {
     try {
-      await navigator.clipboard.writeText(solutionCode);
+      // Try modern Clipboard API first (requires HTTPS)
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(solutionCode);
+      } else {
+        // Fallback for HTTP: use textarea + execCommand
+        const textArea = document.createElement('textarea');
+        textArea.value = solutionCode;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+      }
       setIsCopied(true);
       timeoutRef.current = setTimeout(() => setIsCopied(false), 2000);
     } catch (err) {

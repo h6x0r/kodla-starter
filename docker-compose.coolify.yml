@@ -1,0 +1,112 @@
+################################################################################
+# Practix Backend + Piston Stack for Coolify
+#
+# This compose file is designed to be deployed as a single stack in Coolify,
+# ensuring backend and piston are on the same Docker network.
+#
+# Usage in Coolify:
+# 1. Create a new Docker Compose resource
+# 2. Point to this file: docker-compose.coolify.yml
+# 3. Set required environment variables in Coolify
+#
+# Required environment variables:
+# - DATABASE_URL: PostgreSQL connection string
+# - JWT_SECRET: Secret for JWT tokens
+# - GEMINI_API_KEY: (optional) For AI Tutor
+# - REDIS_HOST: Redis hostname
+# - REDIS_PORT: Redis port (usually 6379)
+################################################################################
+
+services:
+  ##############################################################################
+  # Piston Code Execution Engine
+  ##############################################################################
+  piston:
+    image: ghcr.io/engineer-man/piston
+    container_name: practix_piston
+    restart: always
+    privileged: true
+    ports:
+      - "2000:2000"
+    volumes:
+      - piston_data:/piston/jobs
+      - piston_packages:/piston/packages
+    mem_limit: 2g
+    memswap_limit: 2g
+    pids_limit: 512
+    environment:
+      - PISTON_RUN_TIMEOUT=180000
+      - PISTON_COMPILE_TIMEOUT=180000
+      - PISTON_RUN_CPU_TIME=180000
+      - PISTON_COMPILE_CPU_TIME=180000
+      - PISTON_OUTPUT_MAX_SIZE=131072
+      - PISTON_MAX_PROCESS_COUNT=256
+      - PISTON_MAX_OPEN_FILES=2048
+      - PISTON_MAX_FILE_SIZE=104857600
+      - PISTON_PROCESS_LIMIT=256
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:2000/api/v2/runtimes"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - practix-network
+
+  ##############################################################################
+  # Backend API Server
+  ##############################################################################
+  backend:
+    image: ${BACKEND_IMAGE:-ghcr.io/your-org/practix-backend:latest}
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: practix_backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Database (set in Coolify)
+      DATABASE_URL: ${DATABASE_URL}
+      # Auth
+      JWT_SECRET: ${JWT_SECRET}
+      # AI Tutor
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      # Server
+      PORT: 8080
+      NODE_ENV: production
+      SKIP_SEED: ${SKIP_SEED:-false}
+      # Piston - uses container name on shared network
+      PISTON_URL: http://piston:2000
+      # Redis (set in Coolify)
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      # Security
+      ENABLE_IP_BAN: ${ENABLE_IP_BAN:-true}
+      SUSPICIOUS_ACTIVITY_LOG: ${SUSPICIOUS_ACTIVITY_LOG:-true}
+      MALICIOUS_CODE_CHECK: ${MALICIOUS_CODE_CHECK:-true}
+      IP_BAN_THRESHOLD: ${IP_BAN_THRESHOLD:-10}
+      IP_BAN_DURATION_HOURS: ${IP_BAN_DURATION_HOURS:-24}
+      # Rate Limiting (seconds between runs)
+      RATE_LIMIT_RUN_FREE: ${RATE_LIMIT_RUN_FREE:-10}
+      RATE_LIMIT_RUN_AUTH: ${RATE_LIMIT_RUN_AUTH:-5}
+      RATE_LIMIT_RUN_PREMIUM: ${RATE_LIMIT_RUN_PREMIUM:-3}
+      RATE_LIMIT_REGISTER: ${RATE_LIMIT_REGISTER:-3}
+      RATE_LIMIT_LOGIN: ${RATE_LIMIT_LOGIN:-5}
+    depends_on:
+      piston:
+        condition: service_healthy
+    command: >
+      sh -c "until npx prisma db push; do echo 'Waiting for Postgres...'; sleep 5; done &&
+      if [ \"$SKIP_SEED\" != \"true\" ]; then npm run seed || true; fi &&
+      node dist/main"
+    networks:
+      - practix-network
+
+networks:
+  practix-network:
+    driver: bridge
+
+volumes:
+  piston_data:
+  piston_packages:
