@@ -1,9 +1,9 @@
-import { Processor, WorkerHost, OnWorkerEvent } from '@nestjs/bullmq';
-import { Injectable, Logger } from '@nestjs/common';
-import { InjectQueue } from '@nestjs/bullmq';
-import { Job, Queue } from 'bullmq';
-import { PistonService, ExecutionResult } from '../piston/piston.service';
-import { CODE_EXECUTION_QUEUE, DEAD_LETTER_QUEUE } from './constants';
+import { Processor, WorkerHost, OnWorkerEvent } from "@nestjs/bullmq";
+import { Injectable, Logger } from "@nestjs/common";
+import { InjectQueue } from "@nestjs/bullmq";
+import { Job, Queue } from "bullmq";
+import { Judge0Service, ExecutionResult } from "../piston/judge0.service";
+import { CODE_EXECUTION_QUEUE, DEAD_LETTER_QUEUE } from "./constants";
 
 /**
  * Job payload for code execution
@@ -46,12 +46,12 @@ export class CodeExecutionProcessor extends WorkerHost {
   private readonly logger = new Logger(CodeExecutionProcessor.name);
 
   constructor(
-    private readonly pistonService: PistonService,
+    private readonly judge0Service: Judge0Service,
     @InjectQueue(DEAD_LETTER_QUEUE)
     private readonly deadLetterQueue: Queue<DeadLetterJob>,
   ) {
     super();
-    this.logger.log('Code execution processor initialized');
+    this.logger.log("Code execution processor initialized");
   }
 
   /**
@@ -61,15 +61,17 @@ export class CodeExecutionProcessor extends WorkerHost {
     const { code, language, stdin, taskId, userId, expectedOutput } = job.data;
 
     this.logger.debug(
-      `Processing job ${job.id}: ${language} code (task: ${taskId || 'playground'})`,
+      `Processing job ${job.id}: ${language} code (task: ${taskId || "playground"})`,
     );
 
     // Idempotency: Check if this job was already processed
     // This prevents duplicate execution on retry after partial success
     const idempotencyKey = `job:processed:${job.id}`;
     const alreadyProcessed = await job.getState();
-    if (alreadyProcessed === 'completed') {
-      this.logger.warn(`Job ${job.id} already completed, skipping duplicate execution`);
+    if (alreadyProcessed === "completed") {
+      this.logger.warn(
+        `Job ${job.id} already completed, skipping duplicate execution`,
+      );
       // Return cached result if available (BullMQ stores it)
       const returnValue = job.returnvalue as CodeExecutionResult;
       if (returnValue) {
@@ -77,19 +79,19 @@ export class CodeExecutionProcessor extends WorkerHost {
       }
     }
 
-    // Execute code via Piston
-    const result = await this.pistonService.execute(code, language, stdin);
+    // Execute code via Judge0
+    const result = await this.judge0Service.execute(code, language, stdin);
 
     // Check expected output if provided
-    if (expectedOutput && result.status === 'passed') {
+    if (expectedOutput && result.status === "passed") {
       const normalizedOutput = result.stdout.trim();
       const normalizedExpected = expectedOutput.trim();
 
       if (normalizedOutput !== normalizedExpected) {
-        result.status = 'failed';
+        result.status = "failed";
         result.statusId = 4;
-        result.description = 'Wrong Answer';
-        result.message = 'Output does not match expected result';
+        result.description = "Wrong Answer";
+        result.message = "Output does not match expected result";
       }
     }
 
@@ -101,12 +103,12 @@ export class CodeExecutionProcessor extends WorkerHost {
     };
   }
 
-  @OnWorkerEvent('completed')
+  @OnWorkerEvent("completed")
   onCompleted(job: Job<CodeExecutionJob>) {
     this.logger.debug(`Job ${job.id} completed`);
   }
 
-  @OnWorkerEvent('failed')
+  @OnWorkerEvent("failed")
   async onFailed(job: Job<CodeExecutionJob>, error: Error) {
     const maxAttempts = job.opts.attempts || 3;
     const isLastAttempt = job.attemptsMade >= maxAttempts;
@@ -119,16 +121,16 @@ export class CodeExecutionProcessor extends WorkerHost {
 
       try {
         const deadLetterJob: DeadLetterJob = {
-          originalJobId: job.id || 'unknown',
+          originalJobId: job.id || "unknown",
           originalQueue: CODE_EXECUTION_QUEUE,
           originalData: job.data,
-          failedReason: error.message || job.failedReason || 'Unknown error',
+          failedReason: error.message || job.failedReason || "Unknown error",
           failedAt: new Date().toISOString(),
           attemptsMade: job.attemptsMade,
           stacktrace: job.stacktrace,
         };
 
-        await this.deadLetterQueue.add('failed-job', deadLetterJob, {
+        await this.deadLetterQueue.add("failed-job", deadLetterJob, {
           jobId: `dlq-${job.id}`,
         });
 
@@ -143,12 +145,12 @@ export class CodeExecutionProcessor extends WorkerHost {
     }
   }
 
-  @OnWorkerEvent('active')
+  @OnWorkerEvent("active")
   onActive(job: Job<CodeExecutionJob>) {
     this.logger.debug(`Job ${job.id} started processing`);
   }
 
-  @OnWorkerEvent('stalled')
+  @OnWorkerEvent("stalled")
   onStalled(jobId: string) {
     this.logger.warn(`Job ${jobId} stalled`);
   }

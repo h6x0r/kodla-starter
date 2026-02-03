@@ -1,10 +1,22 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { InjectQueue } from '@nestjs/bullmq';
-import { Queue, QueueEvents } from 'bullmq';
-import { ConfigService } from '@nestjs/config';
-import { CODE_EXECUTION_QUEUE } from './constants';
-import { CodeExecutionJob, CodeExecutionResult } from './code-execution.processor';
-import { PistonService, ExecutionResult, LanguageConfig } from '../piston/piston.service';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from "@nestjs/common";
+import { InjectQueue } from "@nestjs/bullmq";
+import { Queue, QueueEvents } from "bullmq";
+import { ConfigService } from "@nestjs/config";
+import { CODE_EXECUTION_QUEUE } from "./constants";
+import {
+  CodeExecutionJob,
+  CodeExecutionResult,
+} from "./code-execution.processor";
+import {
+  Judge0Service,
+  ExecutionResult,
+  LanguageConfig,
+} from "../piston/judge0.service";
 
 @Injectable()
 export class CodeExecutionService implements OnModuleInit, OnModuleDestroy {
@@ -13,8 +25,11 @@ export class CodeExecutionService implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     @InjectQueue(CODE_EXECUTION_QUEUE)
-    private readonly executionQueue: Queue<CodeExecutionJob, CodeExecutionResult>,
-    private readonly pistonService: PistonService,
+    private readonly executionQueue: Queue<
+      CodeExecutionJob,
+      CodeExecutionResult
+    >,
+    private readonly judge0Service: Judge0Service,
     private readonly configService: ConfigService,
   ) {}
 
@@ -22,19 +37,19 @@ export class CodeExecutionService implements OnModuleInit, OnModuleDestroy {
     // Create QueueEvents for job completion tracking
     const queueEvents = new QueueEvents(CODE_EXECUTION_QUEUE, {
       connection: {
-        host: this.configService.get('REDIS_HOST') || 'redis',
-        port: parseInt(this.configService.get('REDIS_PORT') || '6379', 10),
+        host: this.configService.get("REDIS_HOST") || "redis",
+        port: parseInt(this.configService.get("REDIS_PORT") || "6379", 10),
       },
     });
 
     try {
       await queueEvents.waitUntilReady();
       this.queueEvents = queueEvents;
-      this.logger.log('QueueEvents connected');
+      this.logger.log("QueueEvents connected");
     } catch (error) {
       // Clean up the connection if initialization fails
       await queueEvents.close().catch(() => {});
-      this.logger.error('Failed to initialize QueueEvents', error);
+      this.logger.error("Failed to initialize QueueEvents", error);
       throw error;
     }
   }
@@ -43,9 +58,9 @@ export class CodeExecutionService implements OnModuleInit, OnModuleDestroy {
     if (this.queueEvents) {
       try {
         await this.queueEvents.close();
-        this.logger.log('QueueEvents closed');
+        this.logger.log("QueueEvents closed");
       } catch (error) {
-        this.logger.error('Error closing QueueEvents', error);
+        this.logger.error("Error closing QueueEvents", error);
       }
     }
   }
@@ -59,7 +74,7 @@ export class CodeExecutionService implements OnModuleInit, OnModuleDestroy {
     stdin?: string,
   ): Promise<ExecutionResult> {
     this.logger.debug(`Sync execution: ${language}`);
-    return this.pistonService.execute(code, language, stdin);
+    return this.judge0Service.execute(code, language, stdin);
   }
 
   /**
@@ -72,8 +87,15 @@ export class CodeExecutionService implements OnModuleInit, OnModuleDestroy {
     language: string,
     maxTests?: number,
   ): Promise<ExecutionResult> {
-    this.logger.debug(`Sync execution with tests: ${language}, maxTests=${maxTests || 'all'}`);
-    return this.pistonService.executeWithTests(solutionCode, testCode, language, maxTests);
+    this.logger.debug(
+      `Sync execution with tests: ${language}, maxTests=${maxTests || "all"}`,
+    );
+    return this.judge0Service.executeWithTests(
+      solutionCode,
+      testCode,
+      language,
+      maxTests,
+    );
   }
 
   /**
@@ -91,7 +113,7 @@ export class CodeExecutionService implements OnModuleInit, OnModuleDestroy {
     },
   ): Promise<{ jobId: string }> {
     const job = await this.executionQueue.add(
-      'execute',
+      "execute",
       {
         code,
         language,
@@ -123,17 +145,14 @@ export class CodeExecutionService implements OnModuleInit, OnModuleDestroy {
       timeout?: number;
     },
   ): Promise<CodeExecutionResult> {
-    const job = await this.executionQueue.add(
-      'execute',
-      {
-        code,
-        language,
-        stdin: options?.stdin,
-        expectedOutput: options?.expectedOutput,
-        taskId: options?.taskId,
-        userId: options?.userId,
-      },
-    );
+    const job = await this.executionQueue.add("execute", {
+      code,
+      language,
+      stdin: options?.stdin,
+      expectedOutput: options?.expectedOutput,
+      taskId: options?.taskId,
+      userId: options?.userId,
+    });
 
     this.logger.debug(`Waiting for job ${job.id} to complete`);
 
@@ -158,7 +177,7 @@ export class CodeExecutionService implements OnModuleInit, OnModuleDestroy {
     const job = await this.executionQueue.getJob(jobId);
 
     if (!job) {
-      return { status: 'not_found' };
+      return { status: "not_found" };
     }
 
     const state = await job.getState();
@@ -197,7 +216,7 @@ export class CodeExecutionService implements OnModuleInit, OnModuleDestroy {
    * Check if execution engine is available
    */
   async checkHealth(): Promise<{ available: boolean; queueReady: boolean }> {
-    const pistonAvailable = await this.pistonService.checkHealth();
+    const judge0Available = await this.judge0Service.checkHealth();
 
     // Check if queue is connected
     let queueReady = false;
@@ -209,7 +228,7 @@ export class CodeExecutionService implements OnModuleInit, OnModuleDestroy {
     }
 
     return {
-      available: pistonAvailable,
+      available: judge0Available,
       queueReady,
     };
   }
@@ -218,6 +237,6 @@ export class CodeExecutionService implements OnModuleInit, OnModuleDestroy {
    * Get supported languages
    */
   getSupportedLanguages(): LanguageConfig[] {
-    return this.pistonService.getSupportedLanguages();
+    return this.judge0Service.getSupportedLanguages();
   }
 }

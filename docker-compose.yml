@@ -46,7 +46,7 @@ services:
     volumes:
       - redis_data:/data
     # Container memory limits
-    mem_limit: 1200m  # Slightly more than maxmemory to allow for overhead
+    mem_limit: 1200m # Slightly more than maxmemory to allow for overhead
     memswap_limit: 1200m
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -56,43 +56,110 @@ services:
       start_period: 5s
 
   ##############################################################################
-  # Piston Code Execution Engine
-  # Note: On ARM64 (Apple Silicon), Piston runs under Rosetta emulation
-  # and requires privileged mode for proper isolation
-  #
-  # For ML courses setup, see: docs/PISTON_ML_SETUP.md
+  # Judge0 Code Execution Engine
+  # Fast, reliable code execution with native ARM64 support
+  # Docs: https://github.com/judge0/judge0
   ##############################################################################
-  piston:
-    image: ghcr.io/engineer-man/piston
-    container_name: practix_piston
-    restart: always  # Auto-restart on crash or OOM
-    privileged: true
+  judge0-server:
+    image: judge0/judge0:1.13.1
+    container_name: practix_judge0
+    restart: always
     ports:
-      - "2000:2000"
-    volumes:
-      - piston_data:/piston/jobs
-      - piston_packages:/piston/packages
-    # Memory limits - increased for ML courses (NumPy, Pandas, sklearn)
-    mem_limit: 2g
-    memswap_limit: 2g  # No swap, strict limit
-    # Increased pids_limit for Go compiler thread requirements
-    pids_limit: 512
+      - "2358:2358"
+    privileged: true
     environment:
-      - PISTON_RUN_TIMEOUT=180000      # 180s wall-time for Go 1.21+ on ARM emulation
-      - PISTON_COMPILE_TIMEOUT=180000  # 180s compile timeout for Go 1.21+ first run
-      - PISTON_RUN_CPU_TIME=180000     # 180s CPU-time for Go 1.21 on ARM emulation
-      - PISTON_COMPILE_CPU_TIME=180000 # 180s compile CPU-time
-      - PISTON_OUTPUT_MAX_SIZE=131072  # 128KB for chart JSON output
-      - PISTON_MAX_PROCESS_COUNT=256   # Increased for Go compiler thread requirements
-      - PISTON_MAX_OPEN_FILES=2048     # Reduced for memory efficiency
-      - PISTON_MAX_FILE_SIZE=104857600 # 100MB for Go 1.21+ compiler
-      - PISTON_PROCESS_LIMIT=256       # Increased for Go compiler thread requirements
+      # Database (uses separate postgres for Judge0)
+      - POSTGRES_HOST=judge0-db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=judge0
+      - POSTGRES_USER=judge0
+      - POSTGRES_PASSWORD=judge0_secure_password
+      # Redis (uses separate redis for Judge0)
+      - REDIS_HOST=judge0-redis
+      - REDIS_PORT=6379
+      # Judge0 Configuration
+      - ENABLE_WAIT_RESULT=true
+      - ENABLE_BATCHED_SUBMISSIONS=true
+      - MAX_QUEUE_SIZE=100
+      - CPU_TIME_LIMIT=30
+      - CPU_EXTRA_TIME=5
+      - WALL_TIME_LIMIT=60
+      - MEMORY_LIMIT=512000
+      - STACK_LIMIT=64000
+      - MAX_PROCESSES_AND_OR_THREADS=60
+      - ENABLE_PER_PROCESS_AND_THREAD_TIME_LIMIT=false
+      - ENABLE_PER_PROCESS_AND_THREAD_MEMORY_LIMIT=false
+      - MAX_FILE_SIZE=2048
+      - NUMBER_OF_RUNS=1
+      - ENABLE_NETWORK=false
+    depends_on:
+      judge0-db:
+        condition: service_healthy
+      judge0-redis:
+        condition: service_healthy
+    mem_limit: 2g
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:2000/api/v2/runtimes', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"]
+      test: ["CMD", "curl", "-f", "http://localhost:2358/languages"]
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 60s
+      start_period: 30s
+
+  judge0-workers:
+    image: judge0/judge0:1.13.1
+    container_name: practix_judge0_workers
+    restart: always
+    command: ["./scripts/workers"]
+    privileged: true
+    environment:
+      - POSTGRES_HOST=judge0-db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=judge0
+      - POSTGRES_USER=judge0
+      - POSTGRES_PASSWORD=judge0_secure_password
+      - REDIS_HOST=judge0-redis
+      - REDIS_PORT=6379
+      - ENABLE_WAIT_RESULT=true
+      - CPU_TIME_LIMIT=30
+      - CPU_EXTRA_TIME=5
+      - WALL_TIME_LIMIT=60
+      - MEMORY_LIMIT=512000
+      - NUMBER_OF_RUNS=1
+    depends_on:
+      judge0-server:
+        condition: service_healthy
+    mem_limit: 4g
+
+  judge0-db:
+    image: postgres:15-alpine
+    container_name: practix_judge0_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: judge0
+      POSTGRES_PASSWORD: judge0_secure_password
+      POSTGRES_DB: judge0
+    volumes:
+      - judge0_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U judge0 -d judge0"]
+      interval: 5s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+
+  judge0-redis:
+    image: redis:7-alpine
+    container_name: practix_judge0_redis
+    restart: unless-stopped
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - judge0_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
 
   ##############################################################################
   # Backend API Server
@@ -109,8 +176,8 @@ services:
       PORT: 8080
       SKIP_SEED: ${SKIP_SEED:-false}
       NODE_ENV: ${NODE_ENV:-production}
-      # Piston Configuration
-      PISTON_URL: http://piston:2000
+      # Judge0 Configuration
+      JUDGE0_URL: http://judge0-server:2358
       # Redis Configuration
       REDIS_HOST: redis
       REDIS_PORT: 6379
@@ -133,7 +200,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      piston:
+      judge0-server:
         condition: service_healthy
     command: >
       sh -c "until npx prisma db push; do echo 'Waiting for Postgres...'; sleep 5; done &&
@@ -159,5 +226,5 @@ services:
 volumes:
   postgres_data:
   redis_data:
-  piston_data:
-  piston_packages:
+  judge0_postgres_data:
+  judge0_redis_data:
