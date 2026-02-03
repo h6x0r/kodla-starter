@@ -2,7 +2,7 @@ SHELL := /bin/sh
 DOCKER_COMPOSE ?= docker compose
 
 .PHONY: migrate-up vet build start start-docker db-reset db-seed db-migrate db-studio db-refresh \
-        start-all stop-all clean clean-deep disk clean-cache piston-install-langs piston-langs piston-status
+        start-all stop-all clean clean-deep disk clean-cache judge0-status judge0-langs
 
 migrate-up:
 	cd server && npx prisma migrate deploy
@@ -57,7 +57,7 @@ start-all:
 	@echo "✅ Full stack is running!"
 	@echo "   Frontend: http://localhost:3000"
 	@echo "   Backend:  http://localhost:8080"
-	@echo "   Piston:   http://localhost:2000"
+	@echo "   Judge0:   http://localhost:2358"
 
 # Stop everything
 stop-all:
@@ -98,24 +98,15 @@ clean-cache:
 	@echo "✅ Build cache cleared!"
 
 # ============================================================================
-# Piston Language Management
+# Judge0 Management
 # ============================================================================
 
-# Install additional languages in Piston
-piston-install-langs:
-	@echo "📦 Installing additional languages in Piston..."
-	docker exec kodla_piston piston ppman install rust || true
-	docker exec kodla_piston piston ppman install c++ || true
-	docker exec kodla_piston piston ppman install javascript || true
-	docker exec kodla_piston piston ppman install ruby || true
-	@echo "✅ Languages installed!"
+# Check Judge0 status
+judge0-status:
+	@echo "🔍 Judge0 Status:"
+	@curl -s http://localhost:2358/about 2>/dev/null && echo "  ✅ Running" || echo "  ❌ Not running"
 
-# List installed Piston languages
-piston-langs:
-	@echo "📋 Installed Piston languages:"
-	@curl -s http://localhost:2000/api/v2/runtimes | python3 -c "import sys,json; [print(f'  {r[\"language\"]} {r[\"version\"]}') for r in json.load(sys.stdin)]" 2>/dev/null || echo "❌ Piston not running"
-
-# Check Piston status
-piston-status:
-	@echo "🔍 Piston Status:"
-	@curl -s http://localhost:2000/api/v2/runtimes | python3 -c "import sys,json; langs=json.load(sys.stdin); print(f'  ✅ Running with {len(langs)} runtimes')" 2>/dev/null || echo "  ❌ Not running"
+# List available Judge0 languages
+judge0-langs:
+	@echo "📋 Available Judge0 languages:"
+	@curl -s http://localhost:2358/languages | python3 -c "import sys,json; [print(f'  {l[\"id\"]}: {l[\"name\"]}') for l in json.load(sys.stdin)]" 2>/dev/null || echo "❌ Judge0 not running"

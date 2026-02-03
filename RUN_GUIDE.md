@@ -16,7 +16,7 @@ make start-docker
 This starts:
 - Frontend at http://localhost:3000
 - Backend at http://localhost:8080
-- Piston (code execution) + Redis + BullMQ
+- Judge0 (code execution) + Redis + BullMQ
 
 ### Option 2: Local Development
 ```bash
@@ -33,7 +33,7 @@ Runs Vite dev server + NestJS in watch mode.
 |---------|-------------|
 | `make start-docker` | Start full stack |
 | `make start` | Local dev servers |
-| `make stop` | Stop all containers |
+| `make stop-all` | Stop all containers |
 | `make build` | Build Docker images |
 | `make vet` | Type-check frontend & backend |
 
@@ -46,9 +46,15 @@ Runs Vite dev server + NestJS in watch mode.
 | `make db-studio` | Open Prisma Studio |
 | `make db-migrate` | Run migrations |
 
+### Judge0
+| Command | Description |
+|---------|-------------|
+| `make judge0-status` | Check Judge0 status |
+| `make judge0-langs` | List available languages |
+
 ---
 
-## Code Execution Engine (Piston + BullMQ)
+## Code Execution Engine (Judge0 + BullMQ)
 
 ### Architecture
 ```
@@ -59,21 +65,22 @@ Runs Vite dev server + NestJS in watch mode.
                                                │
                                                ▼
                     ┌─────────────┐     ┌─────────────┐
-                    │  PostgreSQL │     │   Piston    │
+                    │  PostgreSQL │     │   Judge0    │
                     │  (practix_db) │     │  (sandbox)  │
                     └─────────────┘     └─────────────┘
 ```
 
 ### Supported Languages
-| Language | Time Limit | Memory Limit |
-|----------|------------|--------------|
-| Go | 5s | 256MB |
-| Java | 10s | 512MB |
-| JavaScript | 5s | 256MB |
-| TypeScript | 10s | 256MB |
-| Python | 10s | 256MB |
-| Rust | 10s | 256MB |
-| C/C++ | 5s | 256MB |
+| Language | Time Limit | Memory Limit | Judge0 ID |
+|----------|------------|--------------|-----------|
+| Go | 15s | 512MB | 60 |
+| Java | 15s | 512MB | 62 |
+| JavaScript | 10s | 256MB | 63 |
+| TypeScript | 15s | 256MB | 74 |
+| Python | 15s | 256MB | 71 |
+| Rust | 15s | 256MB | 73 |
+| C++ | 10s | 256MB | 54 |
+| C | 10s | 256MB | 50 |
 
 ### Resource Management
 - **Queue-based execution** with BullMQ (Redis)
@@ -87,7 +94,7 @@ Runs Vite dev server + NestJS in watch mode.
 ### Configuration
 Environment variables in `docker-compose.yml`:
 ```bash
-PISTON_URL=http://piston:2000
+JUDGE0_URL=http://judge0-server:2358
 REDIS_HOST=redis
 REDIS_PORT=6379
 ```
@@ -103,8 +110,8 @@ JWT_SECRET="your_jwt_secret"
 PORT=8080
 GEMINI_API_KEY="your_google_ai_key"
 
-# Piston
-PISTON_URL="http://piston:2000"
+# Judge0
+JUDGE0_URL="http://judge0-server:2358"
 
 # Redis (for BullMQ queue and caching)
 REDIS_HOST=redis
@@ -153,7 +160,7 @@ GET /submissions/languages
 ### Code Execution Issues
 | Problem | Solution |
 |---------|----------|
-| Piston not starting | Check Docker: `docker compose logs piston` |
+| Judge0 not starting | Check Docker: `docker compose logs judge0-server` |
 | Code execution timeout | Check queue status: `GET /submissions/judge/status` |
 | "Unsupported language" | Check `/submissions/languages` for supported list |
 | Rate limit exceeded | Wait 1 minute or check rate limiting config |
@@ -176,20 +183,20 @@ GET /submissions/languages
 
 ### Recommended Setup
 1. Use managed PostgreSQL (AWS RDS, Google Cloud SQL)
-2. Deploy Piston on dedicated server with high CPU
+2. Deploy Judge0 on dedicated server with high CPU
 3. Use Redis cluster for BullMQ queue persistence
 4. Set up monitoring for queue depth
 
 ### Scaling
 ```bash
-# Scale Piston workers
-docker compose up -d --scale piston=4
+# Scale Judge0 workers
+docker compose up -d --scale judge0-workers=4
 ```
 
 BullMQ automatically distributes jobs across workers.
 
 ### Security
-- Use firewall to restrict Piston access to backend only
+- Use firewall to restrict Judge0 access to backend only
 - Set resource limits per execution
 - Configure rate limiting per user tier
 

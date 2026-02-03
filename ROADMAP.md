@@ -98,7 +98,7 @@ Production-grade code execution with Piston + BullMQ + Redis:
 
 ### Key Files
 ```
-server/src/piston/piston.service.ts       # Piston API client
+server/src/judge0/judge0.service.ts       # Judge0 API client
 server/src/queue/code-execution.service.ts # BullMQ queue API
 server/src/queue/code-execution.processor.ts # Queue worker
 server/src/cache/cache.service.ts         # Redis caching

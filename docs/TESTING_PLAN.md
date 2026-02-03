@@ -58,7 +58,7 @@ These affect user progression and engagement.
 |---------|------------|------------|-------------------|
 | `gamification.service.ts` | MEDIUM | HIGH | ~20 tests |
 | `users.service.ts` | MEDIUM | LOW | ~10 tests |
-| `piston.service.ts` | MEDIUM | HIGH | ~15 tests |
+| `judge0.service.ts` | MEDIUM | HIGH | ~15 tests |
 | `code-execution.service.ts` | MEDIUM | MEDIUM | ~12 tests |
 | `tasks.service.ts` | MEDIUM | LOW | ✅ Done (~6 tests) |
 | `courses.service.ts` | MEDIUM | MEDIUM | ✅ Done (~7 tests) |
@@ -169,7 +169,7 @@ describe('SubmissionsService', () => {
   describe('create()', () => {
     // Happy paths
     it('should create submission for valid task and code')
-    it('should execute code via Piston service')
+    it('should execute code via Judge0 service')
     it('should save submission to database')
     it('should return test results with pass/fail status')
     it('should award XP on successful submission')
@@ -179,7 +179,7 @@ describe('SubmissionsService', () => {
     it('should handle task not found')
     it('should handle invalid language')
     it('should handle code execution timeout')
-    it('should handle Piston service unavailable')
+    it('should handle Judge0 service unavailable')
     it('should sanitize error messages for users')
 
     // Security
@@ -352,10 +352,10 @@ describe('GamificationService', () => {
 })
 ```
 
-#### 1.3.6 piston.service.ts (~15 tests)
+#### 1.3.6 judge0.service.ts (~15 tests)
 
 ```typescript
-describe('PistonService', () => {
+describe('Judge0Service', () => {
   describe('execute()', () => {
     it('should execute Go code')
     it('should execute Java code')
@@ -364,7 +364,7 @@ describe('PistonService', () => {
     it('should handle compilation errors')
     it('should handle runtime errors')
     it('should respect timeout')
-    it('should handle Piston API unavailable')
+    it('should handle Judge0 API unavailable')
   })
 
   describe('executeWithTests()', () => {
@@ -375,8 +375,8 @@ describe('PistonService', () => {
   })
 
   describe('checkHealth()', () => {
-    it('should return true when Piston available')
-    it('should return false when Piston unavailable')
+    it('should return true when Judge0 available')
+    it('should return false when Judge0 unavailable')
   })
 
   describe('getSupportedLanguages()', () => {
@@ -422,9 +422,9 @@ const mockPrisma = {
   // ...
 }
 
-// 2. Piston API - mock HTTP responses
-jest.mock('../piston/piston.service', () => ({
-  PistonService: jest.fn().mockImplementation(() => ({
+// 2. Judge0 API - mock HTTP responses
+jest.mock('../judge0/judge0.service', () => ({
+  Judge0Service: jest.fn().mockImplementation(() => ({
     execute: jest.fn().mockResolvedValue({ stdout: '', stderr: '', code: 0 }),
     executeWithTests: jest.fn().mockResolvedValue({ ... }),
   })),
@@ -630,7 +630,7 @@ Day 3:    ai.service.ts (~15 tests) - mock Gemini API
 Day 4-5:  subscriptions.service.ts (~20 tests)
 Day 6:    access-control.service.ts (~15 tests)
 Day 7-8:  gamification.service.ts (~20 tests)
-Day 9:    piston.service.ts (~15 tests)
+Day 9:    judge0.service.ts (~15 tests)
 Day 10:   Remaining services (~40 tests)
 ```
 

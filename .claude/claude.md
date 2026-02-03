@@ -227,7 +227,7 @@ server/
 │   ├── subscriptions/     # Subscription system
 │   ├── submissions/       # Code execution & grading
 │   ├── ai/                # AI Tutor (Gemini)
-│   ├── piston/            # Code execution engine
+│   ├── judge0/            # Judge0 code execution
 │   ├── queue/             # BullMQ job queue
 │   ├── health/            # Health checks & metrics
 │   └── gamification/      # XP, levels, badges
@@ -328,7 +328,7 @@ See `TASK_CREATION_GUIDE.md` for complete instructions.
 
 ### Проверка Статуса
 ```bash
-docker compose ps  # Должны быть: frontend, backend, db, redis, piston
+docker compose ps  # Должны быть: frontend, backend, db, redis, judge0
 ```
 
 ---

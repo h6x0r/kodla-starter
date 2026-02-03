@@ -1,6 +1,6 @@
 # PRACTIX Tech Stack & Integrations
 
-> Last updated: 2026-01-04
+> Last updated: 2026-02-03
 
 ---
 
@@ -11,7 +11,7 @@
 | **Frontend** | React + TypeScript | SPA with Monaco Editor |
 | **Backend** | NestJS + Prisma | REST API, Auth, Business Logic |
 | **Database** | PostgreSQL | User data, Courses, Progress |
-| **Code Execution** | Piston + BullMQ | Sandboxed code runner (8 languages) |
+| **Code Execution** | Judge0 + BullMQ | Sandboxed code runner (8 languages) |
 | **AI Tutor** | Google Gemini 2.0 Flash | Intelligent hints & explanations |
 | **Auth** | JWT | Stateless authentication |
 
@@ -37,33 +37,6 @@ After analyzing multiple LLM providers for EdTech use case (150K+ requests/month
 | Claude 3.5 Sonnet | $3.00 | $15.00 | ~$1,980 | Premium |
 
 *Estimated for 150K requests/month (~1100 tokens avg)
-
-#### Pros & Cons Analysis
-
-**Gemini 2.0 Flash** (Selected)
-- Pros: Lowest cost, excellent code understanding, fast responses, good multi-language support
-- Cons: Slightly less creative than GPT-4o in edge cases
-- **Result: CHOSEN - Best price/quality for EdTech**
-
-**GPT-4o mini**
-- Pros: Strong reasoning, good code generation, reliable
-- Cons: 1.5x more expensive than Gemini
-- **Result: Good backup option**
-
-**Claude 3.5 Haiku**
-- Pros: Excellent at following instructions, good safety
-- Cons: 3x more expensive than Gemini
-- **Result: Too expensive for high volume**
-
-**Groq (Llama 70B)**
-- Pros: Fast inference, open-source model
-- Cons: Less accurate for coding tasks, inconsistent quality
-- **Result: Not suitable for education**
-
-**Premium Models (GPT-4o, Claude Sonnet)**
-- Pros: Best quality responses
-- Cons: 20-40x more expensive
-- **Result: Not viable for EdTech scale**
 
 ### Implementation Details
 
@@ -93,64 +66,64 @@ server/src/ai/
 
 ## 2. Code Execution Engine
 
-### Piston + BullMQ + Redis
+### Judge0 + BullMQ + Redis
 
-Lightweight, ARM64-compatible code execution with production-grade queue management.
+Production-grade code execution with enterprise-level queue management.
 
 #### Architecture
 
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│   Backend   │────▶│   BullMQ    │────▶│   Piston    │
+│   Backend   │────▶│   BullMQ    │────▶│   Judge0    │
 │   (NestJS)  │     │   (Redis)   │     │   Workers   │
 └─────────────┘     └─────────────┘     └─────────────┘
 ```
 
 #### Supported Languages
 
-| Language | Time Limit | Memory Limit |
-|----------|------------|--------------|
-| Go | 5s | 256MB |
-| Java | 10s | 512MB |
-| JavaScript | 5s | 256MB |
-| TypeScript | 10s | 256MB |
-| Python | 10s | 256MB |
-| Rust | 10s | 256MB |
-| C++ | 5s | 256MB |
-| C | 5s | 256MB |
+| Language | Time Limit | Memory Limit | Judge0 ID |
+|----------|------------|--------------|-----------|
+| Go | 15s | 512MB | 60 |
+| Java | 15s | 512MB | 62 |
+| JavaScript | 10s | 256MB | 63 |
+| TypeScript | 15s | 256MB | 74 |
+| Python | 15s | 256MB | 71 |
+| Rust | 15s | 256MB | 73 |
+| C++ | 10s | 256MB | 54 |
+| C | 10s | 256MB | 50 |
 
-#### Why Piston?
+#### Why Judge0?
 
 | Feature | Benefit |
 |---------|---------|
 | ARM64 (Apple Silicon) | ✅ Native support |
 | Setup Complexity | Simple Docker setup |
-| Queue Management | BullMQ (Redis-based) |
-| Resource Usage | Lightweight |
-| Languages | 50+ supported |
-| License | MIT (free & open-source) |
+| Queue Management | BullMQ (Redis-based) + Internal |
+| Resource Usage | Efficient with worker scaling |
+| Languages | 47+ supported |
+| License | GPL-3.0 (free for non-commercial) |
 
 #### Pros & Cons
 
 **Pros:**
 - ✅ Works on ARM64/Apple Silicon natively
-- ✅ Free & open-source (MIT)
-- ✅ Lightweight and fast
+- ✅ Built-in expected output comparison
+- ✅ Battle-tested in production (judge0.com)
 - ✅ BullMQ provides enterprise-grade queuing
-- ✅ Easy horizontal scaling
-- ✅ Detailed queue monitoring
+- ✅ Easy horizontal scaling with workers
+- ✅ Detailed execution metrics
 
 **Cons:**
-- Requires Redis for queue
-- No built-in expected output comparison (handled in app)
+- GPL license (requires open-source or commercial license)
+- Requires dedicated PostgreSQL for Judge0
 
 #### Implementation
 
 ```
 server/src/
-├── piston/
-│   ├── piston.module.ts      # Piston module
-│   └── piston.service.ts     # Piston API client
+├── judge0/
+│   ├── judge0.module.ts      # Judge0 module
+│   └── judge0.service.ts     # Judge0 API client
 ├── queue/
 │   ├── queue.module.ts       # BullMQ setup
 │   ├── code-execution.service.ts  # Queue API
@@ -169,8 +142,8 @@ server/src/
 #### Scaling
 
 ```bash
-# Scale Piston workers
-docker compose up -d --scale piston=4
+# Scale Judge0 workers
+docker compose up -d --scale judge0-workers=4
 ```
 
 BullMQ automatically distributes jobs across workers.
@@ -227,7 +200,7 @@ server/src/
 ├── courses/        # Course CRUD
 ├── submissions/    # Code submissions
 ├── ai/             # AI Tutor
-├── piston/         # Piston code execution
+├── judge0/         # Judge0 code execution
 └── queue/          # BullMQ job queue
 ```
 
@@ -294,9 +267,9 @@ Relational database for structured data.
 │                          │                                  │
 │                          ▼                                  │
 │  ┌─────────────────────────────────────────────────────┐    │
-│  │              Piston + Redis + BullMQ                 │    │
+│  │              Judge0 + Redis + BullMQ                 │    │
 │  │       (Code Execution Engine with Job Queue)         │    │
-│  │              Piston: Port 2000                       │    │
+│  │              Judge0: Port 2358                       │    │
 │  └─────────────────────────────────────────────────────┘    │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
@@ -317,7 +290,7 @@ Global                 → 60 requests/minute
 - Cache TTL: 30 minutes
 - Key: hash(code + language + stdin)
 - Only successful executions cached
-- Reduces Piston load by ~60%
+- Reduces Judge0 load by ~60%
 
 ### Priority Queues
 - Premium users: priority 1
@@ -343,7 +316,7 @@ Playground Mode:
   Browser → WASM Runtime → Instant result (~50ms)
 
 Submit Mode:
-  Browser → Backend → Piston → Verified result (~1-3s)
+  Browser → Backend → Judge0 → Verified result (~1-3s)
 ```
 
 **Benefits**:
@@ -357,7 +330,7 @@ Submit Mode:
 - Some language features unsupported
 
 ### Phase 2: Horizontal Scaling
-- Multi-instance Piston (docker-compose scale)
+- Multi-instance Judge0 workers (docker-compose scale)
 - Redis Cluster for queue persistence
 - Kubernetes migration
 
@@ -373,8 +346,8 @@ DATABASE_URL=postgresql://user:pass@localhost:5432/practix
 JWT_SECRET=your-secret-key
 JWT_REFRESH_SECRET=your-refresh-secret
 
-# Piston
-PISTON_URL=http://piston:2000
+# Judge0
+JUDGE0_URL=http://judge0-server:2358
 
 # Redis
 REDIS_HOST=redis
@@ -390,4 +363,4 @@ PORT=8080
 
 ---
 
-*Last updated: 2026-01-04*
+*Last updated: 2026-02-03*

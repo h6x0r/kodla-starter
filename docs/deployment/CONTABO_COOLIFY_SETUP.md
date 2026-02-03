@@ -12,7 +12,7 @@
 4. [Шаг 3: Установка Coolify](#шаг-3-установка-coolify)
 5. [Шаг 4: Настройка домена](#шаг-4-настройка-домена)
 6. [Шаг 5: Деплой Practix](#шаг-5-деплой-practix)
-7. [Шаг 6: Настройка Piston](#шаг-6-настройка-piston)
+7. [Шаг 6: Настройка Judge0](#шаг-6-настройка-judge0)
 8. [Шаг 7: Seed базы данных](#шаг-7-seed-базы-данных)
 9. [Шаг 8: Мониторинг и бэкапы](#шаг-8-мониторинг-и-бэкапы)
 10. [Оптимизация Contabo](#оптимизация-contabo)
@@ -45,8 +45,8 @@
 | План | vCPU | RAM | SSD | Цена | Для кого |
 |------|------|-----|-----|------|----------|
 | **VPS S** | 4 | 8 GB | 50 GB | €5.99 | MVP, до 500 users |
-| **VPS M** | 6 | 16 GB | 100 GB | €9.99 | Production, до 2000 users |
-| **VPS L** | 8 | 30 GB | 200 GB | €14.99 | Scale, 2000+ users |
+| **VPS M** | 6 | 16 GB | 100 GB | €9.99 | Production, до 2358 users |
+| **VPS L** | 8 | 30 GB | 200 GB | €14.99 | Scale, 2358+ users |
 
 ---
 
@@ -408,8 +408,8 @@ ufw delete allow 8000/tcp
    # AI Tutor
    GEMINI_API_KEY=your-gemini-api-key
 
-   # Piston
-   PISTON_URL=http://practix-piston:2000
+   # Judge0
+   JUDGE0_URL=http://practix-judge0:2358
 
    # CORS
    FRONTEND_URL=https://practix.uz
@@ -471,30 +471,30 @@ ufw delete allow 8000/tcp
 
 ---
 
-## Шаг 6: Настройка Piston
+## Шаг 6: Настройка Judge0
 
-### 6.1 Создание Piston сервиса
+### 6.1 Создание Judge0 сервиса
 
 1. **Add Resource** → **Docker Compose**
 
-2. **Name:** `practix-piston`
+2. **Name:** `practix-judge0`
 
 3. **Docker Compose:**
    ```yaml
    services:
-     piston:
-       image: ghcr.io/engineer-man/piston:latest
-       container_name: practix-piston
+     judge0:
+       image: ghcr.io/engineer-man/judge0:latest
+       container_name: practix-judge0
        restart: unless-stopped
        privileged: true
        ports:
-         - "2000:2000"
+         - "2358:2358"
        volumes:
-         - piston-packages:/piston/packages
+         - judge0-packages:/judge0/packages
        environment:
-         - PISTON_RUN_TIMEOUT=10000
-         - PISTON_COMPILE_TIMEOUT=15000
-         - PISTON_OUTPUT_MAX_SIZE=65536
+         - JUDGE0_RUN_TIMEOUT=10000
+         - JUDGE0_COMPILE_TIMEOUT=15000
+         - JUDGE0_OUTPUT_MAX_SIZE=65536
        deploy:
          resources:
            limits:
@@ -505,7 +505,7 @@ ufw delete allow 8000/tcp
              memory: 512M
 
    volumes:
-     piston-packages:
+     judge0-packages:
    ```
 
 4. **Deploy**
@@ -517,26 +517,26 @@ ufw delete allow 8000/tcp
 ssh root@YOUR_SERVER_IP
 
 # Найти контейнер
-docker ps | grep piston
+docker ps | grep judge0
 
 # Установить языки (один за одним, чтобы не перегружать)
-docker exec practix-piston piston ppman install python
-docker exec practix-piston piston ppman install node
-docker exec practix-piston piston ppman install typescript
-docker exec practix-piston piston ppman install go
-docker exec practix-piston piston ppman install java
-docker exec practix-piston piston ppman install gcc
-docker exec practix-piston piston ppman install g++
-docker exec practix-piston piston ppman install rust
+docker exec practix-judge0 judge0 ppman install python
+docker exec practix-judge0 judge0 ppman install node
+docker exec practix-judge0 judge0 ppman install typescript
+docker exec practix-judge0 judge0 ppman install go
+docker exec practix-judge0 judge0 ppman install java
+docker exec practix-judge0 judge0 ppman install gcc
+docker exec practix-judge0 judge0 ppman install g++
+docker exec practix-judge0 judge0 ppman install rust
 
 # Проверить
-docker exec practix-piston piston ppman list
+docker exec practix-judge0 judge0 ppman list
 ```
 
-### 6.3 Тест Piston
+### 6.3 Тест Judge0
 
 ```bash
-curl -X POST http://localhost:2000/api/v2/execute \
+curl -X POST http://localhost:2358/api/v2/execute \
   -H "Content-Type: application/json" \
   -d '{
     "language": "python",
@@ -750,19 +750,19 @@ swapon /swapfile2
 # Уменьшить лимиты контейнеров в Coolify
 ```
 
-### Проблема: Piston не работает
+### Проблема: Judge0 не работает
 
 ```bash
 # Проверить статус
-docker ps | grep piston
-docker logs practix-piston
+docker ps | grep judge0
+docker logs practix-judge0
 
 # Проверить privileged mode
-docker inspect practix-piston | grep -i privileged
+docker inspect practix-judge0 | grep -i privileged
 # Должно быть true
 
 # Перезапустить
-docker restart practix-piston
+docker restart practix-judge0
 ```
 
 ### Проблема: Сеть нестабильна
@@ -809,7 +809,7 @@ docker logs practix-postgres
 - [ ] SSL работает
 - [ ] PostgreSQL задеплоен
 - [ ] Redis задеплоен
-- [ ] Piston задеплоен + языки установлены
+- [ ] Judge0 задеплоен + языки установлены
 - [ ] Backend задеплоен с env vars
 - [ ] Frontend задеплоен
 - [ ] Миграции выполнены

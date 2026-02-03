@@ -11,7 +11,7 @@
 3. [Шаг 2: Установка Coolify](#шаг-2-установка-coolify)
 4. [Шаг 3: Настройка домена](#шаг-3-настройка-домена)
 5. [Шаг 4: Деплой Practix](#шаг-4-деплой-practix)
-6. [Шаг 5: Настройка Piston](#шаг-5-настройка-piston)
+6. [Шаг 5: Настройка Judge0](#шаг-5-настройка-judge0)
 7. [Шаг 6: Seed базы данных](#шаг-6-seed-базы-данных)
 8. [Шаг 7: Мониторинг и бэкапы](#шаг-7-мониторинг-и-бэкапы)
 9. [Troubleshooting](#troubleshooting)
@@ -30,7 +30,7 @@
 │  ├── Backend (NestJS)          → api.practix.uz              │
 │  ├── PostgreSQL 15             → Internal                   │
 │  ├── Redis 7                   → Internal                   │
-│  └── Piston (privileged)       → Internal                   │
+│  └── Judge0 (privileged)       → Internal                   │
 ├─────────────────────────────────────────────────────────────┤
 │  Cloudflare (DNS + CDN + SSL)                               │
 └─────────────────────────────────────────────────────────────┘
@@ -258,8 +258,8 @@ Access your Coolify instance at: http://YOUR_IP:8000
    # AI (Gemini)
    GEMINI_API_KEY=your-gemini-api-key
 
-   # Piston (internal)
-   PISTON_URL=http://practix-piston:2000
+   # Judge0 (internal)
+   JUDGE0_URL=http://practix-judge0:2358
 
    # Frontend URL (для CORS)
    FRONTEND_URL=https://practix.uz
@@ -300,74 +300,74 @@ Access your Coolify instance at: http://YOUR_IP:8000
 
 ---
 
-## Шаг 5: Настройка Piston
+## Шаг 5: Настройка Judge0
 
-### 5.1 Создание Piston сервиса
+### 5.1 Создание Judge0 сервиса
 
 1. **Add Resource** → **Docker Compose**
 
-2. **Name:** `practix-piston`
+2. **Name:** `practix-judge0`
 
 3. **Docker Compose:**
    ```yaml
    services:
-     piston:
-       image: ghcr.io/engineer-man/piston:latest
-       container_name: practix-piston
+     judge0:
+       image: ghcr.io/engineer-man/judge0:latest
+       container_name: practix-judge0
        restart: unless-stopped
        privileged: true
        ports:
-         - "2000:2000"
+         - "2358:2358"
        volumes:
-         - piston-packages:/piston/packages
+         - judge0-packages:/judge0/packages
        environment:
-         - PISTON_RUN_TIMEOUT=10000
-         - PISTON_COMPILE_TIMEOUT=15000
-         - PISTON_OUTPUT_MAX_SIZE=65536
+         - JUDGE0_RUN_TIMEOUT=10000
+         - JUDGE0_COMPILE_TIMEOUT=15000
+         - JUDGE0_OUTPUT_MAX_SIZE=65536
 
    volumes:
-     piston-packages:
+     judge0-packages:
    ```
 
 4. **Deploy**
 
-### 5.2 Установка языков в Piston
+### 5.2 Установка языков в Judge0
 
 ```bash
 # SSH на сервер
 ssh root@YOUR_SERVER_IP
 
-# Найти контейнер Piston
-docker ps | grep piston
+# Найти контейнер Judge0
+docker ps | grep judge0
 
 # Установить языки
-docker exec -it practix-piston piston ppman install python
-docker exec -it practix-piston piston ppman install node
-docker exec -it practix-piston piston ppman install typescript
-docker exec -it practix-piston piston ppman install go
-docker exec -it practix-piston piston ppman install java
-docker exec -it practix-piston piston ppman install gcc      # C
-docker exec -it practix-piston piston ppman install g++      # C++
-docker exec -it practix-piston piston ppman install rust
+docker exec -it practix-judge0 judge0 ppman install python
+docker exec -it practix-judge0 judge0 ppman install node
+docker exec -it practix-judge0 judge0 ppman install typescript
+docker exec -it practix-judge0 judge0 ppman install go
+docker exec -it practix-judge0 judge0 ppman install java
+docker exec -it practix-judge0 judge0 ppman install gcc      # C
+docker exec -it practix-judge0 judge0 ppman install g++      # C++
+docker exec -it practix-judge0 judge0 ppman install rust
 
 # Проверить установленные языки
-docker exec -it practix-piston piston ppman list
+docker exec -it practix-judge0 judge0 ppman list
 ```
 
-### 5.3 Проверка Piston
+### 5.3 Проверка Judge0
 
 ```bash
 # Тест выполнения кода
-curl -X POST http://localhost:2000/api/v2/execute \
+curl -X POST http://localhost:2358/api/v2/execute \
   -H "Content-Type: application/json" \
   -d '{
     "language": "python",
     "version": "3.10",
-    "files": [{"content": "print(\"Hello from Piston!\")"}]
+    "files": [{"content": "print(\"Hello from Judge0!\")"}]
   }'
 
 # Ожидаемый ответ:
-# {"run":{"stdout":"Hello from Piston!\n","stderr":"","code":0,"signal":null,"output":"Hello from Piston!\n"}}
+# {"run":{"stdout":"Hello from Judge0!\n","stderr":"","code":0,"signal":null,"output":"Hello from Judge0!\n"}}
 ```
 
 ---
@@ -617,18 +617,18 @@ cd /data/coolify
 docker compose up -d
 ```
 
-### Проблема: Piston не выполняет код
+### Проблема: Judge0 не выполняет код
 
 ```bash
 # Проверить логи
-docker logs practix-piston
+docker logs practix-judge0
 
 # Проверить privileged mode
-docker inspect practix-piston | grep Privileged
+docker inspect practix-judge0 | grep Privileged
 # Должно быть: "Privileged": true
 
 # Проверить установленные языки
-docker exec practix-piston piston ppman list
+docker exec practix-judge0 judge0 ppman list
 ```
 
 ### Проблема: Database connection refused
@@ -665,7 +665,7 @@ docker network inspect coolify
 - [ ] DNS настроен (Cloudflare)
 - [ ] PostgreSQL задеплоен
 - [ ] Redis задеплоен
-- [ ] Piston задеплоен + языки установлены
+- [ ] Judge0 задеплоен + языки установлены
 - [ ] Backend задеплоен + env vars настроены
 - [ ] Frontend задеплоен
 - [ ] Database migrations выполнены

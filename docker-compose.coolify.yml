@@ -1,8 +1,8 @@
 ################################################################################
-# Practix Backend + Piston Stack for Coolify
+# Practix Backend + Judge0 Stack for Coolify
 #
 # This compose file is designed to be deployed as a single stack in Coolify,
-# ensuring backend and piston are on the same Docker network.
+# ensuring backend and Judge0 are on the same Docker network.
 #
 # Usage in Coolify:
 # 1. Create a new Docker Compose resource
@@ -15,54 +15,116 @@
 # - GEMINI_API_KEY: (optional) For AI Tutor
 # - REDIS_HOST: Redis hostname
 # - REDIS_PORT: Redis port (usually 6379)
-#
-# IMPORTANT: Piston timeout configuration
-# The PISTON_* environment variables MUST be set correctly for Go/Java support:
-# - PISTON_COMPILE_TIMEOUT=180000 (180s for Go 1.21+ compilation)
-# - PISTON_RUN_TIMEOUT=180000 (180s for complex test execution)
-# Backend auto-detects these limits at startup and adapts accordingly.
 ################################################################################
 
 services:
   ##############################################################################
-  # Piston Code Execution Engine
+  # Judge0 Code Execution Engine
+  # Fast, reliable code execution with native ARM64 support
   ##############################################################################
-  piston:
-    image: ghcr.io/engineer-man/piston
-    container_name: practix_piston
+  judge0-server:
+    image: judge0/judge0:1.13.1
+    container_name: practix_judge0
     restart: always
-    privileged: true
     ports:
-      - "2000:2000"
-    volumes:
-      - piston_data:/piston/jobs
-      - piston_packages:/piston/packages
-    mem_limit: 2g
-    memswap_limit: 2g
-    pids_limit: 512
+      - "2358:2358"
+    privileged: true
     environment:
-      - PISTON_RUN_TIMEOUT=180000
-      - PISTON_COMPILE_TIMEOUT=180000
-      - PISTON_RUN_CPU_TIME=180000
-      - PISTON_COMPILE_CPU_TIME=180000
-      - PISTON_OUTPUT_MAX_SIZE=131072
-      - PISTON_MAX_PROCESS_COUNT=256
-      - PISTON_MAX_OPEN_FILES=2048
-      - PISTON_MAX_FILE_SIZE=104857600
-      - PISTON_PROCESS_LIMIT=256
+      - POSTGRES_HOST=judge0-db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=judge0
+      - POSTGRES_USER=judge0
+      - POSTGRES_PASSWORD=${JUDGE0_DB_PASSWORD:-judge0_secure_password}
+      - REDIS_HOST=judge0-redis
+      - REDIS_PORT=6379
+      - ENABLE_WAIT_RESULT=true
+      - ENABLE_BATCHED_SUBMISSIONS=true
+      - MAX_QUEUE_SIZE=100
+      - CPU_TIME_LIMIT=30
+      - CPU_EXTRA_TIME=5
+      - WALL_TIME_LIMIT=60
+      - MEMORY_LIMIT=512000
+      - STACK_LIMIT=64000
+      - MAX_PROCESSES_AND_OR_THREADS=60
+      - ENABLE_PER_PROCESS_AND_THREAD_TIME_LIMIT=false
+      - ENABLE_PER_PROCESS_AND_THREAD_MEMORY_LIMIT=false
+      - MAX_FILE_SIZE=2048
+      - NUMBER_OF_RUNS=1
+      - ENABLE_NETWORK=false
+    depends_on:
+      judge0-db:
+        condition: service_healthy
+      judge0-redis:
+        condition: service_healthy
+    mem_limit: 2g
     healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "-q",
-          "--spider",
-          "http://localhost:2000/api/v2/runtimes",
-        ]
+      test: ["CMD", "curl", "-f", "http://localhost:2358/languages"]
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 60s
+      start_period: 30s
+    networks:
+      - practix-network
+
+  judge0-workers:
+    image: judge0/judge0:1.13.1
+    container_name: practix_judge0_workers
+    restart: always
+    command: ["./scripts/workers"]
+    privileged: true
+    environment:
+      - POSTGRES_HOST=judge0-db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=judge0
+      - POSTGRES_USER=judge0
+      - POSTGRES_PASSWORD=${JUDGE0_DB_PASSWORD:-judge0_secure_password}
+      - REDIS_HOST=judge0-redis
+      - REDIS_PORT=6379
+      - ENABLE_WAIT_RESULT=true
+      - CPU_TIME_LIMIT=30
+      - CPU_EXTRA_TIME=5
+      - WALL_TIME_LIMIT=60
+      - MEMORY_LIMIT=512000
+      - NUMBER_OF_RUNS=1
+    depends_on:
+      judge0-server:
+        condition: service_healthy
+    mem_limit: 4g
+    networks:
+      - practix-network
+
+  judge0-db:
+    image: postgres:15-alpine
+    container_name: practix_judge0_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: judge0
+      POSTGRES_PASSWORD: ${JUDGE0_DB_PASSWORD:-judge0_secure_password}
+      POSTGRES_DB: judge0
+    volumes:
+      - judge0_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U judge0 -d judge0"]
+      interval: 5s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+    networks:
+      - practix-network
+
+  judge0-redis:
+    image: redis:7-alpine
+    container_name: practix_judge0_redis
+    restart: unless-stopped
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - judge0_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
     networks:
       - practix-network
 
@@ -89,8 +151,8 @@ services:
       PORT: 8080
       NODE_ENV: production
       SKIP_SEED: ${SKIP_SEED:-false}
-      # Piston - uses container name on shared network
-      PISTON_URL: http://piston:2000
+      # Judge0 - uses container name on shared network
+      JUDGE0_URL: http://judge0-server:2358
       # Redis (set in Coolify)
       REDIS_HOST: ${REDIS_HOST}
       REDIS_PORT: ${REDIS_PORT:-6379}
@@ -107,7 +169,7 @@ services:
       RATE_LIMIT_REGISTER: ${RATE_LIMIT_REGISTER:-3}
       RATE_LIMIT_LOGIN: ${RATE_LIMIT_LOGIN:-5}
     depends_on:
-      piston:
+      judge0-server:
         condition: service_healthy
     command: >
       sh -c "until npx prisma db push; do echo 'Waiting for Postgres...'; sleep 5; done &&
@@ -121,5 +183,5 @@ networks:
     driver: bridge
 
 volumes:
-  piston_data:
-  piston_packages:
+  judge0_postgres_data:
+  judge0_redis_data:
