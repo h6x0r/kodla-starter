@@ -1,16 +1,13 @@
 /**
- * Go Tasks E2E Validation
+ * TypeScript Tasks E2E Validation
  *
- * Validates that all Go task solutions pass their tests.
- * Run: E2E_TIER=QUICK npm run e2e -- --grep "Go Tasks"
+ * Validates that all TypeScript task solutions pass their tests.
+ * Run: E2E_TIER=DAILY npm run e2e -- --grep "TypeScript Tasks"
  */
 
 import { test, expect } from "@playwright/test";
-import { AuthHelper, PREMIUM_USER } from "../../fixtures/auth.fixture";
-import {
-  SolutionsHelper,
-  TaskSolution,
-} from "../../fixtures/solutions.fixture";
+import { AuthHelper } from "../../fixtures/auth.fixture";
+import { SolutionsHelper } from "../../fixtures/solutions.fixture";
 import {
   getCurrentTierConfig,
   isLanguageEnabled,
@@ -30,16 +27,16 @@ import {
 const solutionsHelper = new SolutionsHelper();
 const tierConfig = getCurrentTierConfig();
 
-// Skip if Go not enabled for this tier
-const goEnabled = isLanguageEnabled("go");
-const goTasks = goEnabled
-  ? solutionsHelper.getByLanguage("go").slice(0, tierConfig.maxTasks)
+// Skip if TypeScript not enabled for this tier
+const tsEnabled = isLanguageEnabled("typescript");
+const tsTasks = tsEnabled
+  ? solutionsHelper.getByLanguage("typescript").slice(0, tierConfig.maxTasks)
   : [];
 
-test.describe("Go Tasks Validation", () => {
+test.describe("TypeScript Tasks Validation", () => {
   test.beforeAll(() => {
     printTierInfo();
-    console.log(`Go tasks to validate: ${goTasks.length}`);
+    console.log(`TypeScript tasks to validate: ${tsTasks.length}`);
   });
 
   // Login as premium user before all tests (has access to all tasks)
@@ -48,16 +45,16 @@ test.describe("Go Tasks Validation", () => {
     await auth.loginAsPremiumUser();
   });
 
-  // Skip entire suite if no Go tasks
-  test.skip(goTasks.length === 0, "No Go tasks to validate");
+  // Skip entire suite if no TypeScript tasks
+  test.skip(tsTasks.length === 0, "No TypeScript tasks to validate");
 
-  // Generate a test for each Go task
-  for (const task of goTasks) {
+  // Generate a test for each TypeScript task
+  for (const task of tsTasks) {
     test(`${formatTaskName(task)} - solution passes all tests`, async ({
       page,
     }) => {
-      // Set timeout for this specific test (Go needs compilation time)
-      test.setTimeout(getLanguageTimeout("go"));
+      // Set timeout for this specific test
+      test.setTimeout(getLanguageTimeout("typescript"));
 
       // Navigate to task
       await page.goto(`/course/${task.courseSlug}/task/${task.slug}`);
@@ -67,7 +64,7 @@ test.describe("Go Tasks Validation", () => {
       await setEditorCode(page, task.solutionCode);
 
       // Run code
-      await submitCodeAndWaitResults(page, "go");
+      await submitCodeAndWaitResults(page, "typescript");
 
       // Verify all tests pass
       const passed = await allTestsPassed(page);
@@ -85,17 +82,17 @@ test.describe("Go Tasks Validation", () => {
 });
 
 // Summary test that runs after all task validations
-test.describe("Go Tasks Summary", () => {
-  test.skip(goTasks.length === 0, "No Go tasks");
+test.describe("TypeScript Tasks Summary", () => {
+  test.skip(tsTasks.length === 0, "No TypeScript tasks");
 
   test("should report validation statistics", async () => {
     const stats = solutionsHelper.getStats();
     console.log(`
-=== Go Tasks Summary ===
-Total Go Tasks: ${stats.byLanguage["go"] || 0}
-Validated in this run: ${goTasks.length}
+=== TypeScript Tasks Summary ===
+Total TypeScript Tasks: ${stats.byLanguage["typescript"] || 0}
+Validated in this run: ${tsTasks.length}
 Tier: ${tierConfig.name}
 `);
-    expect(goTasks.length).toBeGreaterThan(0);
+    expect(tsTasks.length).toBeGreaterThan(0);
   });
 });

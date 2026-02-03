@@ -10,7 +10,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import { fileURLToPath } from "url";
-import { ALL_COURSES } from "../prisma/seeds/courses/index.js";
+import { ALL_COURSES } from "../../server/prisma/seeds/courses/index.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,8 +24,14 @@ interface TaskSolution {
   difficulty: "easy" | "medium" | "hard";
   isPremium: boolean;
   solutionCode: string;
+  initialCode: string;
   testCode?: string;
   taskType?: string;
+  title: string;
+  hint1?: string;
+  hint2?: string;
+  description: string;
+  whyItMatters?: string;
 }
 
 interface Task {
@@ -35,8 +41,13 @@ interface Task {
   tags: string[];
   isPremium: boolean;
   solutionCode: string;
+  initialCode: string;
   testCode?: string;
   taskType?: string;
+  description: string;
+  hint1?: string;
+  hint2?: string;
+  whyItMatters?: string;
 }
 
 interface Topic {
@@ -123,8 +134,14 @@ function extractTasks(course: Course): TaskSolution[] {
           difficulty: task.difficulty,
           isPremium: task.isPremium,
           solutionCode: task.solutionCode,
+          initialCode: task.initialCode,
           testCode: task.testCode,
           taskType: task.taskType || "CODE",
+          title: task.title,
+          hint1: task.hint1,
+          hint2: task.hint2,
+          description: task.description,
+          whyItMatters: task.whyItMatters,
         });
       }
     }

@@ -9,16 +9,16 @@
  *   E2E_TIER=FULL npm run e2e:test
  */
 
-export type TestTier = 'QUICK' | 'DAILY' | 'FULL';
+export type TestTier = "QUICK" | "DAILY" | "FULL";
 
 export interface TierConfig {
   name: TestTier;
   description: string;
   maxTasks: number;
   languages: string[];
-  timeout: number;       // Per-test timeout in ms
-  workers: number;       // Parallel workers
-  retries: number;       // Retry count on failure
+  timeout: number; // Per-test timeout in ms
+  workers: number; // Parallel workers
+  retries: number; // Retry count on failure
   useCase: string;
 }
 
@@ -27,36 +27,36 @@ export interface TierConfig {
  */
 export const TIER_CONFIGS: Record<TestTier, TierConfig> = {
   QUICK: {
-    name: 'QUICK',
-    description: 'Quick validation for PR checks',
+    name: "QUICK",
+    description: "Quick validation for PR checks",
     maxTasks: 20,
-    languages: ['python', 'go'],  // Fastest languages
-    timeout: 200_000,    // Go 1.21+ on ARM needs ~180s
+    languages: ["python", "go"], // Fastest languages
+    timeout: 200_000, // Go 1.21+ on ARM needs ~180s
     workers: 2,
     retries: 1,
-    useCase: 'PR checks, pre-commit hooks (~10 min)',
+    useCase: "PR checks, pre-commit hooks (~10 min)",
   },
 
   DAILY: {
-    name: 'DAILY',
-    description: 'Extended validation for daily CI',
+    name: "DAILY",
+    description: "Extended validation for daily CI",
     maxTasks: 250,
-    languages: ['python', 'go', 'java', 'javascript'],
-    timeout: 200_000,    // Go/Java need longer timeout on ARM
+    languages: ["python", "go", "java", "javascript", "typescript"],
+    timeout: 200_000, // Go/Java need longer timeout on ARM
     workers: 4,
     retries: 2,
-    useCase: 'Daily CI runs, nightly builds (~1 hour)',
+    useCase: "Daily CI runs, nightly builds (~1 hour)",
   },
 
   FULL: {
-    name: 'FULL',
-    description: 'Complete validation of all tasks',
-    maxTasks: Infinity,  // All tasks
-    languages: ['python', 'go', 'java', 'javascript', 'unknown'],
-    timeout: 240_000,    // Extended timeout for all languages
+    name: "FULL",
+    description: "Complete validation of all tasks",
+    maxTasks: Infinity, // All tasks
+    languages: ["python", "go", "java", "javascript", "typescript", "unknown"],
+    timeout: 240_000, // Extended timeout for all languages
     workers: 4,
     retries: 2,
-    useCase: 'Weekly runs, release validation (~4-6 hours)',
+    useCase: "Weekly runs, release validation (~4-6 hours)",
   },
 };
 
@@ -68,7 +68,7 @@ export function getCurrentTier(): TestTier {
   if (tier && TIER_CONFIGS[tier]) {
     return tier;
   }
-  return 'QUICK';  // Default to QUICK for safety
+  return "QUICK"; // Default to QUICK for safety
 }
 
 /**
@@ -101,8 +101,8 @@ export function printTierInfo(): void {
   console.log(`
 === E2E Test Tier: ${config.name} ===
 Description: ${config.description}
-Max Tasks: ${config.maxTasks === Infinity ? 'All' : config.maxTasks}
-Languages: ${config.languages.join(', ')}
+Max Tasks: ${config.maxTasks === Infinity ? "All" : config.maxTasks}
+Languages: ${config.languages.join(", ")}
 Timeout: ${config.timeout}ms
 Workers: ${config.workers}
 Retries: ${config.retries}
@@ -111,15 +111,16 @@ Use Case: ${config.useCase}
 }
 
 /**
- * Language-specific execution timeouts
- * Note: Go 1.21+ requires longer timeout due to larger standard library
+ * Language-specific execution timeouts (for Submit mode - all 10 tests)
+ * Note: Go/Java require longer timeout due to compilation overhead
  */
 export const LANGUAGE_TIMEOUTS: Record<string, number> = {
-  python: 20_000,      // Python is fast
-  go: 120_000,         // Go 1.21+ compilation needs ~30-60s on ARM emulation
-  javascript: 15_000,  // Node.js is fast
-  java: 60_000,        // Java compilation is slow
-  unknown: 30_000,     // Default
+  python: 30_000, // Python is fast, 30s for 10 tests
+  go: 180_000, // Go compilation + 10 tests needs up to 3 min
+  javascript: 20_000, // Node.js is fast
+  typescript: 30_000, // TypeScript transpilation + Node.js
+  java: 120_000, // Java/JVM compilation is slow, 2 min for 10 tests
+  unknown: 60_000, // Default
 };
 
 /**

@@ -88,7 +88,7 @@ export const LANGUAGES: Record<string, LanguageConfig> = {
     name: "Go",
     extension: ".go",
     monacoId: "go",
-    timeLimit: 15, // max allowed by Judge0
+    timeLimit: 30, // Go needs extra time for compilation
     memoryLimit: 512000, // 512MB in KB
   },
   java: {
@@ -96,7 +96,7 @@ export const LANGUAGES: Record<string, LanguageConfig> = {
     name: "Java",
     extension: ".java",
     monacoId: "java",
-    timeLimit: 15, // max allowed by Judge0
+    timeLimit: 30, // Java/JVM needs extra time for compilation
     memoryLimit: 512000,
   },
   javascript: {
@@ -341,8 +341,8 @@ export class Judge0Service implements OnModuleInit, OnModuleDestroy {
         source_code: code,
         language_id: langConfig.judge0Id,
         stdin: stdin || "",
-        cpu_time_limit: Math.min(langConfig.timeLimit, 15), // max 15s
-        wall_time_limit: Math.min(langConfig.timeLimit * 2, 20), // max 20s
+        cpu_time_limit: Math.min(langConfig.timeLimit, 30), // Judge0 configured with 30s max
+        wall_time_limit: Math.min(langConfig.timeLimit * 2, 60), // Judge0 configured with 60s max
         memory_limit: Math.min(langConfig.memoryLimit, 512000), // max 512MB
       };
 

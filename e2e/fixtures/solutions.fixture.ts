@@ -5,10 +5,10 @@
  * Solutions are extracted from seed files at build time.
  */
 
-import { test as base } from '@playwright/test';
-import * as fs from 'fs';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
+import { test as base } from "@playwright/test";
+import * as fs from "fs";
+import * as path from "path";
+import { fileURLToPath } from "url";
 
 export interface TaskSolution {
   slug: string;
@@ -16,11 +16,17 @@ export interface TaskSolution {
   moduleTitle: string;
   topicTitle: string;
   language: string;
-  difficulty: 'easy' | 'medium' | 'hard';
+  difficulty: "easy" | "medium" | "hard";
   isPremium: boolean;
   solutionCode: string;
+  initialCode: string;
   testCode?: string;
   taskType?: string;
+  title: string;
+  hint1?: string;
+  hint2?: string;
+  description: string;
+  whyItMatters?: string;
 }
 
 /**
@@ -30,16 +36,16 @@ function loadSolutions(): TaskSolution[] {
   // Handle ESM __dirname equivalent
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
-  const solutionsPath = path.join(__dirname, '../data/solutions.json');
+  const solutionsPath = path.join(__dirname, "../data/solutions.json");
 
   if (!fs.existsSync(solutionsPath)) {
     console.warn(
-      'Solutions file not found. Run: npm run e2e:extract-solutions',
+      "Solutions file not found. Run: npm run e2e:extract-solutions",
     );
     return [];
   }
 
-  const data = fs.readFileSync(solutionsPath, 'utf-8');
+  const data = fs.readFileSync(solutionsPath, "utf-8");
   return JSON.parse(data) as TaskSolution[];
 }
 
@@ -84,7 +90,7 @@ export class SolutionsHelper {
   /**
    * Get solutions by difficulty
    */
-  getByDifficulty(difficulty: 'easy' | 'medium' | 'hard'): TaskSolution[] {
+  getByDifficulty(difficulty: "easy" | "medium" | "hard"): TaskSolution[] {
     return this.solutions.filter((s) => s.difficulty === difficulty);
   }
 
@@ -115,7 +121,7 @@ export class SolutionsHelper {
    * Get solutions for a specific tier
    */
   getForTier(
-    tier: 'QUICK' | 'DAILY' | 'FULL',
+    tier: "QUICK" | "DAILY" | "FULL",
     languages?: string[],
   ): TaskSolution[] {
     let filtered = languages
@@ -123,13 +129,13 @@ export class SolutionsHelper {
       : this.solutions;
 
     switch (tier) {
-      case 'QUICK':
+      case "QUICK":
         // 20 tasks for PR checks
         return this.getSampleFromFiltered(filtered, 20);
-      case 'DAILY':
+      case "DAILY":
         // 250 tasks for daily CI
         return this.getSampleFromFiltered(filtered, 250);
-      case 'FULL':
+      case "FULL":
         // All tasks
         return filtered;
       default:
@@ -186,4 +192,4 @@ export const test = base.extend<{ solutions: SolutionsHelper }>({
   },
 });
 
-export { expect } from '@playwright/test';
+export { expect } from "@playwright/test";

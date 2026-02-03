@@ -20,7 +20,7 @@ services:
       - REDIS_PORT=6379
       - ENABLE_WAIT_RESULT=true
       - ENABLE_BATCHED_SUBMISSIONS=true
-      - MAX_QUEUE_SIZE=100
+      - MAX_QUEUE_SIZE=200
       - CPU_TIME_LIMIT=30
       - CPU_EXTRA_TIME=5
       - WALL_TIME_LIMIT=60
@@ -64,10 +64,19 @@ services:
       - WALL_TIME_LIMIT=60
       - MEMORY_LIMIT=512000
       - NUMBER_OF_RUNS=1
+      # Worker concurrency: 4 threads in 1 container (fits 8GB server)
+      - RAILS_MAX_THREADS=4
+      - COUNT=4
     depends_on:
       judge0-server:
         condition: service_healthy
-    mem_limit: 4g
+    mem_limit: 3g
+    deploy:
+      resources:
+        limits:
+          memory: 3g
+        reservations:
+          memory: 1g
 
   judge0-db:
     image: postgres:15-alpine
