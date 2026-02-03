@@ -752,7 +752,7 @@ ${testCalls}
     const cleanTests = testCode
       .replace(/import\s+org\.junit.*$/gm, "")
       .replace(/import\s+static\s+org\.junit.*$/gm, "")
-      .replace(/import\s+java\.\w+(\.\w+)*;/gm, "")
+      .replace(/import\s+java\.\w+(\.\w+)*(\.\*)?;/gm, "")
       .replace(/class\s+(Test\d+)\s*\{/g, "class $1 implements Testable {")
       .replace(/@Test\s*/g, "")
       .replace(/(?<!Assert\.)assertEquals\(/g, "Assert.assertEquals(")
@@ -899,10 +899,15 @@ ${cleanTests}
 
   private extractJavaImports(testCode: string): string[] {
     const imports: string[] = [];
-    const importRegex = /import\s+(java\.\w+(?:\.\w+)*);/g;
+    // Match both specific imports (java.lang.reflect.Method) and wildcards (java.lang.reflect.*)
+    const importRegex = /import\s+(java\.\w+(?:\.\w+)*(?:\.\*)?);/g;
     let match;
     while ((match = importRegex.exec(testCode)) !== null) {
-      if (!match[1].startsWith("java.util.")) {
+      // Skip java.util.* imports as they're handled separately
+      if (
+        !match[1].startsWith("java.util.") &&
+        !match[1].startsWith("java.util")
+      ) {
         imports.push(match[1]);
       }
     }
