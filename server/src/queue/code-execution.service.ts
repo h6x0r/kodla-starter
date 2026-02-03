@@ -16,7 +16,7 @@ import {
   Judge0Service,
   ExecutionResult,
   LanguageConfig,
-} from "../piston/judge0.service";
+} from "../judge0/judge0.service";
 
 @Injectable()
 export class CodeExecutionService implements OnModuleInit, OnModuleDestroy {

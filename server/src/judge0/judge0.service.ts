@@ -467,7 +467,7 @@ export class Judge0Service implements OnModuleInit, OnModuleDestroy {
   }
 
   /**
-   * Build Python test code (same as Piston)
+   * Build Python test code 
    */
   private buildPythonTestCode(
     solutionCode: string,
@@ -539,7 +539,7 @@ if __name__ == "__main__":
   }
 
   /**
-   * Build Go test code (same as Piston)
+   * Build Go test code 
    */
   private buildGoTestCode(
     solutionCode: string,
@@ -732,7 +732,7 @@ ${testCalls}
   }
 
   /**
-   * Build Java test code (same as Piston)
+   * Build Java test code 
    */
   private buildJavaTestCode(solutionCode: string, testCode: string): string {
     const testClasses = this.extractJavaTestClasses(testCode);

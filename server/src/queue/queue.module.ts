@@ -1,24 +1,24 @@
-import { Module } from '@nestjs/common';
-import { BullModule } from '@nestjs/bullmq';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { CodeExecutionProcessor } from './code-execution.processor';
-import { CodeExecutionService } from './code-execution.service';
-import { DeadLetterService } from './dead-letter.service';
-import { ShutdownService } from './shutdown.service';
-import { PistonModule } from '../piston/piston.module';
-import { CODE_EXECUTION_QUEUE, DEAD_LETTER_QUEUE } from './constants';
+import { Module } from "@nestjs/common";
+import { BullModule } from "@nestjs/bullmq";
+import { ConfigModule, ConfigService } from "@nestjs/config";
+import { CodeExecutionProcessor } from "./code-execution.processor";
+import { CodeExecutionService } from "./code-execution.service";
+import { DeadLetterService } from "./dead-letter.service";
+import { ShutdownService } from "./shutdown.service";
+import { Judge0Module } from "../judge0/judge0.module";
+import { CODE_EXECUTION_QUEUE, DEAD_LETTER_QUEUE } from "./constants";
 
 @Module({
   imports: [
     ConfigModule,
-    PistonModule,
+    Judge0Module,
     BullModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (configService: ConfigService) => ({
         connection: {
-          host: configService.get('REDIS_HOST') || 'redis',
-          port: parseInt(configService.get('REDIS_PORT') || '6379', 10),
-          password: configService.get('REDIS_PASSWORD') || undefined,
+          host: configService.get("REDIS_HOST") || "redis",
+          port: parseInt(configService.get("REDIS_PORT") || "6379", 10),
+          password: configService.get("REDIS_PASSWORD") || undefined,
         },
       }),
       inject: [ConfigService],
@@ -29,12 +29,12 @@ import { CODE_EXECUTION_QUEUE, DEAD_LETTER_QUEUE } from './constants';
         defaultJobOptions: {
           attempts: 3,
           backoff: {
-            type: 'exponential',
-            delay: 5000, // 5s → 10s → 20s (covers ~15s Piston restart)
+            type: "exponential",
+            delay: 5000, // 5s → 10s → 20s (covers ~15s Judge0 restart)
           },
           removeOnComplete: {
             count: 100, // Keep last 100 completed jobs
-            age: 3600,  // Remove jobs older than 1 hour
+            age: 3600, // Remove jobs older than 1 hour
           },
           removeOnFail: false, // Keep failed jobs for DLQ processing
         },
@@ -56,7 +56,12 @@ import { CODE_EXECUTION_QUEUE, DEAD_LETTER_QUEUE } from './constants';
       },
     ),
   ],
-  providers: [CodeExecutionProcessor, CodeExecutionService, DeadLetterService, ShutdownService],
+  providers: [
+    CodeExecutionProcessor,
+    CodeExecutionService,
+    DeadLetterService,
+    ShutdownService,
+  ],
   exports: [CodeExecutionService, DeadLetterService, ShutdownService],
 })
 export class QueueModule {}

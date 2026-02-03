@@ -9,7 +9,7 @@ import {
 import { Response } from "express";
 import { PrismaHealthIndicator } from "./prisma.health";
 import { RedisHealthIndicator } from "./redis.health";
-import { PistonHealthIndicator } from "./piston.health";
+import { Judge0HealthIndicator } from "./judge0.health";
 import { MetricsService } from "./metrics.service";
 
 @ApiTags("health")
@@ -19,7 +19,7 @@ export class HealthController {
     private health: HealthCheckService,
     private prismaHealth: PrismaHealthIndicator,
     private redisHealth: RedisHealthIndicator,
-    private pistonHealth: PistonHealthIndicator,
+    private judge0Health: Judge0HealthIndicator,
     private disk: DiskHealthIndicator,
     private memory: MemoryHealthIndicator,
     private metricsService: MetricsService,
@@ -27,7 +27,6 @@ export class HealthController {
 
   /**
    * Liveness probe - is the service alive?
-   * Returns 200 if the service is running
    */
   @Get("live")
   @ApiOperation({ summary: "Liveness probe" })
@@ -38,7 +37,6 @@ export class HealthController {
 
   /**
    * Readiness probe - is the service ready to accept traffic?
-   * Checks database and Redis connectivity
    */
   @Get("ready")
   @HealthCheck()
@@ -66,19 +64,19 @@ export class HealthController {
       () => this.redisHealth.isHealthy("redis"),
       () =>
         this.disk.checkStorage("storage", { path: "/", thresholdPercent: 0.9 }),
-      () => this.memory.checkHeap("memory_heap", 300 * 1024 * 1024), // 300MB heap limit
-      () => this.memory.checkRSS("memory_rss", 500 * 1024 * 1024), // 500MB RSS limit
+      () => this.memory.checkHeap("memory_heap", 300 * 1024 * 1024),
+      () => this.memory.checkRSS("memory_rss", 500 * 1024 * 1024),
     ]);
   }
 
   /**
    * Code execution service status (Judge0)
    */
-  @Get("piston")
-  @ApiOperation({ summary: "Code execution service status (Judge0)" })
+  @Get("judge0")
+  @ApiOperation({ summary: "Judge0 code execution service status" })
   @ApiResponse({ status: 200, description: "Judge0 status" })
-  async pistonStatus() {
-    const healthResult = await this.pistonHealth.isHealthy("judge0");
+  async judge0Status() {
+    const healthResult = await this.judge0Health.isHealthy("judge0");
     return {
       status: "ok",
       timestamp: new Date().toISOString(),

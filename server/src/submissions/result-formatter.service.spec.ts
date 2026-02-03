@@ -1,5 +1,5 @@
 import { ResultFormatterService } from './result-formatter.service';
-import { ExecutionResult } from '../piston/piston.service';
+import { ExecutionResult } from '../judge0/judge0.service';
 
 // Helper to create ExecutionResult with required fields
 const createResult = (partial: Partial<ExecutionResult>): ExecutionResult => ({

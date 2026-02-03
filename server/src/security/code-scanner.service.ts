@@ -47,7 +47,7 @@ interface ThreatPattern {
  * Code Scanner Service
  * Detects potentially malicious patterns in submitted code
  *
- * This is a defense-in-depth layer - Piston already provides sandboxing,
+ * This is a defense-in-depth layer - Judge0 already provides sandboxing,
  * but this prevents obviously malicious code from even being executed.
  */
 @Injectable()

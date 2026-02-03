@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { ExecutionResult } from '../piston/piston.service';
+import { Injectable } from "@nestjs/common";
+import { ExecutionResult } from "../judge0/judge0.service";
 
 /**
  * Formatted execution metrics
@@ -29,13 +29,13 @@ export class ResultFormatterService {
    * @returns Formatted runtime string (e.g., "125ms" or "-")
    */
   formatRuntime(time: string | number): string {
-    if (time === '-' || time === '' || time === null || time === undefined) {
-      return '-';
+    if (time === "-" || time === "" || time === null || time === undefined) {
+      return "-";
     }
 
-    const timeNum = typeof time === 'string' ? parseFloat(time) : time;
+    const timeNum = typeof time === "string" ? parseFloat(time) : time;
     if (isNaN(timeNum)) {
-      return '-';
+      return "-";
     }
 
     return `${Math.round(timeNum * 1000)}ms`;
@@ -50,14 +50,14 @@ export class ResultFormatterService {
    */
   formatMemory(memoryBytes: number | undefined): string {
     if (!memoryBytes || memoryBytes === 0) {
-      return '-';
+      return "-";
     }
 
     const memoryMB = memoryBytes / (1024 * 1024);
 
-    // Piston sometimes returns unrealistically high values
+    // Judge0 sometimes returns unrealistically high values
     if (memoryMB > 1024) {
-      return '-';
+      return "-";
     }
 
     return `${memoryMB.toFixed(1)}MB`;
@@ -77,39 +77,39 @@ export class ResultFormatterService {
    * Format execution result into readable message
    * Returns concise error information only - the UI handles detailed display
    *
-   * @param result - Execution result from Piston
+   * @param result - Execution result from Judge0
    * @returns Formatted message string
    */
   formatMessage(result: ExecutionResult): string {
     // For passed submissions, no message needed (UI shows status badge)
-    if (result.status === 'passed') {
-      return '';
+    if (result.status === "passed") {
+      return "";
     }
 
     // For compile errors, include compile output
-    if (result.status === 'compileError') {
-      return result.compileOutput || 'Compilation failed';
+    if (result.status === "compileError") {
+      return result.compileOutput || "Compilation failed";
     }
 
     // For timeout
-    if (result.status === 'timeout') {
-      return 'Time limit exceeded';
+    if (result.status === "timeout") {
+      return "Time limit exceeded";
     }
 
     // For runtime errors, include stderr
-    if (result.status === 'error') {
+    if (result.status === "error") {
       if (result.stderr) {
         return result.stderr;
       }
-      return result.message || 'Runtime error';
+      return result.message || "Runtime error";
     }
 
     // For failed tests, the UI uses testCases for detailed display
-    if (result.status === 'failed') {
-      return result.message || 'Tests failed';
+    if (result.status === "failed") {
+      return result.message || "Tests failed";
     }
 
-    return '';
+    return "";
   }
 
   /**
@@ -117,13 +117,13 @@ export class ResultFormatterService {
    */
   getStatusLabel(status: string): string {
     const labels: Record<string, string> = {
-      passed: 'PASSED',
-      failed: 'FAILED',
-      timeout: 'TIMEOUT',
-      compileError: 'COMPILE_ERROR',
-      error: 'ERROR',
+      passed: "PASSED",
+      failed: "FAILED",
+      timeout: "TIMEOUT",
+      compileError: "COMPILE_ERROR",
+      error: "ERROR",
     };
-    return labels[status] || 'UNKNOWN';
+    return labels[status] || "UNKNOWN";
   }
 
   /**

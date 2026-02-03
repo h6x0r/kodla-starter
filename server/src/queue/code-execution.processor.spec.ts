@@ -2,14 +2,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getQueueToken } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { CodeExecutionProcessor, CodeExecutionJob, CodeExecutionResult } from './code-execution.processor';
-import { PistonService, ExecutionResult } from '../piston/piston.service';
+import { Judge0Service, ExecutionResult } from '../judge0/judge0.service';
 import { DEAD_LETTER_QUEUE } from './constants';
 
 describe('CodeExecutionProcessor', () => {
   let processor: CodeExecutionProcessor;
-  let pistonService: PistonService;
+  let judge0Service: Judge0Service;
 
-  const mockPistonService = {
+  const mockJudge0Service = {
     execute: jest.fn(),
   };
 
@@ -41,13 +41,13 @@ describe('CodeExecutionProcessor', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         CodeExecutionProcessor,
-        { provide: PistonService, useValue: mockPistonService },
+        { provide: Judge0Service, useValue: mockJudge0Service },
         { provide: getQueueToken(DEAD_LETTER_QUEUE), useValue: mockDeadLetterQueue },
       ],
     }).compile();
 
     processor = module.get<CodeExecutionProcessor>(CodeExecutionProcessor);
-    pistonService = module.get<PistonService>(PistonService);
+    judge0Service = module.get<Judge0Service>(Judge0Service);
 
     jest.clearAllMocks();
   });
@@ -72,7 +72,7 @@ describe('CodeExecutionProcessor', () => {
         compileOutput: '',
         exitCode: 0,
       };
-      mockPistonService.execute.mockResolvedValue(executionResult);
+      mockJudge0Service.execute.mockResolvedValue(executionResult);
 
       const job = createMockJob({ code: 'print("Hello, World!")', language: 'python' });
       const result = await processor.process(job);
@@ -82,8 +82,8 @@ describe('CodeExecutionProcessor', () => {
       expect(result.jobId).toBe('job-123');
     });
 
-    it('should pass stdin to PistonService', async () => {
-      mockPistonService.execute.mockResolvedValue({
+    it('should pass stdin to Judge0Service', async () => {
+      mockJudge0Service.execute.mockResolvedValue({
         status: 'passed',
         statusId: 3,
         description: 'Accepted',
@@ -100,7 +100,7 @@ describe('CodeExecutionProcessor', () => {
       });
       await processor.process(job);
 
-      expect(mockPistonService.execute).toHaveBeenCalledWith(
+      expect(mockJudge0Service.execute).toHaveBeenCalledWith(
         'input()',
         'python',
         'test input',
@@ -108,7 +108,7 @@ describe('CodeExecutionProcessor', () => {
     });
 
     it('should include taskId and userId in result', async () => {
-      mockPistonService.execute.mockResolvedValue({
+      mockJudge0Service.execute.mockResolvedValue({
         status: 'passed',
         statusId: 3,
         description: 'Accepted',
@@ -131,7 +131,7 @@ describe('CodeExecutionProcessor', () => {
     });
 
     it('should mark as failed when output does not match expected', async () => {
-      mockPistonService.execute.mockResolvedValue({
+      mockJudge0Service.execute.mockResolvedValue({
         status: 'passed',
         statusId: 3,
         description: 'Accepted',
@@ -155,7 +155,7 @@ describe('CodeExecutionProcessor', () => {
     });
 
     it('should pass when output matches expected (with trimming)', async () => {
-      mockPistonService.execute.mockResolvedValue({
+      mockJudge0Service.execute.mockResolvedValue({
         status: 'passed',
         statusId: 3,
         description: 'Accepted',
@@ -176,7 +176,7 @@ describe('CodeExecutionProcessor', () => {
     });
 
     it('should not check expected output on error', async () => {
-      mockPistonService.execute.mockResolvedValue({
+      mockJudge0Service.execute.mockResolvedValue({
         status: 'error',
         statusId: 5,
         description: 'Runtime Error',
@@ -198,7 +198,7 @@ describe('CodeExecutionProcessor', () => {
     });
 
     it('should handle compilation errors', async () => {
-      mockPistonService.execute.mockResolvedValue({
+      mockJudge0Service.execute.mockResolvedValue({
         status: 'compileError',
         statusId: 6,
         description: 'Compilation Error',
@@ -217,7 +217,7 @@ describe('CodeExecutionProcessor', () => {
     });
 
     it('should handle timeout', async () => {
-      mockPistonService.execute.mockResolvedValue({
+      mockJudge0Service.execute.mockResolvedValue({
         status: 'timeout',
         statusId: 7,
         description: 'Timeout',
@@ -234,7 +234,7 @@ describe('CodeExecutionProcessor', () => {
     });
 
     it('should handle memory limit exceeded', async () => {
-      mockPistonService.execute.mockResolvedValue({
+      mockJudge0Service.execute.mockResolvedValue({
         status: 'error',
         statusId: 8,
         description: 'Memory Limit Exceeded',

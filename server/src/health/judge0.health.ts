@@ -4,14 +4,13 @@ import {
   HealthIndicatorResult,
   HealthCheckError,
 } from "@nestjs/terminus";
-import { Judge0Service } from "../piston/judge0.service";
+import { Judge0Service } from "../judge0/judge0.service";
 
 /**
  * Health indicator for Judge0 code execution service
- * Checks availability
  */
 @Injectable()
-export class PistonHealthIndicator extends HealthIndicator {
+export class Judge0HealthIndicator extends HealthIndicator {
   constructor(private readonly judge0Service: Judge0Service) {
     super();
   }

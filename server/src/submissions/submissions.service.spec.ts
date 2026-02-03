@@ -229,7 +229,7 @@ describe('SubmissionsService', () => {
         expect(mockPrismaService.submission.create).toHaveBeenCalled();
       });
 
-      it('should execute code via Piston service with tests', async () => {
+      it('should execute code via Judge0 service with tests', async () => {
         mockPrismaService.task.findFirst.mockResolvedValue(mockTask);
         mockAccessControlService.getQueuePriority.mockResolvedValue(1);
         mockCodeExecutionService.executeSyncWithTests.mockResolvedValue(mockExecutionResult);

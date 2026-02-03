@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getQueueToken } from '@nestjs/bullmq';
 import { CodeExecutionService } from './code-execution.service';
-import { PistonService, ExecutionResult } from '../piston/piston.service';
+import { Judge0Service, ExecutionResult } from '../judge0/judge0.service';
 import { ConfigService } from '@nestjs/config';
 import { CODE_EXECUTION_QUEUE } from './constants';
 import { QueueEvents } from 'bullmq';
@@ -16,7 +16,7 @@ jest.mock('bullmq', () => ({
 
 describe('CodeExecutionService', () => {
   let service: CodeExecutionService;
-  let pistonService: PistonService;
+  let judge0Service: Judge0Service;
 
   const mockExecutionResult: ExecutionResult = {
     status: 'passed',
@@ -49,7 +49,7 @@ describe('CodeExecutionService', () => {
     getDelayedCount: jest.fn().mockResolvedValue(1),
   };
 
-  const mockPistonService = {
+  const mockJudge0Service = {
     execute: jest.fn(),
     executeWithTests: jest.fn(),
     checkHealth: jest.fn(),
@@ -65,13 +65,13 @@ describe('CodeExecutionService', () => {
       providers: [
         CodeExecutionService,
         { provide: getQueueToken(CODE_EXECUTION_QUEUE), useValue: mockQueue },
-        { provide: PistonService, useValue: mockPistonService },
+        { provide: Judge0Service, useValue: mockJudge0Service },
         { provide: ConfigService, useValue: mockConfigService },
       ],
     }).compile();
 
     service = module.get<CodeExecutionService>(CodeExecutionService);
-    pistonService = module.get<PistonService>(PistonService);
+    judge0Service = module.get<Judge0Service>(Judge0Service);
 
     jest.clearAllMocks();
   });
@@ -84,25 +84,25 @@ describe('CodeExecutionService', () => {
   // executeSync()
   // ============================================
   describe('executeSync()', () => {
-    it('should execute code synchronously via PistonService', async () => {
-      mockPistonService.execute.mockResolvedValue(mockExecutionResult);
+    it('should execute code synchronously via Judge0Service', async () => {
+      mockJudge0Service.execute.mockResolvedValue(mockExecutionResult);
 
       const result = await service.executeSync('print("hello")', 'python');
 
       expect(result).toEqual(mockExecutionResult);
-      expect(mockPistonService.execute).toHaveBeenCalledWith(
+      expect(mockJudge0Service.execute).toHaveBeenCalledWith(
         'print("hello")',
         'python',
         undefined,
       );
     });
 
-    it('should pass stdin to PistonService', async () => {
-      mockPistonService.execute.mockResolvedValue(mockExecutionResult);
+    it('should pass stdin to Judge0Service', async () => {
+      mockJudge0Service.execute.mockResolvedValue(mockExecutionResult);
 
       await service.executeSync('code', 'go', 'input data');
 
-      expect(mockPistonService.execute).toHaveBeenCalledWith(
+      expect(mockJudge0Service.execute).toHaveBeenCalledWith(
         'code',
         'go',
         'input data',
@@ -121,7 +121,7 @@ describe('CodeExecutionService', () => {
         compileOutput: '',
         exitCode: 1,
       };
-      mockPistonService.execute.mockResolvedValue(errorResult);
+      mockJudge0Service.execute.mockResolvedValue(errorResult);
 
       const result = await service.executeSync('invalid code', 'python');
 
@@ -134,8 +134,8 @@ describe('CodeExecutionService', () => {
   // executeSyncWithTests()
   // ============================================
   describe('executeSyncWithTests()', () => {
-    it('should execute code with tests via PistonService', async () => {
-      mockPistonService.executeWithTests.mockResolvedValue(mockExecutionResult);
+    it('should execute code with tests via Judge0Service', async () => {
+      mockJudge0Service.executeWithTests.mockResolvedValue(mockExecutionResult);
 
       const result = await service.executeSyncWithTests(
         'func Add(a, b int) int { return a + b }',
@@ -144,7 +144,7 @@ describe('CodeExecutionService', () => {
       );
 
       expect(result).toEqual(mockExecutionResult);
-      expect(mockPistonService.executeWithTests).toHaveBeenCalledWith(
+      expect(mockJudge0Service.executeWithTests).toHaveBeenCalledWith(
         'func Add(a, b int) int { return a + b }',
         'func TestAdd(t *testing.T) {}',
         'go',
@@ -153,11 +153,11 @@ describe('CodeExecutionService', () => {
     });
 
     it('should pass maxTests limit', async () => {
-      mockPistonService.executeWithTests.mockResolvedValue(mockExecutionResult);
+      mockJudge0Service.executeWithTests.mockResolvedValue(mockExecutionResult);
 
       await service.executeSyncWithTests('solution', 'tests', 'java', 5);
 
-      expect(mockPistonService.executeWithTests).toHaveBeenCalledWith(
+      expect(mockJudge0Service.executeWithTests).toHaveBeenCalledWith(
         'solution',
         'tests',
         'java',
@@ -307,8 +307,8 @@ describe('CodeExecutionService', () => {
   // checkHealth()
   // ============================================
   describe('checkHealth()', () => {
-    it('should return healthy status when both Piston and queue are available', async () => {
-      mockPistonService.checkHealth.mockResolvedValue(true);
+    it('should return healthy status when both Judge0 and queue are available', async () => {
+      mockJudge0Service.checkHealth.mockResolvedValue(true);
       mockQueue.getWaitingCount.mockResolvedValue(0);
 
       const result = await service.checkHealth();
@@ -319,8 +319,8 @@ describe('CodeExecutionService', () => {
       });
     });
 
-    it('should return unavailable when Piston is down', async () => {
-      mockPistonService.checkHealth.mockResolvedValue(false);
+    it('should return unavailable when Judge0 is down', async () => {
+      mockJudge0Service.checkHealth.mockResolvedValue(false);
       mockQueue.getWaitingCount.mockResolvedValue(0);
 
       const result = await service.checkHealth();
@@ -330,7 +330,7 @@ describe('CodeExecutionService', () => {
     });
 
     it('should return queue not ready when Redis is down', async () => {
-      mockPistonService.checkHealth.mockResolvedValue(true);
+      mockJudge0Service.checkHealth.mockResolvedValue(true);
       mockQueue.getWaitingCount.mockRejectedValue(new Error('Redis connection refused'));
 
       const result = await service.checkHealth();
@@ -340,7 +340,7 @@ describe('CodeExecutionService', () => {
     });
 
     it('should return both unavailable when everything is down', async () => {
-      mockPistonService.checkHealth.mockResolvedValue(false);
+      mockJudge0Service.checkHealth.mockResolvedValue(false);
       mockQueue.getWaitingCount.mockRejectedValue(new Error('Connection refused'));
 
       const result = await service.checkHealth();
@@ -356,17 +356,17 @@ describe('CodeExecutionService', () => {
   // getSupportedLanguages()
   // ============================================
   describe('getSupportedLanguages()', () => {
-    it('should return languages from PistonService', () => {
+    it('should return languages from Judge0Service', () => {
       const languages = [
-        { name: 'Go', pistonName: 'go', version: '1.21', extension: 'go' },
-        { name: 'Python', pistonName: 'python', version: '3.11', extension: 'py' },
+        { name: 'Go', judge0Name: 'go', version: '1.21', extension: 'go' },
+        { name: 'Python', judge0Name: 'python', version: '3.11', extension: 'py' },
       ];
-      mockPistonService.getSupportedLanguages.mockReturnValue(languages);
+      mockJudge0Service.getSupportedLanguages.mockReturnValue(languages);
 
       const result = service.getSupportedLanguages();
 
       expect(result).toEqual(languages);
-      expect(mockPistonService.getSupportedLanguages).toHaveBeenCalled();
+      expect(mockJudge0Service.getSupportedLanguages).toHaveBeenCalled();
     });
   });
 
@@ -564,7 +564,7 @@ describe('CodeExecutionService', () => {
   // ============================================
   describe('edge cases', () => {
     it('should handle empty code execution', async () => {
-      mockPistonService.execute.mockResolvedValue({
+      mockJudge0Service.execute.mockResolvedValue({
         status: 'passed',
         statusId: 3,
         description: 'Accepted',
@@ -584,20 +584,20 @@ describe('CodeExecutionService', () => {
 
     it('should handle very long code execution', async () => {
       const longCode = 'x = 1\n'.repeat(10000);
-      mockPistonService.execute.mockResolvedValue(mockExecutionResult);
+      mockJudge0Service.execute.mockResolvedValue(mockExecutionResult);
 
       await service.executeSync(longCode, 'python');
 
-      expect(mockPistonService.execute).toHaveBeenCalledWith(longCode, 'python', undefined);
+      expect(mockJudge0Service.execute).toHaveBeenCalledWith(longCode, 'python', undefined);
     });
 
     it('should handle execution with special characters in stdin', async () => {
       const specialStdin = '!@#$%^&*(){}[]|\\:";\'<>,.?/~`\n\t\r';
-      mockPistonService.execute.mockResolvedValue(mockExecutionResult);
+      mockJudge0Service.execute.mockResolvedValue(mockExecutionResult);
 
       await service.executeSync('code', 'python', specialStdin);
 
-      expect(mockPistonService.execute).toHaveBeenCalledWith('code', 'python', specialStdin);
+      expect(mockJudge0Service.execute).toHaveBeenCalledWith('code', 'python', specialStdin);
     });
 
     it('should handle compile error result', async () => {
@@ -612,7 +612,7 @@ describe('CodeExecutionService', () => {
         memory: 0,
         exitCode: 1,
       };
-      mockPistonService.execute.mockResolvedValue(compileErrorResult);
+      mockJudge0Service.execute.mockResolvedValue(compileErrorResult);
 
       const result = await service.executeSync('invalid code', 'go');
 
@@ -632,7 +632,7 @@ describe('CodeExecutionService', () => {
         memory: 0,
         exitCode: null,
       };
-      mockPistonService.execute.mockResolvedValue(timeoutResult);
+      mockJudge0Service.execute.mockResolvedValue(timeoutResult);
 
       const result = await service.executeSync('while True: pass', 'python');
 
@@ -736,7 +736,7 @@ describe('CodeExecutionService', () => {
   // ============================================
   describe('checkHealth edge cases', () => {
     it('should handle slow queue response', async () => {
-      mockPistonService.checkHealth.mockResolvedValue(true);
+      mockJudge0Service.checkHealth.mockResolvedValue(true);
       mockQueue.getWaitingCount.mockImplementation(async () => {
         await new Promise(r => setTimeout(r, 10));
         return 5;
@@ -747,8 +747,8 @@ describe('CodeExecutionService', () => {
       expect(result.queueReady).toBe(true);
     });
 
-    it('should handle Piston taking time to respond', async () => {
-      mockPistonService.checkHealth.mockImplementation(async () => {
+    it('should handle Judge0 taking time to respond', async () => {
+      mockJudge0Service.checkHealth.mockImplementation(async () => {
         await new Promise(r => setTimeout(r, 10));
         return true;
       });
@@ -765,7 +765,7 @@ describe('CodeExecutionService', () => {
   // ============================================
   describe('language-specific test execution', () => {
     it('should execute Go tests with correct parameters', async () => {
-      mockPistonService.executeWithTests.mockResolvedValue(mockExecutionResult);
+      mockJudge0Service.executeWithTests.mockResolvedValue(mockExecutionResult);
 
       await service.executeSyncWithTests(
         'func Add(a, b int) int { return a + b }',
@@ -773,7 +773,7 @@ describe('CodeExecutionService', () => {
         'go',
       );
 
-      expect(mockPistonService.executeWithTests).toHaveBeenCalledWith(
+      expect(mockJudge0Service.executeWithTests).toHaveBeenCalledWith(
         expect.stringContaining('func Add'),
         expect.stringContaining('TestAdd'),
         'go',
@@ -782,7 +782,7 @@ describe('CodeExecutionService', () => {
     });
 
     it('should execute Python tests with correct parameters', async () => {
-      mockPistonService.executeWithTests.mockResolvedValue(mockExecutionResult);
+      mockJudge0Service.executeWithTests.mockResolvedValue(mockExecutionResult);
 
       await service.executeSyncWithTests(
         'def add(a, b): return a + b',
@@ -790,7 +790,7 @@ describe('CodeExecutionService', () => {
         'python',
       );
 
-      expect(mockPistonService.executeWithTests).toHaveBeenCalledWith(
+      expect(mockJudge0Service.executeWithTests).toHaveBeenCalledWith(
         expect.stringContaining('def add'),
         expect.stringContaining('test_add'),
         'python',
@@ -799,7 +799,7 @@ describe('CodeExecutionService', () => {
     });
 
     it('should execute Java tests with correct parameters', async () => {
-      mockPistonService.executeWithTests.mockResolvedValue(mockExecutionResult);
+      mockJudge0Service.executeWithTests.mockResolvedValue(mockExecutionResult);
 
       await service.executeSyncWithTests(
         'public class Solution { public int add(int a, int b) { return a + b; } }',
@@ -807,7 +807,7 @@ describe('CodeExecutionService', () => {
         'java',
       );
 
-      expect(mockPistonService.executeWithTests).toHaveBeenCalledWith(
+      expect(mockJudge0Service.executeWithTests).toHaveBeenCalledWith(
         expect.stringContaining('public class Solution'),
         expect.stringContaining('@Test'),
         'java',

@@ -2,7 +2,7 @@ import { Processor, WorkerHost, OnWorkerEvent } from "@nestjs/bullmq";
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectQueue } from "@nestjs/bullmq";
 import { Job, Queue } from "bullmq";
-import { Judge0Service, ExecutionResult } from "../piston/judge0.service";
+import { Judge0Service, ExecutionResult } from "../judge0/judge0.service";
 import { CODE_EXECUTION_QUEUE, DEAD_LETTER_QUEUE } from "./constants";
 
 /**
