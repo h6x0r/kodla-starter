@@ -72,34 +72,18 @@ export class HealthController {
   }
 
   /**
-   * Piston status - code execution service status and limits
+   * Code execution service status (Judge0)
    */
   @Get("piston")
-  @ApiOperation({ summary: "Piston code execution service status and limits" })
-  @ApiResponse({ status: 200, description: "Piston status and configuration" })
+  @ApiOperation({ summary: "Code execution service status (Judge0)" })
+  @ApiResponse({ status: 200, description: "Judge0 status" })
   async pistonStatus() {
-    const limits = this.pistonHealth.getLimits();
+    const healthResult = await this.pistonHealth.isHealthy("judge0");
     return {
       status: "ok",
       timestamp: new Date().toISOString(),
-      piston: {
-        limits: {
-          compileTimeout: limits.compileTimeout,
-          runTimeout: limits.runTimeout,
-          memoryLimit: limits.memoryLimit,
-          detected: limits.detected,
-        },
-        formatted: {
-          compileTimeout: `${limits.compileTimeout}ms (${(limits.compileTimeout / 1000).toFixed(0)}s)`,
-          runTimeout: `${limits.runTimeout}ms (${(limits.runTimeout / 1000).toFixed(0)}s)`,
-          memoryLimit: `${Math.round(limits.memoryLimit / 1024 / 1024)}MB`,
-        },
-        recommendations: {
-          compileTimeout: "180000ms (for Go/Java compilation)",
-          runTimeout: "60000ms (for complex tests)",
-          memoryLimit: "512MB",
-        },
-      },
+      engine: "judge0",
+      health: healthResult,
     };
   }
 

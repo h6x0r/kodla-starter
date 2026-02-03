@@ -1,0 +1,103 @@
+################################################################################
+# Judge0 Stack for Coolify Deployment
+# Deploy this as a separate Docker Compose stack in Coolify
+################################################################################
+
+services:
+  judge0-server:
+    image: judge0/judge0:1.13.1
+    restart: always
+    ports:
+      - "2358:2358"
+    privileged: true
+    environment:
+      - POSTGRES_HOST=judge0-db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=judge0
+      - POSTGRES_USER=judge0
+      - POSTGRES_PASSWORD=${JUDGE0_DB_PASSWORD:-judge0_secure_password_2026}
+      - REDIS_HOST=judge0-redis
+      - REDIS_PORT=6379
+      - ENABLE_WAIT_RESULT=true
+      - ENABLE_BATCHED_SUBMISSIONS=true
+      - MAX_QUEUE_SIZE=100
+      - CPU_TIME_LIMIT=30
+      - CPU_EXTRA_TIME=5
+      - WALL_TIME_LIMIT=60
+      - MEMORY_LIMIT=512000
+      - STACK_LIMIT=64000
+      - MAX_PROCESSES_AND_OR_THREADS=60
+      - ENABLE_PER_PROCESS_AND_THREAD_TIME_LIMIT=false
+      - ENABLE_PER_PROCESS_AND_THREAD_MEMORY_LIMIT=false
+      - MAX_FILE_SIZE=2048
+      - NUMBER_OF_RUNS=1
+      - ENABLE_NETWORK=false
+    depends_on:
+      judge0-db:
+        condition: service_healthy
+      judge0-redis:
+        condition: service_healthy
+    mem_limit: 2g
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:2358/languages"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  judge0-workers:
+    image: judge0/judge0:1.13.1
+    restart: always
+    command: ["./scripts/workers"]
+    privileged: true
+    environment:
+      - POSTGRES_HOST=judge0-db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=judge0
+      - POSTGRES_USER=judge0
+      - POSTGRES_PASSWORD=${JUDGE0_DB_PASSWORD:-judge0_secure_password_2026}
+      - REDIS_HOST=judge0-redis
+      - REDIS_PORT=6379
+      - ENABLE_WAIT_RESULT=true
+      - CPU_TIME_LIMIT=30
+      - CPU_EXTRA_TIME=5
+      - WALL_TIME_LIMIT=60
+      - MEMORY_LIMIT=512000
+      - NUMBER_OF_RUNS=1
+    depends_on:
+      judge0-server:
+        condition: service_healthy
+    mem_limit: 4g
+
+  judge0-db:
+    image: postgres:15-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: judge0
+      POSTGRES_PASSWORD: ${JUDGE0_DB_PASSWORD:-judge0_secure_password_2026}
+      POSTGRES_DB: judge0
+    volumes:
+      - judge0_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U judge0 -d judge0"]
+      interval: 5s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+
+  judge0-redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - judge0_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+volumes:
+  judge0_postgres_data:
+  judge0_redis_data:
