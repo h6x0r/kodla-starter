@@ -518,6 +518,9 @@ if __name__ == "__main__":
 
         for method_name in methods:
             test_result = {"name": method_name, "passed": False}
+            # Call setUp() before each test if it exists
+            if hasattr(instance, 'setUp'):
+                instance.setUp()
             method = getattr(instance, method_name)
             try:
                 method()
