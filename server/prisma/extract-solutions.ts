@@ -21,8 +21,14 @@ interface TaskSolution {
   difficulty: "easy" | "medium" | "hard";
   isPremium: boolean;
   solutionCode: string;
+  initialCode: string;
   testCode?: string;
   taskType?: string;
+  title: string;
+  description: string;
+  hint1?: string;
+  hint2?: string;
+  whyItMatters?: string;
 }
 
 /**
@@ -92,8 +98,14 @@ function extractTasks(course: Course): TaskSolution[] {
           difficulty: task.difficulty,
           isPremium: task.isPremium,
           solutionCode: task.solutionCode,
+          initialCode: task.initialCode,
           testCode: task.testCode,
           taskType: task.taskType || "CODE",
+          title: task.title,
+          description: task.description,
+          hint1: task.hint1,
+          hint2: task.hint2,
+          whyItMatters: task.whyItMatters,
         });
       }
     }

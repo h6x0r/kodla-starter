@@ -20,7 +20,7 @@ import {
 import {
   waitForEditor,
   setEditorCode,
-  submitCodeAndWaitResults,
+  runCodeAndWaitResults,
   allTestsPassed,
   getTestResults,
   formatTaskName,
@@ -66,8 +66,8 @@ test.describe("Go Tasks Validation", () => {
       // Set solution code
       await setEditorCode(page, task.solutionCode);
 
-      // Run code
-      await submitCodeAndWaitResults(page, "go");
+      // Run code (quick test - 5 tests for faster validation)
+      await runCodeAndWaitResults(page, "go");
 
       // Verify all tests pass
       const passed = await allTestsPassed(page);

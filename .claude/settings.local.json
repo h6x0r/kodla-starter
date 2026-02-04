@@ -318,7 +318,9 @@
       "WebFetch(domain:coolify.5.189.182.153.sslip.io)",
       "mcp__playwright__browser_run_code",
       "mcp__context7__resolve-library-id",
-      "mcp__context7__query-docs"
+      "mcp__context7__query-docs",
+      "WebFetch(domain:ce.judge0.com)",
+      "WebFetch(domain:extra-ce.judge0.com)"
     ],
     "deny": [],
     "ask": []

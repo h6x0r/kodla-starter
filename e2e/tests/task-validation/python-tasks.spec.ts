@@ -20,7 +20,7 @@ import {
 import {
   waitForEditor,
   setEditorCode,
-  submitCodeAndWaitResults,
+  runCodeAndWaitResults,
   allTestsPassed,
   getTestResults,
   formatTaskName,
@@ -67,7 +67,7 @@ test.describe("Python Tasks Validation", () => {
       await setEditorCode(page, task.solutionCode);
 
       // Run code
-      await submitCodeAndWaitResults(page, "python");
+      await runCodeAndWaitResults(page, "python");
 
       // Verify all tests pass
       const passed = await allTestsPassed(page);

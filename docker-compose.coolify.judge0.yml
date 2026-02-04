@@ -5,7 +5,10 @@
 
 services:
   judge0-server:
-    image: judge0/judge0:1.13.1
+    # Custom Judge0 CE with ML packages (numpy, pandas, sklearn, scipy)
+    # Build from docker/judge0/Dockerfile
+    # IMPORTANT: Do NOT use judge0/judge0:1.13.1-extra - it lacks Go/JS/TS/Rust!
+    image: practix/judge0:1.13.1-ml
     restart: always
     ports:
       - "2358:2358"
@@ -46,7 +49,9 @@ services:
       start_period: 30s
 
   judge0-workers:
-    image: judge0/judge0:1.13.1
+    # Custom Judge0 CE with ML packages (numpy, pandas, sklearn, scipy)
+    # Build from docker/judge0/Dockerfile
+    image: practix/judge0:1.13.1-ml
     restart: always
     command: ["./scripts/workers"]
     privileged: true
