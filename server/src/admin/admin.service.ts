@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { Injectable } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
 
 @Injectable()
 export class AdminService {
@@ -93,14 +93,14 @@ export class AdminService {
 
     // Single query for all course stats using groupBy
     const courseProgressStats = await this.prisma.userCourse.groupBy({
-      by: ['courseSlug'],
+      by: ["courseSlug"],
       _count: { _all: true },
       _avg: { progress: true },
     });
 
     // Get completed counts in a single query
     const completedStats = await this.prisma.userCourse.groupBy({
-      by: ['courseSlug'],
+      by: ["courseSlug"],
       where: {
         completedAt: { not: null },
       },
@@ -121,7 +121,10 @@ export class AdminService {
 
     // Build course stats using the lookup maps
     const courseStats = courses.map((course) => {
-      const progress = progressMap.get(course.slug) || { count: 0, avgProgress: 0 };
+      const progress = progressMap.get(course.slug) || {
+        count: 0,
+        avgProgress: 0,
+      };
       const completed = completedMap.get(course.slug) || 0;
       const totalEnrolled = progress.count;
 
@@ -132,9 +135,13 @@ export class AdminService {
         category: course.category,
         totalEnrolled,
         completed,
-        completionRate: totalEnrolled > 0 ? (completed / totalEnrolled) * 100 : 0,
+        completionRate:
+          totalEnrolled > 0 ? (completed / totalEnrolled) * 100 : 0,
         averageProgress: Math.round(progress.avgProgress * 100) / 100,
-        translations: course.translations as Record<string, { title?: string; description?: string }> | null,
+        translations: course.translations as Record<
+          string,
+          { title?: string; description?: string }
+        > | null,
       };
     });
 
@@ -166,20 +173,20 @@ export class AdminService {
 
     // Single query for total submissions per task
     const totalSubmissionsStats = await this.prisma.submission.groupBy({
-      by: ['taskId'],
+      by: ["taskId"],
       _count: { _all: true },
     });
 
     // Single query for passed submissions per task
     const passedSubmissionsStats = await this.prisma.submission.groupBy({
-      by: ['taskId'],
-      where: { status: 'passed' },
+      by: ["taskId"],
+      where: { status: "passed" },
       _count: { _all: true },
     });
 
     // Single query for unique users per task
     const uniqueUsersStats = await this.prisma.submission.groupBy({
-      by: ['taskId', 'userId'],
+      by: ["taskId", "userId"],
     });
 
     // Create lookup maps for O(1) access
@@ -220,7 +227,9 @@ export class AdminService {
     });
 
     // Filter tasks with at least some submissions
-    const tasksWithSubmissions = taskStats.filter((t) => t.totalSubmissions > 0);
+    const tasksWithSubmissions = taskStats.filter(
+      (t) => t.totalSubmissions > 0,
+    );
 
     // Sort by hardest (lowest pass rate)
     const hardestTasks = [...tasksWithSubmissions]
@@ -268,7 +277,7 @@ export class AdminService {
 
     // Group by status
     const submissionsByStatus = await this.prisma.submission.groupBy({
-      by: ['status'],
+      by: ["status"],
       _count: {
         status: true,
       },
@@ -285,7 +294,7 @@ export class AdminService {
 
     // Get submissions per day for the last 30 days
     const submissionsPerDay = await this.prisma.submission.groupBy({
-      by: ['createdAt'],
+      by: ["createdAt"],
       where: {
         createdAt: {
           gte: thirtyDaysAgo,
@@ -299,8 +308,9 @@ export class AdminService {
     // Create a map of date -> count
     const dailySubmissions: { [key: string]: number } = {};
     submissionsPerDay.forEach((submission) => {
-      const date = submission.createdAt.toISOString().split('T')[0];
-      dailySubmissions[date] = (dailySubmissions[date] || 0) + submission._count.id;
+      const date = submission.createdAt.toISOString().split("T")[0];
+      dailySubmissions[date] =
+        (dailySubmissions[date] || 0) + submission._count.id;
     });
 
     return {
@@ -322,14 +332,14 @@ export class AdminService {
     // Active subscriptions
     const activeSubscriptions = await this.prisma.subscription.count({
       where: {
-        status: 'active',
+        status: "active",
       },
     });
 
     // New subscriptions this month
     const newSubscriptionsThisMonth = await this.prisma.subscription.count({
       where: {
-        status: 'active',
+        status: "active",
         createdAt: {
           gte: firstDayOfMonth,
         },
@@ -338,9 +348,9 @@ export class AdminService {
 
     // Subscriptions by plan
     const subscriptionsByPlan = await this.prisma.subscription.groupBy({
-      by: ['planId'],
+      by: ["planId"],
       where: {
-        status: 'active',
+        status: "active",
       },
       _count: {
         planId: true,
@@ -368,27 +378,30 @@ export class AdminService {
       const plan = planMap.get(stat.planId);
       return {
         planId: stat.planId,
-        planName: plan?.name || 'Unknown',
-        planSlug: plan?.slug || 'unknown',
-        planType: plan?.type || 'unknown',
+        planName: plan?.name || "Unknown",
+        planSlug: plan?.slug || "unknown",
+        planType: plan?.type || "unknown",
         count: stat._count.planId,
         monthlyRevenue: (plan?.priceMonthly || 0) * stat._count.planId,
       };
     });
 
     // Calculate total monthly revenue
-    const totalMonthlyRevenue = planStats.reduce((sum, plan) => sum + plan.monthlyRevenue, 0);
+    const totalMonthlyRevenue = planStats.reduce(
+      (sum, plan) => sum + plan.monthlyRevenue,
+      0,
+    );
 
     // Get payment stats
     const completedPayments = await this.prisma.payment.count({
       where: {
-        status: 'completed',
+        status: "completed",
       },
     });
 
     const totalRevenue = await this.prisma.payment.aggregate({
       where: {
-        status: 'completed',
+        status: "completed",
       },
       _sum: {
         amount: true,
@@ -447,12 +460,14 @@ export class AdminService {
     // Unique users using AI
     const uniqueUsers = await this.prisma.aiUsage.findMany({
       select: { userId: true },
-      distinct: ['userId'],
+      distinct: ["userId"],
     });
 
     // Average usage per user
     const averageUsagePerUser =
-      uniqueUsers.length > 0 ? (totalUsage._sum.count || 0) / uniqueUsers.length : 0;
+      uniqueUsers.length > 0
+        ? (totalUsage._sum.count || 0) / uniqueUsers.length
+        : 0;
 
     return {
       totalUsage: totalUsage._sum.count || 0,
@@ -460,5 +475,53 @@ export class AdminService {
       averageUsagePerUser: Math.round(averageUsagePerUser * 100) / 100,
       dailyUsage,
     };
+  }
+
+  /**
+   * Search users by email or name
+   * Returns: matching users with basic info and stats
+   */
+  async searchUsers(query: string, limit = 20) {
+    if (!query || query.length < 2) {
+      return [];
+    }
+
+    const users = await this.prisma.user.findMany({
+      where: {
+        OR: [
+          { email: { contains: query, mode: "insensitive" } },
+          { name: { contains: query, mode: "insensitive" } },
+        ],
+      },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        role: true,
+        isPremium: true,
+        createdAt: true,
+        lastActivityAt: true,
+        _count: {
+          select: {
+            submissions: true,
+            courses: true,
+          },
+        },
+      },
+      take: limit,
+      orderBy: { createdAt: "desc" },
+    });
+
+    return users.map((user) => ({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      isPremium: user.isPremium,
+      createdAt: user.createdAt,
+      lastActivityAt: user.lastActivityAt,
+      submissionsCount: user._count.submissions,
+      coursesCount: user._count.courses,
+    }));
   }
 }

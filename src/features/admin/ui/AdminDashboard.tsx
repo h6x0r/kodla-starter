@@ -32,6 +32,7 @@ import { createLogger } from "@/lib/logger";
 import { useUITranslation, useLanguage } from "@/contexts/LanguageContext";
 import AiSettingsPanel from "./AiSettingsPanel";
 import BugReportsPanel from "./BugReportsPanel";
+import UserSearchPanel from "./UserSearchPanel";
 
 const log = createLogger("AdminDashboard");
 
@@ -234,6 +235,9 @@ const AdminDashboard = () => {
         <AiSettingsPanel />
         <BugReportsPanel />
       </div>
+
+      {/* User Search */}
+      <UserSearchPanel />
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

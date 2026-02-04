@@ -151,6 +151,19 @@ export interface BugReport {
   task: { title: string; slug: string } | null;
 }
 
+// User Search Result
+export interface UserSearchResult {
+  id: string;
+  email: string;
+  name: string | null;
+  role: string;
+  isPremium: boolean;
+  createdAt: string;
+  lastActivityAt: string | null;
+  submissionsCount: number;
+  coursesCount: number;
+}
+
 /**
  * Admin Analytics Service - Connected to Backend Admin API
  *
@@ -249,5 +262,16 @@ export const adminService = {
     status: BugStatus,
   ): Promise<BugReport> => {
     return await api.patch<BugReport>(`/bugreports/${id}/status`, { status });
+  },
+
+  /**
+   * Search users by email or name
+   * GET /admin/analytics/users/search?q=query
+   */
+  searchUsers: async (query: string): Promise<UserSearchResult[]> => {
+    if (!query || query.length < 2) return [];
+    return await api.get<UserSearchResult[]>(
+      `/admin/analytics/users/search?q=${encodeURIComponent(query)}`,
+    );
   },
 };

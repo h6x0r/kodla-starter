@@ -747,6 +747,21 @@ const UI_TRANSLATIONS: Record<Language, Record<string, string>> = {
     "admin.bugReports.status.closed": "Closed",
     "admin.bugReports.status.wont-fix": "Won't Fix",
 
+    // User Search
+    "admin.userSearch.title": "User Search",
+    "admin.userSearch.subtitle": "Search users by email or name",
+    "admin.userSearch.placeholder": "Enter email or name...",
+    "admin.userSearch.search": "Search",
+    "admin.userSearch.minChars": "Enter at least 2 characters",
+    "admin.userSearch.searchError": "Failed to search users",
+    "admin.userSearch.noResults": "No users found",
+    "admin.userSearch.noName": "No name",
+    "admin.userSearch.registered": "Registered",
+    "admin.userSearch.lastActive": "Last active",
+    "admin.userSearch.submissions": "submissions",
+    "admin.userSearch.courses": "courses",
+    "admin.userSearch.hint": "Search for users by email or name",
+
     // ===================== COMMON =====================
     "common.loading": "Loading...",
     "common.error": "Error",
@@ -1391,6 +1406,21 @@ const UI_TRANSLATIONS: Record<Language, Record<string, string>> = {
     "admin.bugReports.status.resolved": "Решён",
     "admin.bugReports.status.closed": "Закрыт",
     "admin.bugReports.status.wont-fix": "Не будет исправлен",
+
+    // User Search
+    "admin.userSearch.title": "Поиск пользователей",
+    "admin.userSearch.subtitle": "Поиск по email или имени",
+    "admin.userSearch.placeholder": "Введите email или имя...",
+    "admin.userSearch.search": "Найти",
+    "admin.userSearch.minChars": "Введите минимум 2 символа",
+    "admin.userSearch.searchError": "Ошибка поиска пользователей",
+    "admin.userSearch.noResults": "Пользователи не найдены",
+    "admin.userSearch.noName": "Без имени",
+    "admin.userSearch.registered": "Регистрация",
+    "admin.userSearch.lastActive": "Последняя активность",
+    "admin.userSearch.submissions": "отправок",
+    "admin.userSearch.courses": "курсов",
+    "admin.userSearch.hint": "Поиск пользователей по email или имени",
 
     // ===================== COMMON =====================
     "common.loading": "Загрузка...",
@@ -2041,6 +2071,22 @@ const UI_TRANSLATIONS: Record<Language, Record<string, string>> = {
     "admin.bugReports.status.resolved": "Hal qilindi",
     "admin.bugReports.status.closed": "Yopildi",
     "admin.bugReports.status.wont-fix": "Tuzatilmaydi",
+
+    // User Search
+    "admin.userSearch.title": "Foydalanuvchilarni qidirish",
+    "admin.userSearch.subtitle": "Email yoki ism bo'yicha qidirish",
+    "admin.userSearch.placeholder": "Email yoki ism kiriting...",
+    "admin.userSearch.search": "Qidirish",
+    "admin.userSearch.minChars": "Kamida 2 ta belgi kiriting",
+    "admin.userSearch.searchError": "Foydalanuvchilarni qidirishda xatolik",
+    "admin.userSearch.noResults": "Foydalanuvchilar topilmadi",
+    "admin.userSearch.noName": "Ismsiz",
+    "admin.userSearch.registered": "Ro'yxatdan o'tgan",
+    "admin.userSearch.lastActive": "Oxirgi faollik",
+    "admin.userSearch.submissions": "yuborishlar",
+    "admin.userSearch.courses": "kurslar",
+    "admin.userSearch.hint":
+      "Email yoki ism bo'yicha foydalanuvchilarni qidiring",
 
     // ===================== COMMON =====================
     "common.loading": "Yuklanmoqda...",
