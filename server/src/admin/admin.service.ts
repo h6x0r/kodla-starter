@@ -684,4 +684,528 @@ export class AdminService {
 
     return { users, total };
   }
+
+  // ============================================
+  // PAYMENTS MANAGEMENT (Admin Panel Phase 2.2)
+  // ============================================
+
+  /**
+   * Get all payments with filtering and pagination
+   */
+  async getPayments(params: {
+    status?: string;
+    provider?: string;
+    limit?: number;
+    offset?: number;
+  }) {
+    const { status, provider, limit = 50, offset = 0 } = params;
+
+    const where: {
+      status?: string;
+      provider?: string;
+    } = {};
+
+    if (status) where.status = status;
+    if (provider) where.provider = provider;
+
+    const [payments, total] = await Promise.all([
+      this.prisma.payment.findMany({
+        where,
+        include: {
+          subscription: {
+            include: {
+              user: {
+                select: { id: true, email: true, name: true },
+              },
+              plan: {
+                select: { id: true, name: true, slug: true, type: true },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip: offset,
+      }),
+      this.prisma.payment.count({ where }),
+    ]);
+
+    return {
+      payments: payments.map((p) => ({
+        id: p.id,
+        amount: p.amount,
+        currency: p.currency,
+        status: p.status,
+        provider: p.provider,
+        providerTxId: p.providerTxId,
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt,
+        user: p.subscription.user,
+        plan: p.subscription.plan,
+        subscriptionId: p.subscriptionId,
+      })),
+      total,
+    };
+  }
+
+  /**
+   * Get all purchases (one-time payments) with filtering
+   */
+  async getPurchases(params: {
+    status?: string;
+    type?: string;
+    limit?: number;
+    offset?: number;
+  }) {
+    const { status, type, limit = 50, offset = 0 } = params;
+
+    const where: {
+      status?: string;
+      type?: string;
+    } = {};
+
+    if (status) where.status = status;
+    if (type) where.type = type;
+
+    const [purchases, total] = await Promise.all([
+      this.prisma.purchase.findMany({
+        where,
+        include: {
+          user: {
+            select: { id: true, email: true, name: true },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip: offset,
+      }),
+      this.prisma.purchase.count({ where }),
+    ]);
+
+    return { purchases, total };
+  }
+
+  /**
+   * Get payment by ID with full details
+   */
+  async getPaymentById(paymentId: string) {
+    const payment = await this.prisma.payment.findUnique({
+      where: { id: paymentId },
+      include: {
+        subscription: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                email: true,
+                name: true,
+                isPremium: true,
+              },
+            },
+            plan: true,
+          },
+        },
+      },
+    });
+
+    if (!payment) return null;
+
+    // Get related transactions for audit trail
+    const transactions = await this.prisma.paymentTransaction.findMany({
+      where: {
+        orderId: payment.subscriptionId,
+        orderType: "subscription",
+      },
+      orderBy: { createdAt: "desc" },
+      take: 10,
+    });
+
+    return {
+      ...payment,
+      transactions,
+    };
+  }
+
+  /**
+   * Get all subscriptions with filtering
+   */
+  async getSubscriptions(params: {
+    status?: string;
+    planId?: string;
+    limit?: number;
+    offset?: number;
+  }) {
+    const { status, planId, limit = 50, offset = 0 } = params;
+
+    const where: {
+      status?: string;
+      planId?: string;
+    } = {};
+
+    if (status) where.status = status;
+    if (planId) where.planId = planId;
+
+    const [subscriptions, total] = await Promise.all([
+      this.prisma.subscription.findMany({
+        where,
+        include: {
+          user: {
+            select: { id: true, email: true, name: true, isPremium: true },
+          },
+          plan: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              type: true,
+              priceMonthly: true,
+            },
+          },
+          _count: {
+            select: { payments: true },
+          },
+        },
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        skip: offset,
+      }),
+      this.prisma.subscription.count({ where }),
+    ]);
+
+    return {
+      subscriptions: subscriptions.map((s) => ({
+        id: s.id,
+        status: s.status,
+        startDate: s.startDate,
+        endDate: s.endDate,
+        autoRenew: s.autoRenew,
+        createdAt: s.createdAt,
+        user: s.user,
+        plan: s.plan,
+        paymentsCount: s._count.payments,
+      })),
+      total,
+    };
+  }
+
+  /**
+   * Get subscription by ID with payment history
+   */
+  async getSubscriptionById(subscriptionId: string) {
+    const subscription = await this.prisma.subscription.findUnique({
+      where: { id: subscriptionId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            name: true,
+            isPremium: true,
+            createdAt: true,
+          },
+        },
+        plan: true,
+        payments: {
+          orderBy: { createdAt: "desc" },
+          take: 20,
+        },
+      },
+    });
+
+    return subscription;
+  }
+
+  /**
+   * Extend subscription manually (admin action)
+   */
+  async extendSubscription(subscriptionId: string, days: number) {
+    const subscription = await this.prisma.subscription.findUnique({
+      where: { id: subscriptionId },
+    });
+
+    if (!subscription) {
+      throw new Error("Subscription not found");
+    }
+
+    // Calculate new end date
+    const currentEndDate = subscription.endDate;
+    const newEndDate = new Date(currentEndDate);
+    newEndDate.setDate(newEndDate.getDate() + days);
+
+    // Update subscription
+    const updated = await this.prisma.subscription.update({
+      where: { id: subscriptionId },
+      data: {
+        endDate: newEndDate,
+        status: "active", // Reactivate if expired
+      },
+      include: {
+        user: { select: { id: true, email: true, name: true } },
+        plan: { select: { id: true, name: true, slug: true } },
+      },
+    });
+
+    // Update user premium status
+    await this.prisma.user.update({
+      where: { id: subscription.userId },
+      data: { isPremium: true },
+    });
+
+    return updated;
+  }
+
+  /**
+   * Cancel subscription manually (admin action)
+   */
+  async cancelSubscription(subscriptionId: string) {
+    const subscription = await this.prisma.subscription.findUnique({
+      where: { id: subscriptionId },
+      include: { user: true },
+    });
+
+    if (!subscription) {
+      throw new Error("Subscription not found");
+    }
+
+    if (subscription.status === "cancelled") {
+      throw new Error("Subscription is already cancelled");
+    }
+
+    // Cancel the subscription
+    const updated = await this.prisma.subscription.update({
+      where: { id: subscriptionId },
+      data: {
+        status: "cancelled",
+        autoRenew: false,
+      },
+      include: {
+        user: { select: { id: true, email: true, name: true } },
+        plan: { select: { id: true, name: true, slug: true } },
+      },
+    });
+
+    // Check if user has other active subscriptions
+    const otherActiveSubscriptions = await this.prisma.subscription.count({
+      where: {
+        userId: subscription.userId,
+        status: "active",
+        id: { not: subscriptionId },
+      },
+    });
+
+    // If no other active subscriptions, remove premium status
+    if (otherActiveSubscriptions === 0) {
+      await this.prisma.user.update({
+        where: { id: subscription.userId },
+        data: { isPremium: false },
+      });
+    }
+
+    return updated;
+  }
+
+  /**
+   * Refund a payment (admin action)
+   */
+  async refundPayment(paymentId: string, reason: string) {
+    const payment = await this.prisma.payment.findUnique({
+      where: { id: paymentId },
+      include: {
+        subscription: {
+          include: { user: true },
+        },
+      },
+    });
+
+    if (!payment) {
+      throw new Error("Payment not found");
+    }
+
+    if (payment.status === "refunded") {
+      throw new Error("Payment is already refunded");
+    }
+
+    if (payment.status !== "completed") {
+      throw new Error("Only completed payments can be refunded");
+    }
+
+    // Update payment status
+    const updated = await this.prisma.payment.update({
+      where: { id: paymentId },
+      data: {
+        status: "refunded",
+        metadata: {
+          ...((payment.metadata as object) || {}),
+          refundReason: reason,
+          refundedAt: new Date().toISOString(),
+        },
+      },
+    });
+
+    // Log the refund transaction
+    await this.prisma.paymentTransaction.create({
+      data: {
+        orderId: payment.subscriptionId,
+        orderType: "subscription",
+        provider: payment.provider || "manual",
+        amount: payment.amount,
+        state: -1, // Refund state
+        action: "refund",
+        request: { reason },
+        response: { success: true },
+      },
+    });
+
+    return updated;
+  }
+
+  /**
+   * Get revenue analytics
+   */
+  async getRevenueAnalytics() {
+    const now = new Date();
+    const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const firstDayOfLastMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() - 1,
+      1,
+    );
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+    // This month's revenue
+    const thisMonthRevenue = await this.prisma.payment.aggregate({
+      where: {
+        status: "completed",
+        createdAt: { gte: firstDayOfMonth },
+      },
+      _sum: { amount: true },
+      _count: true,
+    });
+
+    // Last month's revenue
+    const lastMonthRevenue = await this.prisma.payment.aggregate({
+      where: {
+        status: "completed",
+        createdAt: {
+          gte: firstDayOfLastMonth,
+          lt: firstDayOfMonth,
+        },
+      },
+      _sum: { amount: true },
+      _count: true,
+    });
+
+    // Total revenue
+    const totalRevenue = await this.prisma.payment.aggregate({
+      where: { status: "completed" },
+      _sum: { amount: true },
+      _count: true,
+    });
+
+    // Revenue by provider
+    const revenueByProvider = await this.prisma.payment.groupBy({
+      by: ["provider"],
+      where: { status: "completed" },
+      _sum: { amount: true },
+      _count: true,
+    });
+
+    // Refunded payments
+    const refundedPayments = await this.prisma.payment.aggregate({
+      where: { status: "refunded" },
+      _sum: { amount: true },
+      _count: true,
+    });
+
+    // Daily revenue for chart (last 30 days)
+    const dailyPayments = await this.prisma.payment.findMany({
+      where: {
+        status: "completed",
+        createdAt: { gte: thirtyDaysAgo },
+      },
+      select: {
+        amount: true,
+        createdAt: true,
+      },
+    });
+
+    // Group by day
+    const dailyRevenue: { [key: string]: number } = {};
+    dailyPayments.forEach((p) => {
+      const date = p.createdAt.toISOString().split("T")[0];
+      dailyRevenue[date] = (dailyRevenue[date] || 0) + p.amount;
+    });
+
+    // Convert to sorted array
+    const dailyRevenueArray = Object.entries(dailyRevenue)
+      .map(([date, amount]) => ({ date, amount }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+
+    // Purchase revenue (one-time purchases)
+    const purchaseRevenue = await this.prisma.purchase.aggregate({
+      where: { status: "completed" },
+      _sum: { amount: true },
+      _count: true,
+    });
+
+    return {
+      thisMonth: {
+        revenue: thisMonthRevenue._sum.amount || 0,
+        count: thisMonthRevenue._count,
+      },
+      lastMonth: {
+        revenue: lastMonthRevenue._sum.amount || 0,
+        count: lastMonthRevenue._count,
+      },
+      total: {
+        revenue: totalRevenue._sum.amount || 0,
+        count: totalRevenue._count,
+      },
+      byProvider: revenueByProvider.map((p) => ({
+        provider: p.provider || "unknown",
+        revenue: p._sum.amount || 0,
+        count: p._count,
+      })),
+      refunded: {
+        amount: refundedPayments._sum.amount || 0,
+        count: refundedPayments._count,
+      },
+      purchases: {
+        revenue: purchaseRevenue._sum.amount || 0,
+        count: purchaseRevenue._count,
+      },
+      dailyRevenue: dailyRevenueArray,
+    };
+  }
+
+  /**
+   * Get all subscription plans
+   */
+  async getSubscriptionPlans() {
+    const plans = await this.prisma.subscriptionPlan.findMany({
+      include: {
+        _count: {
+          select: { subscriptions: true },
+        },
+        course: {
+          select: { id: true, title: true, slug: true },
+        },
+      },
+      orderBy: { createdAt: "asc" },
+    });
+
+    return plans.map((p) => ({
+      id: p.id,
+      slug: p.slug,
+      name: p.name,
+      nameRu: p.nameRu,
+      type: p.type,
+      priceMonthly: p.priceMonthly,
+      currency: p.currency,
+      isActive: p.isActive,
+      course: p.course,
+      subscriptionsCount: p._count.subscriptions,
+      createdAt: p.createdAt,
+    }));
+  }
 }

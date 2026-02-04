@@ -152,4 +152,171 @@ export class AdminController {
       );
     }
   }
+
+  // ============================================
+  // PAYMENTS MANAGEMENT (Admin Panel Phase 2.2)
+  // ============================================
+
+  /**
+   * GET /admin/analytics/payments
+   * Get all payments with filtering
+   */
+  @Get("payments")
+  async getPayments(
+    @Query("status") status?: string,
+    @Query("provider") provider?: string,
+    @Query("limit") limit?: string,
+    @Query("offset") offset?: string,
+  ) {
+    return this.adminService.getPayments({
+      status,
+      provider,
+      limit: limit ? parseInt(limit, 10) : 50,
+      offset: offset ? parseInt(offset, 10) : 0,
+    });
+  }
+
+  /**
+   * GET /admin/analytics/payments/revenue
+   * Get revenue analytics
+   */
+  @Get("payments/revenue")
+  async getRevenueAnalytics() {
+    return this.adminService.getRevenueAnalytics();
+  }
+
+  /**
+   * GET /admin/analytics/payments/:id
+   * Get payment details by ID
+   */
+  @Get("payments/:id")
+  async getPaymentById(@Param("id") paymentId: string) {
+    const payment = await this.adminService.getPaymentById(paymentId);
+    if (!payment) {
+      throw new NotFoundException("Payment not found");
+    }
+    return payment;
+  }
+
+  /**
+   * POST /admin/analytics/payments/:id/refund
+   * Refund a payment
+   */
+  @Post("payments/:id/refund")
+  async refundPayment(
+    @Param("id") paymentId: string,
+    @Body("reason") reason: string,
+  ) {
+    if (!reason || reason.trim().length === 0) {
+      throw new BadRequestException("Refund reason is required");
+    }
+    try {
+      return await this.adminService.refundPayment(paymentId, reason.trim());
+    } catch (error) {
+      throw new BadRequestException(
+        error instanceof Error ? error.message : "Failed to refund payment",
+      );
+    }
+  }
+
+  /**
+   * GET /admin/analytics/purchases
+   * Get all one-time purchases
+   */
+  @Get("purchases")
+  async getPurchases(
+    @Query("status") status?: string,
+    @Query("type") type?: string,
+    @Query("limit") limit?: string,
+    @Query("offset") offset?: string,
+  ) {
+    return this.adminService.getPurchases({
+      status,
+      type,
+      limit: limit ? parseInt(limit, 10) : 50,
+      offset: offset ? parseInt(offset, 10) : 0,
+    });
+  }
+
+  /**
+   * GET /admin/analytics/subscriptions/list
+   * Get all subscriptions with filtering
+   */
+  @Get("subscriptions/list")
+  async getSubscriptions(
+    @Query("status") status?: string,
+    @Query("planId") planId?: string,
+    @Query("limit") limit?: string,
+    @Query("offset") offset?: string,
+  ) {
+    return this.adminService.getSubscriptions({
+      status,
+      planId,
+      limit: limit ? parseInt(limit, 10) : 50,
+      offset: offset ? parseInt(offset, 10) : 0,
+    });
+  }
+
+  /**
+   * GET /admin/analytics/subscriptions/plans
+   * Get all subscription plans
+   */
+  @Get("subscriptions/plans")
+  async getSubscriptionPlans() {
+    return this.adminService.getSubscriptionPlans();
+  }
+
+  /**
+   * GET /admin/analytics/subscriptions/:id
+   * Get subscription details by ID
+   */
+  @Get("subscriptions/:id")
+  async getSubscriptionById(@Param("id") subscriptionId: string) {
+    const subscription =
+      await this.adminService.getSubscriptionById(subscriptionId);
+    if (!subscription) {
+      throw new NotFoundException("Subscription not found");
+    }
+    return subscription;
+  }
+
+  /**
+   * POST /admin/analytics/subscriptions/:id/extend
+   * Extend subscription manually
+   */
+  @Post("subscriptions/:id/extend")
+  async extendSubscription(
+    @Param("id") subscriptionId: string,
+    @Body("days") days: number,
+  ) {
+    if (!days || days <= 0 || days > 365) {
+      throw new BadRequestException("Days must be between 1 and 365");
+    }
+    try {
+      return await this.adminService.extendSubscription(subscriptionId, days);
+    } catch (error) {
+      throw new BadRequestException(
+        error instanceof Error
+          ? error.message
+          : "Failed to extend subscription",
+      );
+    }
+  }
+
+  /**
+   * POST /admin/analytics/subscriptions/:id/cancel
+   * Cancel subscription manually
+   */
+  @Post("subscriptions/:id/cancel")
+  async cancelSubscription(@Param("id") subscriptionId: string) {
+    try {
+      return await this.adminService.cancelSubscription(subscriptionId);
+    } catch (error) {
+      throw new BadRequestException(
+        error instanceof Error
+          ? error.message
+          : "Failed to cancel subscription",
+      );
+    }
+  }
 }
