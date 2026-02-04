@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsArray, IsNumber, IsIn } from 'class-validator';
+import { IsString, IsNotEmpty, IsArray, IsNumber, IsIn } from "class-validator";
 
 /**
  * Phase data structure for DTO validation
@@ -12,43 +12,15 @@ export interface RoadmapPhaseDto {
   steps: {
     id: string;
     title: string;
-    type: 'practice' | 'video' | 'project' | 'reading';
+    type: "practice" | "video" | "project" | "reading";
     durationEstimate: string;
     deepLink: string;
-    resourceType: 'task' | 'topic' | 'module';
+    resourceType: "task" | "topic" | "module";
     relatedResourceId: string;
-    status: 'available' | 'completed' | 'locked';
+    status: "available" | "completed" | "locked";
   }[];
   progressPercentage: number;
 }
-
-// Legacy DTO - kept for backward compatibility
-export class GenerateRoadmapDto {
-  @IsString()
-  @IsNotEmpty()
-  role: string;
-
-  @IsString()
-  @IsNotEmpty()
-  level: string;
-
-  @IsString()
-  @IsOptional()
-  goal?: string;
-
-  @IsArray()
-  @IsString({ each: true })
-  @IsOptional()
-  preferredTopics?: string[];
-
-  @IsNumber()
-  @IsOptional()
-  hoursPerWeek?: number;
-}
-
-// ============================================================================
-// NEW: Extended Roadmap Generation DTO (v2)
-// ============================================================================
 
 export class GenerateRoadmapVariantsDto {
   // Step 1: Current knowledge
@@ -66,7 +38,7 @@ export class GenerateRoadmapVariantsDto {
 
   // Step 3: Goal
   @IsString()
-  @IsIn(['first-job', 'senior', 'startup', 'master-skill'])
+  @IsIn(["first-job", "senior", "startup", "master-skill"])
   goal: string;
 
   // Step 4: Time commitment
@@ -103,7 +75,7 @@ export class SelectRoadmapVariantDto {
   targetRole: string;
 
   @IsString()
-  @IsIn(['easy', 'medium', 'hard'])
+  @IsIn(["easy", "medium", "hard"])
   difficulty: string;
 
   // Phases JSON - will be parsed on backend

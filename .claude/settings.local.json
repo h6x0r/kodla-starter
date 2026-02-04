@@ -321,7 +321,8 @@
       "mcp__context7__query-docs",
       "WebFetch(domain:ce.judge0.com)",
       "WebFetch(domain:extra-ce.judge0.com)",
-      "WebFetch(domain:hub.docker.com)"
+      "WebFetch(domain:hub.docker.com)",
+      "WebFetch(domain:)"
     ],
     "deny": [],
     "ask": []

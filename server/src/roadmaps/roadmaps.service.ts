@@ -1,18 +1,20 @@
-import { Injectable, ForbiddenException, Logger } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { ConfigService } from '@nestjs/config';
-import { CacheService } from '../cache/cache.service';
-import { UserRoadmap } from '@prisma/client';
-import { GenerateRoadmapDto, GenerateRoadmapVariantsDto, SelectRoadmapVariantDto } from './dto/roadmaps.dto';
+import { Injectable, ForbiddenException, Logger } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { ConfigService } from "@nestjs/config";
+import { CacheService } from "../cache/cache.service";
+import { UserRoadmap } from "@prisma/client";
+import {
+  GenerateRoadmapVariantsDto,
+  SelectRoadmapVariantDto,
+} from "./dto/roadmaps.dto";
 import { GoogleGenAI } from "@google/genai";
 import {
   VARIANTS_CACHE_TTL,
   SALARY_RANGES,
   COURSE_ICONS,
   PHASE_PALETTES,
-  CATEGORY_PATTERNS,
   DEFAULT_AI_MODEL,
-} from './roadmap.config';
+} from "./roadmap.config";
 
 export interface RoadmapPhase {
   id: string;
@@ -27,15 +29,13 @@ export interface RoadmapPhase {
 export interface RoadmapStep {
   id: string;
   title: string;
-  type: 'practice' | 'video' | 'project' | 'reading';
+  type: "practice" | "video" | "project" | "reading";
   durationEstimate: string;
   deepLink: string;
-  resourceType: 'task' | 'topic' | 'module';
+  resourceType: "task" | "topic" | "module";
   relatedResourceId: string;
-  status: 'available' | 'completed' | 'locked';
+  status: "available" | "completed" | "locked";
 }
-
-// PHASE_PALETTES and CATEGORY_PATTERNS are imported from roadmap.config.ts
 
 interface TaskInfo {
   id: string;
@@ -65,7 +65,7 @@ export interface RoadmapVariantData {
   estimatedMonths: number;
   salaryRange: { min: number; max: number };
   targetRole: string;
-  difficulty: 'easy' | 'medium' | 'hard';
+  difficulty: "easy" | "medium" | "hard";
   topics: string[];
   sources: {
     courseSlug: string;
@@ -96,7 +96,7 @@ interface AIVariantResponse {
   name: string;
   description: string;
   isRecommended?: boolean;
-  difficulty: 'easy' | 'medium' | 'hard';
+  difficulty: "easy" | "medium" | "hard";
   targetRole: string;
   topics: string[];
   taskSlugs?: string[];
@@ -119,9 +119,11 @@ export class RoadmapsService {
   constructor(
     private prisma: PrismaService,
     private configService: ConfigService,
-    private cacheService: CacheService
+    private cacheService: CacheService,
   ) {
-    const apiKey = this.configService.get<string>('GEMINI_API_KEY') || this.configService.get<string>('API_KEY');
+    const apiKey =
+      this.configService.get<string>("GEMINI_API_KEY") ||
+      this.configService.get<string>("API_KEY");
     if (apiKey) {
       this.genAI = new GoogleGenAI({ apiKey });
     }
@@ -145,18 +147,23 @@ export class RoadmapsService {
   }> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { roadmapGenerations: true }
+      select: { roadmapGenerations: true },
     });
 
     if (!user) {
-      return { canGenerate: false, reason: 'user_not_found', isPremium: false, generationCount: 0 };
+      return {
+        canGenerate: false,
+        reason: "user_not_found",
+        isPremium: false,
+        generationCount: 0,
+      };
     }
 
     // Compute isPremium from active subscriptions (not cached field)
     const activeSubscription = await this.prisma.subscription.findFirst({
       where: {
         userId,
-        status: 'active',
+        status: "active",
         endDate: { gt: new Date() },
       },
     });
@@ -164,7 +171,11 @@ export class RoadmapsService {
 
     // Premium users have unlimited generations
     if (isPremium) {
-      return { canGenerate: true, isPremium: true, generationCount: user.roadmapGenerations };
+      return {
+        canGenerate: true,
+        isPremium: true,
+        generationCount: user.roadmapGenerations,
+      };
     }
 
     // Free users get 1 free generation
@@ -174,9 +185,9 @@ export class RoadmapsService {
 
     return {
       canGenerate: false,
-      reason: 'free_limit_reached',
+      reason: "free_limit_reached",
       isPremium: false,
-      generationCount: user.roadmapGenerations
+      generationCount: user.roadmapGenerations,
     };
   }
 
@@ -186,7 +197,7 @@ export class RoadmapsService {
   async getUserRoadmap(userId: string) {
     const roadmap = await this.prisma.userRoadmap.findFirst({
       where: { userId },
-      orderBy: { updatedAt: 'desc' },
+      orderBy: { updatedAt: "desc" },
     });
 
     if (!roadmap) {
@@ -204,90 +215,6 @@ export class RoadmapsService {
       canRegenerate: canGenStatus.canGenerate,
       isPremium: canGenStatus.isPremium,
       generationCount: canGenStatus.generationCount,
-    };
-  }
-
-  /**
-   * @deprecated Use generateRoadmapVariants() instead. This v1 method is no longer exposed via API.
-   * Generate a new roadmap based on preferences using AI
-   */
-  async generateRoadmap(userId: string, dto: GenerateRoadmapDto) {
-    // Check if user can generate
-    const canGenStatus = await this.canGenerateRoadmap(userId);
-
-    if (!canGenStatus.canGenerate) {
-      throw new ForbiddenException(
-        'Regeneration requires Premium subscription. Upgrade to create unlimited personalized roadmaps.'
-      );
-    }
-
-    // Get relevant tasks based on category
-    const relevantTasks = await this.getTasksByCategory(dto.role);
-
-    // Get user's completed tasks
-    const completedTaskIds = await this.getUserCompletedTasks(userId);
-
-    // Filter out completed tasks
-    const availableTasks = relevantTasks.filter(t => !completedTaskIds.has(t.id));
-
-    // Generate phases using AI or fallback
-    let phases: RoadmapPhase[];
-
-    if (this.genAI && availableTasks.length > 0) {
-      try {
-        phases = await this.generatePhasesWithAI(dto, availableTasks);
-      } catch (error) {
-        this.logger.warn('AI generation failed, using fallback', error);
-        phases = await this.generatePhasesFallback(dto, availableTasks);
-      }
-    } else {
-      phases = await this.generatePhasesFallback(dto, availableTasks);
-    }
-
-    // Calculate title based on role
-    const roleTitle = this.getRoleTitle(dto.role);
-    const title = `${roleTitle} Roadmap`;
-
-    // Create or update user roadmap
-    const roadmap = await this.prisma.userRoadmap.upsert({
-      where: {
-        id: await this.findExistingRoadmapId(userId) || 'new',
-      },
-      create: {
-        userId,
-        role: dto.role,
-        level: dto.level,
-        title,
-        phases: phases as unknown as any,
-        totalProgress: 0,
-      },
-      update: {
-        role: dto.role,
-        level: dto.level,
-        title,
-        phases: phases as unknown as any,
-        totalProgress: 0,
-        updatedAt: new Date(),
-      },
-    });
-
-    // Increment generation counter
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: {
-        roadmapGenerations: { increment: 1 },
-        lastRoadmapGeneration: new Date(),
-      },
-    });
-
-    const hydratedRoadmap = await this.hydrateRoadmap(roadmap, userId);
-    const newStatus = await this.canGenerateRoadmap(userId);
-
-    return {
-      ...hydratedRoadmap,
-      canRegenerate: newStatus.canGenerate,
-      isPremium: newStatus.isPremium,
-      generationCount: newStatus.generationCount,
     };
   }
 
@@ -317,53 +244,53 @@ export class RoadmapsService {
   async getTemplates() {
     return [
       {
-        id: 'backend-go',
-        title: 'Go Backend',
-        description: 'APIs, microservices, concurrency',
-        icon: '🐹',
-        gradient: 'from-cyan-400 to-blue-500',
+        id: "backend-go",
+        title: "Go Backend",
+        description: "APIs, microservices, concurrency",
+        icon: "🐹",
+        gradient: "from-cyan-400 to-blue-500",
       },
       {
-        id: 'backend-java',
-        title: 'Java Backend',
-        description: 'Enterprise, Spring, production',
-        icon: '☕',
-        gradient: 'from-orange-400 to-red-500',
+        id: "backend-java",
+        title: "Java Backend",
+        description: "Enterprise, Spring, production",
+        icon: "☕",
+        gradient: "from-orange-400 to-red-500",
       },
       {
-        id: 'python-data',
-        title: 'Python & Data',
-        description: 'ML basics, data analysis, algorithms',
-        icon: '🐍',
-        gradient: 'from-green-400 to-emerald-500',
+        id: "python-data",
+        title: "Python & Data",
+        description: "ML basics, data analysis, algorithms",
+        icon: "🐍",
+        gradient: "from-green-400 to-emerald-500",
       },
       {
-        id: 'ai-ml',
-        title: 'AI & Machine Learning',
-        description: 'Deep learning, LLMs, inference',
-        icon: '🤖',
-        gradient: 'from-purple-400 to-pink-500',
+        id: "ai-ml",
+        title: "AI & Machine Learning",
+        description: "Deep learning, LLMs, inference",
+        icon: "🤖",
+        gradient: "from-purple-400 to-pink-500",
       },
       {
-        id: 'software-design',
-        title: 'Software Design',
-        description: 'SOLID, patterns, architecture',
-        icon: '🏗️',
-        gradient: 'from-amber-400 to-orange-500',
+        id: "software-design",
+        title: "Software Design",
+        description: "SOLID, patterns, architecture",
+        icon: "🏗️",
+        gradient: "from-amber-400 to-orange-500",
       },
       {
-        id: 'algorithms',
-        title: 'Algorithms & DS',
-        description: 'Problem solving, interviews',
-        icon: '🧮',
-        gradient: 'from-indigo-400 to-purple-500',
+        id: "algorithms",
+        title: "Algorithms & DS",
+        description: "Problem solving, interviews",
+        icon: "🧮",
+        gradient: "from-indigo-400 to-purple-500",
       },
       {
-        id: 'fullstack',
-        title: 'Fullstack',
-        description: 'Combined frontend + backend',
-        icon: '🌐',
-        gradient: 'from-teal-400 to-cyan-500',
+        id: "fullstack",
+        title: "Fullstack",
+        description: "Combined frontend + backend",
+        icon: "🌐",
+        gradient: "from-teal-400 to-cyan-500",
       },
     ];
   }
@@ -375,13 +302,16 @@ export class RoadmapsService {
   /**
    * Generate 3-5 roadmap variants based on user preferences
    */
-  async generateRoadmapVariants(userId: string, dto: GenerateRoadmapVariantsDto) {
+  async generateRoadmapVariants(
+    userId: string,
+    dto: GenerateRoadmapVariantsDto,
+  ) {
     // Check if user can generate
     const canGenStatus = await this.canGenerateRoadmap(userId);
 
     if (!canGenStatus.canGenerate) {
       throw new ForbiddenException(
-        'Regeneration requires Premium subscription. Upgrade to create unlimited personalized roadmaps.'
+        "Regeneration requires Premium subscription. Upgrade to create unlimited personalized roadmaps.",
       );
     }
 
@@ -392,7 +322,9 @@ export class RoadmapsService {
     const completedTaskIds = await this.getUserCompletedTasks(userId);
 
     // Filter out completed tasks
-    const availableTasks = allTasksWithCourses.filter(t => !completedTaskIds.has(t.id));
+    const availableTasks = allTasksWithCourses.filter(
+      (t) => !completedTaskIds.has(t.id),
+    );
 
     // Generate variants using AI or fallback
     let variants: RoadmapVariantData[];
@@ -401,7 +333,7 @@ export class RoadmapsService {
       try {
         variants = await this.generateVariantsWithAI(dto, availableTasks);
       } catch (error) {
-        this.logger.warn('AI variant generation failed, using fallback', error);
+        this.logger.warn("AI variant generation failed, using fallback", error);
         variants = this.generateVariantsFallback(dto, availableTasks);
       }
     } else {
@@ -412,7 +344,7 @@ export class RoadmapsService {
     await this.cacheService.set(
       this.getVariantsCacheKey(userId),
       variants,
-      VARIANTS_CACHE_TTL
+      VARIANTS_CACHE_TTL,
     );
     this.logger.log(`Cached ${variants.length} variants for user ${userId}`);
 
@@ -433,7 +365,9 @@ export class RoadmapsService {
     const canGenStatus = await this.canGenerateRoadmap(userId);
 
     if (!canGenStatus.canGenerate) {
-      throw new ForbiddenException('Regeneration requires Premium subscription.');
+      throw new ForbiddenException(
+        "Regeneration requires Premium subscription.",
+      );
     }
 
     // Create phases from DTO
@@ -442,7 +376,7 @@ export class RoadmapsService {
     // Create or update user roadmap
     const roadmap = await this.prisma.userRoadmap.upsert({
       where: {
-        id: await this.findExistingRoadmapId(userId) || 'new',
+        id: (await this.findExistingRoadmapId(userId)) || "new",
       },
       create: {
         userId,
@@ -494,7 +428,7 @@ export class RoadmapsService {
 
     // Try to get cached variants
     const cachedVariants = await this.cacheService.get<RoadmapVariantData[]>(
-      this.getVariantsCacheKey(userId)
+      this.getVariantsCacheKey(userId),
     );
 
     return {
@@ -524,12 +458,18 @@ export class RoadmapsService {
             topics: {
               include: {
                 tasks: {
-                  select: { id: true, slug: true, title: true, difficulty: true, estimatedTime: true },
+                  select: {
+                    id: true,
+                    slug: true,
+                    title: true,
+                    difficulty: true,
+                    estimatedTime: true,
+                  },
                 },
               },
             },
           },
-          orderBy: { order: 'asc' },
+          orderBy: { order: "asc" },
         },
       },
     });
@@ -550,7 +490,7 @@ export class RoadmapsService {
               moduleTitle: module.title,
               courseSlug: course.slug,
               courseTitle: course.title,
-              courseIcon: COURSE_ICONS[course.slug] || '📚',
+              courseIcon: COURSE_ICONS[course.slug] || "📚",
             });
           }
         }
@@ -565,28 +505,29 @@ export class RoadmapsService {
    */
   private async generateVariantsWithAI(
     dto: GenerateRoadmapVariantsDto,
-    tasks: TaskWithCourseInfo[]
+    tasks: TaskWithCourseInfo[],
   ): Promise<RoadmapVariantData[]> {
     const prompt = this.buildVariantsPrompt(dto, tasks);
 
-    const aiModel = this.configService.get<string>('AI_MODEL_NAME') || DEFAULT_AI_MODEL;
+    const aiModel =
+      this.configService.get<string>("AI_MODEL_NAME") || DEFAULT_AI_MODEL;
     const response = await this.genAI!.models.generateContent({
       model: aiModel,
       contents: prompt,
     });
 
-    const text = response.text || '';
+    const text = response.text || "";
 
     // Extract JSON from response
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      throw new Error('No valid JSON in AI response');
+      throw new Error("No valid JSON in AI response");
     }
 
     const parsed = JSON.parse(jsonMatch[0]);
 
     // Create task lookup map
-    const taskMap = new Map(tasks.map(t => [t.slug, t]));
+    const taskMap = new Map(tasks.map((t) => [t.slug, t]));
 
     // Convert AI response to variants
     return this.convertAIResponseToVariants(parsed, taskMap, dto);
@@ -595,12 +536,17 @@ export class RoadmapsService {
   /**
    * Build prompt for generating multiple variants
    */
-  private buildVariantsPrompt(dto: GenerateRoadmapVariantsDto, tasks: TaskWithCourseInfo[]): string {
+  private buildVariantsPrompt(
+    dto: GenerateRoadmapVariantsDto,
+    tasks: TaskWithCourseInfo[],
+  ): string {
     const goalDescriptions: Record<string, string> = {
-      'first-job': 'Looking for first IT job, needs interview prep and portfolio',
-      'senior': 'Wants promotion to senior/lead, needs architecture and best practices',
-      'startup': 'Building a startup/product, needs full-stack and MVP skills',
-      'master-skill': 'Deep expertise in specific technology',
+      "first-job":
+        "Looking for first IT job, needs interview prep and portfolio",
+      senior:
+        "Wants promotion to senior/lead, needs architecture and best practices",
+      startup: "Building a startup/product, needs full-stack and MVP skills",
+      "master-skill": "Deep expertise in specific technology",
     };
 
     // Sample tasks (max 300 for context)
@@ -609,25 +555,30 @@ export class RoadmapsService {
     // Group tasks by course for context
     const courseGroups = new Map<string, number>();
     for (const task of tasks) {
-      courseGroups.set(task.courseTitle, (courseGroups.get(task.courseTitle) || 0) + 1);
+      courseGroups.set(
+        task.courseTitle,
+        (courseGroups.get(task.courseTitle) || 0) + 1,
+      );
     }
 
     return `
 You are creating personalized learning roadmap VARIANTS for a developer.
 
 USER PROFILE:
-- Known Languages: ${dto.knownLanguages.join(', ') || 'None specified'}
+- Known Languages: ${dto.knownLanguages.join(", ") || "None specified"}
 - Years of Experience: ${dto.yearsOfExperience}
-- Interested Areas: ${dto.interests.join(', ')}
+- Interested Areas: ${dto.interests.join(", ")}
 - Main Goal: ${dto.goal} (${goalDescriptions[dto.goal] || dto.goal})
 - Available Time: ${dto.hoursPerWeek} hours/week
 - Target Timeline: ${dto.targetMonths} months
 
 AVAILABLE COURSES (${courseGroups.size} courses, ${tasks.length} total tasks):
-${Array.from(courseGroups.entries()).map(([name, count]) => `- ${name}: ${count} tasks`).join('\n')}
+${Array.from(courseGroups.entries())
+  .map(([name, count]) => `- ${name}: ${count} tasks`)
+  .join("\n")}
 
 SAMPLE TASKS (${sampledTasks.length} of ${tasks.length}):
-${sampledTasks.map(t => `- ${t.slug}: "${t.title}" [${t.difficulty}] (${t.estimatedTime}) from ${t.courseTitle}`).join('\n')}
+${sampledTasks.map((t) => `- ${t.slug}: "${t.title}" [${t.difficulty}] (${t.estimatedTime}) from ${t.courseTitle}`).join("\n")}
 
 Generate 3-5 DIFFERENT roadmap variants. Each variant should be a distinct learning path:
 
@@ -679,7 +630,7 @@ IMPORTANT:
   private convertAIResponseToVariants(
     parsed: AIVariantsResponse,
     taskMap: Map<string, TaskWithCourseInfo>,
-    dto: GenerateRoadmapVariantsDto
+    dto: GenerateRoadmapVariantsDto,
   ): RoadmapVariantData[] {
     const variants: RoadmapVariantData[] = [];
 
@@ -711,17 +662,30 @@ IMPORTANT:
       // Calculate metrics
       const totalTasks = variantTasks.length;
       const estimatedHours = this.calculateTotalHours(variantTasks);
-      const estimatedMonths = Math.ceil(estimatedHours / (dto.hoursPerWeek * 4));
+      const estimatedMonths = Math.ceil(
+        estimatedHours / (dto.hoursPerWeek * 4),
+      );
 
       // Determine salary range based on difficulty
-      const salaryKey = variant.difficulty === 'easy' ? 'junior-plus' :
-                        variant.difficulty === 'hard' ? 'senior' : 'middle';
-      const salaryRange = SALARY_RANGES[salaryKey] || SALARY_RANGES['middle'];
+      const salaryKey =
+        variant.difficulty === "easy"
+          ? "junior-plus"
+          : variant.difficulty === "hard"
+            ? "senior"
+            : "middle";
+      const salaryRange = SALARY_RANGES[salaryKey] || SALARY_RANGES["middle"];
 
       // Calculate sources (which courses contribute)
-      const sourceMap = new Map<string, { count: number; title: string; icon: string }>();
+      const sourceMap = new Map<
+        string,
+        { count: number; title: string; icon: string }
+      >();
       for (const task of variantTasks) {
-        const existing = sourceMap.get(task.courseSlug) || { count: 0, title: task.courseTitle, icon: task.courseIcon };
+        const existing = sourceMap.get(task.courseSlug) || {
+          count: 0,
+          title: task.courseTitle,
+          icon: task.courseIcon,
+        };
         existing.count++;
         sourceMap.set(task.courseSlug, existing);
       }
@@ -737,33 +701,35 @@ IMPORTANT:
         .sort((a, b) => b.taskCount - a.taskCount);
 
       // Build phases
-      const phases: RoadmapPhase[] = (variant.phases || []).map((phase: AIPhaseResponse, index: number) => {
-        const phaseTasks = (phase.taskSlugs || [])
-          .map((slug: string) => taskMap.get(slug))
-          .filter(Boolean) as TaskWithCourseInfo[];
+      const phases: RoadmapPhase[] = (variant.phases || [])
+        .map((phase: AIPhaseResponse, index: number) => {
+          const phaseTasks = (phase.taskSlugs || [])
+            .map((slug: string) => taskMap.get(slug))
+            .filter(Boolean) as TaskWithCourseInfo[];
 
-        return {
-          id: `phase_${index + 1}`,
-          title: phase.title,
-          description: phase.description,
-          colorTheme: PHASE_PALETTES[index % PHASE_PALETTES.length],
-          order: index + 1,
-          steps: phaseTasks.map(task => ({
-            id: `step_${task.id}`,
-            title: task.title,
-            type: 'practice' as const,
-            durationEstimate: task.estimatedTime,
-            deepLink: `/task/${task.slug}`,
-            resourceType: 'task' as const,
-            relatedResourceId: task.id,
-            status: 'available' as const,
-          })),
-          progressPercentage: 0,
-        };
-      }).filter((p: RoadmapPhase) => p.steps.length > 0);
+          return {
+            id: `phase_${index + 1}`,
+            title: phase.title,
+            description: phase.description,
+            colorTheme: PHASE_PALETTES[index % PHASE_PALETTES.length],
+            order: index + 1,
+            steps: phaseTasks.map((task) => ({
+              id: `step_${task.id}`,
+              title: task.title,
+              type: "practice" as const,
+              durationEstimate: task.estimatedTime,
+              deepLink: `/task/${task.slug}`,
+              resourceType: "task" as const,
+              relatedResourceId: task.id,
+              status: "available" as const,
+            })),
+            progressPercentage: 0,
+          };
+        })
+        .filter((p: RoadmapPhase) => p.steps.length > 0);
 
       // Preview tasks (first 5)
-      const previewTasks = variantTasks.slice(0, 5).map(t => ({
+      const previewTasks = variantTasks.slice(0, 5).map((t) => ({
         title: t.title,
         difficulty: t.difficulty,
         fromCourse: t.courseTitle,
@@ -774,13 +740,15 @@ IMPORTANT:
         id: variantId,
         name: variant.name,
         description: variant.description,
-        isRecommended: variantId === 'balanced' || variant.name?.toLowerCase().includes('recommend'),
+        isRecommended:
+          variantId === "balanced" ||
+          variant.name?.toLowerCase().includes("recommend"),
         totalTasks,
         estimatedHours,
         estimatedMonths,
         salaryRange,
-        targetRole: variant.targetRole || 'Developer',
-        difficulty: variant.difficulty || 'medium',
+        targetRole: variant.targetRole || "Developer",
+        difficulty: variant.difficulty || "medium",
         topics: variant.topics || [],
         sources,
         previewTasks,
@@ -796,23 +764,27 @@ IMPORTANT:
    */
   private generateVariantsFallback(
     dto: GenerateRoadmapVariantsDto,
-    tasks: TaskWithCourseInfo[]
+    tasks: TaskWithCourseInfo[],
   ): RoadmapVariantData[] {
     // Sort tasks by difficulty
-    const difficultyOrder = { 'easy': 0, 'medium': 1, 'hard': 2 };
+    const difficultyOrder = { easy: 0, medium: 1, hard: 2 };
     const sortedTasks = [...tasks].sort(
-      (a, b) => (difficultyOrder[a.difficulty as keyof typeof difficultyOrder] || 1) -
-                (difficultyOrder[b.difficulty as keyof typeof difficultyOrder] || 1)
+      (a, b) =>
+        (difficultyOrder[a.difficulty as keyof typeof difficultyOrder] || 1) -
+        (difficultyOrder[b.difficulty as keyof typeof difficultyOrder] || 1),
     );
 
     // Filter by interests if specified
     let relevantTasks = sortedTasks;
     if (dto.interests.length > 0) {
-      const interestPatterns = dto.interests.map(i => new RegExp(i, 'i'));
-      relevantTasks = sortedTasks.filter(t =>
-        interestPatterns.some(p =>
-          p.test(t.courseSlug) || p.test(t.courseTitle) || p.test(t.moduleTitle)
-        )
+      const interestPatterns = dto.interests.map((i) => new RegExp(i, "i"));
+      relevantTasks = sortedTasks.filter((t) =>
+        interestPatterns.some(
+          (p) =>
+            p.test(t.courseSlug) ||
+            p.test(t.courseTitle) ||
+            p.test(t.moduleTitle),
+        ),
       );
       // If too few, use all
       if (relevantTasks.length < 30) relevantTasks = sortedTasks;
@@ -823,18 +795,45 @@ IMPORTANT:
 
     // Variant 1: Quick Start (30-50 tasks)
     const quickTasks = relevantTasks.slice(0, 45);
-    variants.push(this.buildVariantFromTasks('quick-start', 'Quick Start',
-      'Fast track to your goal with essential skills', quickTasks, dto, 'easy', 'junior-plus'));
+    variants.push(
+      this.buildVariantFromTasks(
+        "quick-start",
+        "Quick Start",
+        "Fast track to your goal with essential skills",
+        quickTasks,
+        dto,
+        "easy",
+        "junior-plus",
+      ),
+    );
 
     // Variant 2: Balanced (80-120 tasks)
     const balancedTasks = relevantTasks.slice(0, 100);
-    variants.push(this.buildVariantFromTasks('balanced', 'Balanced Path',
-      'Recommended path with comprehensive coverage', balancedTasks, dto, 'medium', 'middle'));
+    variants.push(
+      this.buildVariantFromTasks(
+        "balanced",
+        "Balanced Path",
+        "Recommended path with comprehensive coverage",
+        balancedTasks,
+        dto,
+        "medium",
+        "middle",
+      ),
+    );
 
     // Variant 3: Deep Dive (150+ tasks)
     const deepTasks = relevantTasks.slice(0, 180);
-    variants.push(this.buildVariantFromTasks('deep-dive', 'Deep Dive',
-      'Thorough learning path for complete mastery', deepTasks, dto, 'hard', 'senior'));
+    variants.push(
+      this.buildVariantFromTasks(
+        "deep-dive",
+        "Deep Dive",
+        "Thorough learning path for complete mastery",
+        deepTasks,
+        dto,
+        "hard",
+        "senior",
+      ),
+    );
 
     // Mark balanced as recommended
     variants[1].isRecommended = true;
@@ -851,13 +850,13 @@ IMPORTANT:
     description: string,
     tasks: TaskWithCourseInfo[],
     dto: GenerateRoadmapVariantsDto,
-    difficulty: 'easy' | 'medium' | 'hard',
-    salaryKey: string
+    difficulty: "easy" | "medium" | "hard",
+    salaryKey: string,
   ): RoadmapVariantData {
     const totalTasks = tasks.length;
     const estimatedHours = this.calculateTotalHours(tasks);
     const estimatedMonths = Math.ceil(estimatedHours / (dto.hoursPerWeek * 4));
-    const salaryRange = SALARY_RANGES[salaryKey] || SALARY_RANGES['middle'];
+    const salaryRange = SALARY_RANGES[salaryKey] || SALARY_RANGES["middle"];
 
     // Group by module for phases
     const moduleGroups = new Map<string, TaskWithCourseInfo[]>();
@@ -879,15 +878,15 @@ IMPORTANT:
         description: `Master ${moduleTitle.toLowerCase()} concepts`,
         colorTheme: PHASE_PALETTES[phaseIndex % PHASE_PALETTES.length],
         order: phaseIndex + 1,
-        steps: moduleTasks.slice(0, 12).map(task => ({
+        steps: moduleTasks.slice(0, 12).map((task) => ({
           id: `step_${task.id}`,
           title: task.title,
-          type: 'practice' as const,
+          type: "practice" as const,
           durationEstimate: task.estimatedTime,
           deepLink: `/task/${task.slug}`,
-          resourceType: 'task' as const,
+          resourceType: "task" as const,
           relatedResourceId: task.id,
-          status: 'available' as const,
+          status: "available" as const,
         })),
         progressPercentage: 0,
       });
@@ -895,9 +894,16 @@ IMPORTANT:
     }
 
     // Calculate sources
-    const sourceMap = new Map<string, { count: number; title: string; icon: string }>();
+    const sourceMap = new Map<
+      string,
+      { count: number; title: string; icon: string }
+    >();
     for (const task of tasks) {
-      const existing = sourceMap.get(task.courseSlug) || { count: 0, title: task.courseTitle, icon: task.courseIcon };
+      const existing = sourceMap.get(task.courseSlug) || {
+        count: 0,
+        title: task.courseTitle,
+        icon: task.courseIcon,
+      };
       existing.count++;
       sourceMap.set(task.courseSlug, existing);
     }
@@ -917,9 +923,9 @@ IMPORTANT:
 
     // Target role based on difficulty
     const targetRoles: Record<string, string> = {
-      'easy': 'Junior Developer',
-      'medium': 'Middle Developer',
-      'hard': 'Senior Developer',
+      easy: "Junior Developer",
+      medium: "Middle Developer",
+      hard: "Senior Developer",
     };
 
     return {
@@ -931,11 +937,11 @@ IMPORTANT:
       estimatedHours,
       estimatedMonths,
       salaryRange,
-      targetRole: targetRoles[difficulty] || 'Developer',
+      targetRole: targetRoles[difficulty] || "Developer",
       difficulty,
       topics,
       sources,
-      previewTasks: tasks.slice(0, 5).map(t => ({
+      previewTasks: tasks.slice(0, 5).map((t) => ({
         title: t.title,
         difficulty: t.difficulty,
         fromCourse: t.courseTitle,
@@ -970,6 +976,20 @@ IMPORTANT:
 
   // ============ PRIVATE HELPERS ============
 
+  /**
+   * Get user's completed task IDs
+   */
+  private async getUserCompletedTasks(userId: string): Promise<Set<string>> {
+    const completedSubmissions = await this.prisma.submission.findMany({
+      where: {
+        userId,
+        status: "passed",
+      },
+      select: { taskId: true },
+    });
+    return new Set(completedSubmissions.map((s) => s.taskId));
+  }
+
   private async findExistingRoadmapId(userId: string): Promise<string | null> {
     const existing = await this.prisma.userRoadmap.findFirst({
       where: { userId },
@@ -980,263 +1000,15 @@ IMPORTANT:
 
   private getRoleTitle(role: string): string {
     const titles: Record<string, string> = {
-      'backend-go': 'Go Backend Developer',
-      'backend-java': 'Java Backend Developer',
-      'python-data': 'Python & Data Scientist',
-      'ai-ml': 'AI/ML Engineer',
-      'software-design': 'Software Architect',
-      'algorithms': 'Algorithm Specialist',
-      'fullstack': 'Fullstack Developer',
+      "backend-go": "Go Backend Developer",
+      "backend-java": "Java Backend Developer",
+      "python-data": "Python & Data Scientist",
+      "ai-ml": "AI/ML Engineer",
+      "software-design": "Software Architect",
+      algorithms: "Algorithm Specialist",
+      fullstack: "Fullstack Developer",
     };
-    return titles[role] || 'Developer';
-  }
-
-  /**
-   * Get tasks matching category patterns
-   */
-  private async getTasksByCategory(category: string): Promise<TaskInfo[]> {
-    const patterns = CATEGORY_PATTERNS[category] || [/.*/];
-
-    const courses = await this.prisma.course.findMany({
-      include: {
-        modules: {
-          include: {
-            topics: {
-              include: {
-                tasks: {
-                  select: { id: true, slug: true, title: true, difficulty: true, estimatedTime: true },
-                },
-              },
-            },
-          },
-          orderBy: { order: 'asc' },
-        },
-      },
-    });
-
-    const tasks: TaskInfo[] = [];
-
-    for (const course of courses) {
-      const matchesPattern = patterns.some(p => p.test(course.slug));
-      if (!matchesPattern) continue;
-
-      for (const module of course.modules) {
-        for (const topic of module.topics) {
-          for (const task of topic.tasks) {
-            tasks.push({
-              id: task.id,
-              slug: task.slug,
-              title: task.title,
-              difficulty: task.difficulty,
-              estimatedTime: task.estimatedTime,
-              topicTitle: topic.title,
-              moduleTitle: module.title,
-            });
-          }
-        }
-      }
-    }
-
-    return tasks;
-  }
-
-  /**
-   * Get user's completed task IDs
-   */
-  private async getUserCompletedTasks(userId: string): Promise<Set<string>> {
-    const completedSubmissions = await this.prisma.submission.findMany({
-      where: {
-        userId,
-        status: 'passed',
-      },
-      select: { taskId: true },
-    });
-
-    return new Set(completedSubmissions.map(s => s.taskId));
-  }
-
-  /**
-   * Generate phases using AI (Gemini)
-   */
-  private async generatePhasesWithAI(
-    dto: GenerateRoadmapDto,
-    tasks: TaskInfo[]
-  ): Promise<RoadmapPhase[]> {
-    const prompt = this.buildRoadmapPrompt(dto, tasks);
-
-    const response = await this.genAI!.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-    });
-
-    const text = response.text || '';
-
-    // Extract JSON from response
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      throw new Error('No valid JSON in AI response');
-    }
-
-    const parsed = JSON.parse(jsonMatch[0]);
-
-    // Create task lookup map
-    const taskMap = new Map(tasks.map(t => [t.slug, t]));
-
-    // Convert AI response to phases
-    const phases: RoadmapPhase[] = (parsed as AIPhasesResponse).phases.map((phase: AIPhaseResponse, index: number) => {
-      const steps: RoadmapStep[] = (phase.taskSlugs || [])
-        .map((slug: string) => {
-          const task = taskMap.get(slug);
-          if (!task) return null;
-
-          return {
-            id: `step_${task.id}`,
-            title: task.title,
-            type: 'practice' as const,
-            durationEstimate: task.estimatedTime,
-            deepLink: `/task/${task.slug}`,
-            resourceType: 'task' as const,
-            relatedResourceId: task.id,
-            status: 'available' as const,
-          };
-        })
-        .filter(Boolean) as RoadmapStep[];
-
-      return {
-        id: `phase_${index + 1}`,
-        title: phase.title,
-        description: phase.description,
-        colorTheme: '',
-        order: index + 1,
-        steps,
-        progressPercentage: 0,
-      };
-    });
-
-    return phases.filter(p => p.steps.length > 0);
-  }
-
-  /**
-   * Build AI prompt for roadmap generation
-   */
-  private buildRoadmapPrompt(dto: GenerateRoadmapDto, tasks: TaskInfo[]): string {
-    const hoursPerWeek = dto.hoursPerWeek || 10;
-    const levelDescription = {
-      'beginner': 'New to programming, needs fundamentals',
-      'intermediate': 'Has 2-4 years experience, ready for deep dive',
-      'advanced': 'Senior developer, focused on best practices',
-    }[dto.level] || 'intermediate level';
-
-    const goalDescription = {
-      'get-job': 'Preparing for job interviews, needs practical portfolio',
-      'level-up': 'Wants promotion, needs leadership skills',
-      'master': 'Deep expertise in specific topics',
-    }[dto.goal || 'level-up'] || 'general improvement';
-
-    // Sample tasks for prompt (max 200 to stay within limits)
-    const sampledTasks = tasks.slice(0, 200);
-
-    return `
-You are creating a personalized learning roadmap for a developer.
-
-USER PROFILE:
-- Focus Area: ${this.getRoleTitle(dto.role)}
-- Experience Level: ${dto.level} (${levelDescription})
-- Main Goal: ${dto.goal || 'level-up'} (${goalDescription})
-- Weekly Hours Available: ${hoursPerWeek} hours
-
-AVAILABLE TASKS (${sampledTasks.length} of ${tasks.length} total):
-${sampledTasks.map(t => `- ${t.slug}: "${t.title}" [${t.difficulty}] (${t.estimatedTime}) - ${t.moduleTitle}`).join('\n')}
-
-Create a structured learning path with 4-6 phases.
-Each phase should have 5-15 tasks ordered by difficulty progression.
-
-Consider:
-1. Logical progression (fundamentals → advanced)
-2. User's experience level - skip basics for advanced users
-3. Time commitment per week (${hoursPerWeek} hours)
-4. Practical skills matching their goal
-
-Return ONLY valid JSON (no markdown):
-{
-  "phases": [
-    {
-      "title": "Phase Name",
-      "description": "What user will learn in 1-2 sentences",
-      "taskSlugs": ["exact-task-slug-1", "exact-task-slug-2"]
-    }
-  ]
-}
-
-IMPORTANT: Use EXACT task slugs from the list above. Do not invent task slugs.
-`;
-  }
-
-  /**
-   * Fallback phase generation (non-AI)
-   */
-  private async generatePhasesFallback(
-    dto: GenerateRoadmapDto,
-    tasks: TaskInfo[]
-  ): Promise<RoadmapPhase[]> {
-    // Sort tasks by difficulty
-    const difficultyOrder = { 'easy': 0, 'medium': 1, 'hard': 2 };
-    const sortedTasks = [...tasks].sort(
-      (a, b) => (difficultyOrder[a.difficulty as keyof typeof difficultyOrder] || 1) -
-                (difficultyOrder[b.difficulty as keyof typeof difficultyOrder] || 1)
-    );
-
-    // Filter based on level
-    let filteredTasks = sortedTasks;
-    if (dto.level === 'advanced') {
-      filteredTasks = sortedTasks.filter(t => t.difficulty !== 'easy');
-    } else if (dto.level === 'beginner') {
-      filteredTasks = sortedTasks.filter(t => t.difficulty !== 'hard').slice(0, 40);
-    }
-
-    // Group by module
-    const moduleGroups = new Map<string, TaskInfo[]>();
-    for (const task of filteredTasks) {
-      const key = task.moduleTitle;
-      if (!moduleGroups.has(key)) {
-        moduleGroups.set(key, []);
-      }
-      moduleGroups.get(key)!.push(task);
-    }
-
-    // Create phases from module groups
-    const phases: RoadmapPhase[] = [];
-    let phaseIndex = 0;
-
-    for (const [moduleTitle, moduleTasks] of moduleGroups) {
-      if (phaseIndex >= 6) break; // Max 6 phases
-
-      const steps: RoadmapStep[] = moduleTasks.slice(0, 10).map(task => ({
-        id: `step_${task.id}`,
-        title: task.title,
-        type: 'practice' as const,
-        durationEstimate: task.estimatedTime,
-        deepLink: `/task/${task.slug}`,
-        resourceType: 'task' as const,
-        relatedResourceId: task.id,
-        status: 'available' as const,
-      }));
-
-      if (steps.length > 0) {
-        phases.push({
-          id: `phase_${phaseIndex + 1}`,
-          title: moduleTitle,
-          description: `Master ${moduleTitle.toLowerCase()} concepts and patterns`,
-          colorTheme: '',
-          order: phaseIndex + 1,
-          steps,
-          progressPercentage: 0,
-        });
-        phaseIndex++;
-      }
-    }
-
-    return phases;
+    return titles[role] || "Developer";
   }
 
   private async hydrateRoadmap(roadmap: UserRoadmap, userId: string) {
@@ -1244,56 +1016,61 @@ IMPORTANT: Use EXACT task slugs from the list above. Do not invent task slugs.
     const completedSubmissions = await this.prisma.submission.findMany({
       where: {
         userId,
-        status: 'passed',
+        status: "passed",
       },
       select: { taskId: true },
     });
 
-    const completedTaskIds = new Set(completedSubmissions.map(s => s.taskId));
+    const completedTaskIds = new Set(completedSubmissions.map((s) => s.taskId));
 
     // Get all tasks to map slugs to IDs
     const allTasks = await this.prisma.task.findMany({
       select: { id: true, slug: true },
     });
-    const taskSlugToId = new Map(allTasks.map(t => [t.slug, t.id]));
+    const taskSlugToId = new Map(allTasks.map((t) => [t.slug, t.id]));
 
     // Hydrate phases with completion status
-    const phases = (roadmap.phases as unknown as RoadmapPhase[]).map((phase, index) => {
-      let completedCount = 0;
+    const phases = (roadmap.phases as unknown as RoadmapPhase[]).map(
+      (phase, index) => {
+        let completedCount = 0;
 
-      const hydratedSteps = phase.steps.map(step => {
-        // Check if step's related resource is completed
-        let isCompleted = false;
+        const hydratedSteps = phase.steps.map((step) => {
+          // Check if step's related resource is completed
+          let isCompleted = false;
 
-        if (step.resourceType === 'task') {
-          // Check by task ID or slug
-          const taskId = taskSlugToId.get(step.relatedResourceId) || step.relatedResourceId;
-          isCompleted = completedTaskIds.has(taskId);
-        }
+          if (step.resourceType === "task") {
+            // Check by task ID or slug
+            const taskId =
+              taskSlugToId.get(step.relatedResourceId) ||
+              step.relatedResourceId;
+            isCompleted = completedTaskIds.has(taskId);
+          }
 
-        if (isCompleted) completedCount++;
+          if (isCompleted) completedCount++;
+
+          return {
+            ...step,
+            status: isCompleted ? "completed" : "available",
+          };
+        });
 
         return {
-          ...step,
-          status: isCompleted ? 'completed' : 'available',
+          ...phase,
+          colorTheme: PHASE_PALETTES[index % PHASE_PALETTES.length],
+          steps: hydratedSteps,
+          progressPercentage:
+            phase.steps.length > 0
+              ? (completedCount / phase.steps.length) * 100
+              : 0,
         };
-      });
-
-      return {
-        ...phase,
-        colorTheme: PHASE_PALETTES[index % PHASE_PALETTES.length],
-        steps: hydratedSteps,
-        progressPercentage: phase.steps.length > 0
-          ? (completedCount / phase.steps.length) * 100
-          : 0,
-      };
-    });
+      },
+    );
 
     // Calculate total progress
     const totalSteps = phases.reduce((sum, p) => sum + p.steps.length, 0);
     const completedSteps = phases.reduce(
-      (sum, p) => sum + p.steps.filter(s => s.status === 'completed').length,
-      0
+      (sum, p) => sum + p.steps.filter((s) => s.status === "completed").length,
+      0,
     );
 
     return {
