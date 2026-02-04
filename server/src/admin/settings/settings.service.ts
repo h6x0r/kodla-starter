@@ -2,24 +2,31 @@ import { Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service";
 import { CacheService } from "../../cache/cache.service";
 
-// Default AI limits (used if no setting exists)
-const DEFAULT_AI_SETTINGS = {
-  enabled: true,
-  "limits.free": 5,
-  "limits.course": 30,
-  "limits.premium": 100,
-  "limits.promptEngineering": 100,
-};
-
-// Cache TTL for settings (5 minutes)
-const SETTINGS_CACHE_TTL = 300;
-
 export interface AiLimits {
   free: number;
   course: number;
   premium: number;
   promptEngineering: number;
 }
+
+// Default AI limits (used if no setting exists)
+export const DEFAULT_AI_LIMITS: AiLimits = {
+  free: 5,
+  course: 30,
+  premium: 100,
+  promptEngineering: 100,
+};
+
+const DEFAULT_AI_SETTINGS = {
+  enabled: true,
+  "limits.free": DEFAULT_AI_LIMITS.free,
+  "limits.course": DEFAULT_AI_LIMITS.course,
+  "limits.premium": DEFAULT_AI_LIMITS.premium,
+  "limits.promptEngineering": DEFAULT_AI_LIMITS.promptEngineering,
+};
+
+// Cache TTL for settings (5 minutes)
+const SETTINGS_CACHE_TTL = 300;
 
 export interface AiSettings {
   enabled: boolean;
