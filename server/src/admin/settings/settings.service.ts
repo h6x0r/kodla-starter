@@ -1,6 +1,7 @@
-import { Injectable, Logger } from "@nestjs/common";
+import { Injectable, Logger, Inject, forwardRef } from "@nestjs/common";
 import { PrismaService } from "../../prisma/prisma.service";
 import { CacheService } from "../../cache/cache.service";
+import { AuditService } from "../audit/audit.service";
 
 export interface AiLimits {
   free: number;
@@ -45,6 +46,8 @@ export class SettingsService {
   constructor(
     private prisma: PrismaService,
     private cacheService: CacheService,
+    @Inject(forwardRef(() => AuditService))
+    private auditService: AuditService,
   ) {}
 
   /**
@@ -235,6 +238,17 @@ export class SettingsService {
 
     if (Object.keys(updates).length > 0) {
       await this.updateSettings("ai", updates, updatedBy);
+
+      // Log audit event
+      if (updatedBy) {
+        await this.auditService.log({
+          adminId: updatedBy,
+          action: "settings_update",
+          entity: "settings",
+          entityId: "ai",
+          details: { changes: updates },
+        });
+      }
     }
 
     return this.getAiSettings();

@@ -1,10 +1,23 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Delete,
+  Body,
+  UseGuards,
+  Request,
+} from "@nestjs/common";
+import { Throttle, ThrottlerGuard } from "@nestjs/throttler";
+import { RoadmapsService } from "./roadmaps.service";
+import {
+  GenerateRoadmapVariantsDto,
+  SelectRoadmapVariantDto,
+} from "./dto/roadmaps.dto";
+import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 
-import { Controller, Get, Post, Delete, Body, UseGuards, Request } from '@nestjs/common';
-import { RoadmapsService } from './roadmaps.service';
-import { GenerateRoadmapVariantsDto, SelectRoadmapVariantDto } from './dto/roadmaps.dto';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-
-@Controller('roadmaps')
+@Controller("roadmaps")
+@UseGuards(ThrottlerGuard)
+@Throttle({ default: { limit: 30, ttl: 60000 } }) // Default: 30 requests per minute
 export class RoadmapsController {
   constructor(private readonly roadmapsService: RoadmapsService) {}
 
@@ -12,7 +25,7 @@ export class RoadmapsController {
    * Get available roadmap templates
    * Public endpoint - no auth required
    */
-  @Get('templates')
+  @Get("templates")
   async getTemplates() {
     return this.roadmapsService.getTemplates();
   }
@@ -22,7 +35,7 @@ export class RoadmapsController {
    * Returns generation status and limits
    */
   @UseGuards(JwtAuthGuard)
-  @Get('can-generate')
+  @Get("can-generate")
   async canGenerateRoadmap(@Request() req) {
     return this.roadmapsService.canGenerateRoadmap(req.user.userId);
   }
@@ -32,7 +45,7 @@ export class RoadmapsController {
    * Returns null if no roadmap exists
    */
   @UseGuards(JwtAuthGuard)
-  @Get('me')
+  @Get("me")
   async getMyRoadmap(@Request() req) {
     return this.roadmapsService.getUserRoadmap(req.user.userId);
   }
@@ -41,7 +54,7 @@ export class RoadmapsController {
    * Delete user's roadmap (reset)
    */
   @UseGuards(JwtAuthGuard)
-  @Delete('me')
+  @Delete("me")
   async deleteRoadmap(@Request() req) {
     return this.roadmapsService.deleteRoadmap(req.user.userId);
   }
@@ -54,10 +67,15 @@ export class RoadmapsController {
    * Generate 3-5 roadmap variants based on user input
    * First generation is FREE, regeneration requires Premium
    * Returns multiple variants for user to choose from
+   * Rate limited: 1 request per minute (AI-intensive operation)
    */
   @UseGuards(JwtAuthGuard)
-  @Post('generate-variants')
-  async generateVariants(@Request() req, @Body() dto: GenerateRoadmapVariantsDto) {
+  @Throttle({ default: { limit: 1, ttl: 60000 } }) // 1 request per minute - AI intensive
+  @Post("generate-variants")
+  async generateVariants(
+    @Request() req,
+    @Body() dto: GenerateRoadmapVariantsDto,
+  ) {
     return this.roadmapsService.generateRoadmapVariants(req.user.userId, dto);
   }
 
@@ -66,7 +84,7 @@ export class RoadmapsController {
    * Returns variants that were generated but not yet selected
    */
   @UseGuards(JwtAuthGuard)
-  @Get('variants')
+  @Get("variants")
   async getMyVariants(@Request() req) {
     return this.roadmapsService.getUserVariants(req.user.userId);
   }
@@ -76,7 +94,7 @@ export class RoadmapsController {
    * Saves the selected variant as the user's active roadmap
    */
   @UseGuards(JwtAuthGuard)
-  @Post('select-variant')
+  @Post("select-variant")
   async selectVariant(@Request() req, @Body() dto: SelectRoadmapVariantDto) {
     return this.roadmapsService.selectRoadmapVariant(req.user.userId, dto);
   }

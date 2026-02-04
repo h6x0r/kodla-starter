@@ -1,9 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "../prisma/prisma.service";
+import { AuditService } from "./audit/audit.service";
 
 @Injectable()
 export class AdminService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly auditService: AuditService,
+  ) {}
 
   /**
    * Get dashboard statistics
@@ -620,16 +624,25 @@ export class AdminService {
       data: { isActive: false },
     });
 
+    // Log audit event
+    await this.auditService.log({
+      adminId,
+      action: "user_ban",
+      entity: "user",
+      entityId: userId,
+      details: { reason, userEmail: updatedUser.email },
+    });
+
     return updatedUser;
   }
 
   /**
    * Unban a user
    */
-  async unbanUser(userId: string) {
+  async unbanUser(userId: string, adminId: string) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, isBanned: true },
+      select: { id: true, isBanned: true, email: true },
     });
 
     if (!user) {
@@ -654,6 +667,15 @@ export class AdminService {
         name: true,
         isBanned: true,
       },
+    });
+
+    // Log audit event
+    await this.auditService.log({
+      adminId,
+      action: "user_unban",
+      entity: "user",
+      entityId: userId,
+      details: { userEmail: updatedUser.email },
     });
 
     return updatedUser;

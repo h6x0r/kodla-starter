@@ -143,9 +143,9 @@ export class AdminController {
    * Unban a user
    */
   @Post("users/:id/unban")
-  async unbanUser(@Param("id") userId: string) {
+  async unbanUser(@Param("id") userId: string, @Request() req) {
     try {
-      return await this.adminService.unbanUser(userId);
+      return await this.adminService.unbanUser(userId, req.user.userId);
     } catch (error) {
       throw new BadRequestException(
         error instanceof Error ? error.message : "Failed to unban user",

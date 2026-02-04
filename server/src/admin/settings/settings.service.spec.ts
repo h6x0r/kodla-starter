@@ -6,6 +6,7 @@ import {
 } from "./settings.service";
 import { PrismaService } from "../../prisma/prisma.service";
 import { CacheService } from "../../cache/cache.service";
+import { AuditService } from "../audit/audit.service";
 
 describe("SettingsService", () => {
   let service: SettingsService;
@@ -24,12 +25,18 @@ describe("SettingsService", () => {
     delete: jest.fn(),
   };
 
+  const mockAuditService = {
+    log: jest.fn(),
+    getAuditLogs: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         SettingsService,
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: CacheService, useValue: mockCacheService },
+        { provide: AuditService, useValue: mockAuditService },
       ],
     }).compile();
 

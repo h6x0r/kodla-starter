@@ -1,10 +1,16 @@
 import { Test, TestingModule } from "@nestjs/testing";
 import { AdminService } from "./admin.service";
 import { PrismaService } from "../prisma/prisma.service";
+import { AuditService } from "./audit/audit.service";
 
 describe("AdminService", () => {
   let service: AdminService;
   let prisma: PrismaService;
+
+  const mockAuditService = {
+    log: jest.fn(),
+    getAuditLogs: jest.fn(),
+  };
 
   const mockPrismaService = {
     user: {
@@ -47,6 +53,7 @@ describe("AdminService", () => {
       providers: [
         AdminService,
         { provide: PrismaService, useValue: mockPrismaService },
+        { provide: AuditService, useValue: mockAuditService },
       ],
     }).compile();
 

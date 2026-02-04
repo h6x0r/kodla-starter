@@ -67,6 +67,7 @@ model User {
   taskCompletions  TaskCompletion[]
   runResults       RunResult[]
   courseAccesses   CourseAccess[]
+  auditLogs        AuditLog[]       @relation("AdminAuditLogs")
 
   // Performance indexes for leaderboard and gamification queries
   @@index([level, xp])        // Leaderboard sorting
@@ -582,4 +583,24 @@ model PromoCodeUsage {
   @@index([promoCodeId])
   @@index([userId])
   @@index([orderId])
+}
+
+// Admin action audit log for tracking administrative actions
+model AuditLog {
+  id        String   @id @default(uuid())
+  adminId   String   // Admin user who performed the action
+  action    String   // Action type: 'user_ban', 'user_unban', 'settings_update', etc.
+  entity    String   // Entity type: 'user', 'settings', 'promo_code', etc.
+  entityId  String?  // ID of the affected entity (optional)
+  details   Json?    // Additional action details
+  ipAddress String?  // Admin's IP address
+  userAgent String?  // Admin's browser/client info
+  createdAt DateTime @default(now())
+
+  admin User @relation("AdminAuditLogs", fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([action])
+  @@index([entity])
+  @@index([createdAt])
 }
