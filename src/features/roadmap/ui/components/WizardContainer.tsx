@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { IconChevronLeft, IconChevronRight } from "@/components/Icons";
 import { WIZARD_STEPS } from "../constants";
 import type { WizardState } from "../types";
@@ -40,6 +40,20 @@ export const WizardContainer: React.FC<WizardContainerProps> = ({
   onSetMonths,
 }) => {
   const currentStep = WIZARD_STEPS[wizardStep];
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [prevStep, setPrevStep] = useState(wizardStep);
+
+  // Handle step transitions with animation
+  useEffect(() => {
+    if (wizardStep !== prevStep) {
+      setIsTransitioning(true);
+      setPrevStep(wizardStep);
+      const timer = setTimeout(() => {
+        setIsTransitioning(false);
+      }, 150);
+      return () => clearTimeout(timer);
+    }
+  }, [wizardStep, prevStep]);
 
   const canProceed = () => {
     switch (wizardStep) {
@@ -132,8 +146,16 @@ export const WizardContainer: React.FC<WizardContainerProps> = ({
           </p>
         </div>
 
-        {/* Step content */}
-        {renderStepContent()}
+        {/* Step content with transition */}
+        <div
+          className={`transition-all duration-150 ${
+            isTransitioning
+              ? "opacity-0 transform translate-y-2"
+              : "opacity-100 transform translate-y-0"
+          }`}
+        >
+          {renderStepContent()}
+        </div>
 
         {/* Navigation buttons */}
         <div className="mt-8 flex justify-between items-center">
