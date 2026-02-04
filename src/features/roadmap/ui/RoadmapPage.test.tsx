@@ -849,5 +849,922 @@ describe("RoadmapPage", () => {
         ).toBeInTheDocument();
       });
     });
+
+    it("should close premium modal when clicking Cancel", async () => {
+      const nonRegenerateRoadmap = {
+        ...mockRoadmap,
+        canRegenerate: false,
+        isPremium: false,
+      };
+      vi.mocked(roadmapService.getUserRoadmap).mockResolvedValue(
+        nonRegenerateRoadmap,
+      );
+
+      renderWithAuth(mockUser);
+
+      await waitFor(() => {
+        expect(screen.getByText(/Regenerate \(Premium\)/)).toBeInTheDocument();
+      });
+
+      // Open modal
+      fireEvent.click(
+        screen.getByText(/Regenerate \(Premium\)/).closest("button")!,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("$4.99")).toBeInTheDocument();
+      });
+
+      // Click Cancel
+      fireEvent.click(screen.getByText("Cancel"));
+
+      await waitFor(() => {
+        expect(screen.queryByText("$4.99")).not.toBeInTheDocument();
+      });
+    });
+
+    it("should close premium modal when clicking backdrop", async () => {
+      const nonRegenerateRoadmap = {
+        ...mockRoadmap,
+        canRegenerate: false,
+        isPremium: false,
+      };
+      vi.mocked(roadmapService.getUserRoadmap).mockResolvedValue(
+        nonRegenerateRoadmap,
+      );
+
+      renderWithAuth(mockUser);
+
+      await waitFor(() => {
+        expect(screen.getByText(/Regenerate \(Premium\)/)).toBeInTheDocument();
+      });
+
+      // Open modal
+      fireEvent.click(
+        screen.getByText(/Regenerate \(Premium\)/).closest("button")!,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("$4.99")).toBeInTheDocument();
+      });
+
+      // Click backdrop (the outer modal div)
+      const backdrop = document.querySelector(".fixed.inset-0");
+      fireEvent.click(backdrop!);
+
+      await waitFor(() => {
+        expect(screen.queryByText("$4.99")).not.toBeInTheDocument();
+      });
+    });
+
+    it("should close premium modal when clicking close button", async () => {
+      const nonRegenerateRoadmap = {
+        ...mockRoadmap,
+        canRegenerate: false,
+        isPremium: false,
+      };
+      vi.mocked(roadmapService.getUserRoadmap).mockResolvedValue(
+        nonRegenerateRoadmap,
+      );
+
+      renderWithAuth(mockUser);
+
+      await waitFor(() => {
+        expect(screen.getByText(/Regenerate \(Premium\)/)).toBeInTheDocument();
+      });
+
+      // Open modal
+      fireEvent.click(
+        screen.getByText(/Regenerate \(Premium\)/).closest("button")!,
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("$4.99")).toBeInTheDocument();
+      });
+
+      // Click close button (X icon)
+      const closeButton = document.querySelector(".absolute.top-4.right-4");
+      fireEvent.click(closeButton!);
+
+      await waitFor(() => {
+        expect(screen.queryByText("$4.99")).not.toBeInTheDocument();
+      });
+    });
+
+    it("should allow regenerate when isPremium is true even if canRegenerate is false", async () => {
+      const premiumRoadmap = {
+        ...mockRoadmap,
+        canRegenerate: false,
+        isPremium: true,
+      };
+      vi.mocked(roadmapService.getUserRoadmap).mockResolvedValue(
+        premiumRoadmap,
+      );
+
+      renderWithAuth(mockUser);
+
+      await waitFor(() => {
+        expect(screen.getByText("Regenerate")).toBeInTheDocument();
+      });
+
+      // Should not show premium banner
+      expect(
+        screen.queryByText(/Regeneration requires Premium/),
+      ).not.toBeInTheDocument();
+
+      fireEvent.click(screen.getByText("Regenerate"));
+
+      // Should start wizard directly without showing modal
+      await waitFor(() => {
+        expect(screen.getByText("Step 1 of 5")).toBeInTheDocument();
+      });
+    });
+
+    it("should show modal features list", async () => {
+      const nonRegenerateRoadmap = {
+        ...mockRoadmap,
+        canRegenerate: false,
+        isPremium: false,
+      };
+      vi.mocked(roadmapService.getUserRoadmap).mockResolvedValue(
+        nonRegenerateRoadmap,
+      );
+
+      renderWithAuth(mockUser);
+
+      await waitFor(() => {
+        expect(screen.getByText(/Regenerate \(Premium\)/)).toBeInTheDocument();
+      });
+
+      fireEvent.click(
+        screen.getByText(/Regenerate \(Premium\)/).closest("button")!,
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("AI-powered personalized path generation"),
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText("Choose from multiple path variants"),
+        ).toBeInTheDocument();
+        expect(
+          screen.getByText("Adjust goals and time commitments"),
+        ).toBeInTheDocument();
+      });
+    });
+
+    it("should show upgrade to premium link in modal", async () => {
+      const nonRegenerateRoadmap = {
+        ...mockRoadmap,
+        canRegenerate: false,
+        isPremium: false,
+      };
+      vi.mocked(roadmapService.getUserRoadmap).mockResolvedValue(
+        nonRegenerateRoadmap,
+      );
+
+      renderWithAuth(mockUser);
+
+      await waitFor(() => {
+        expect(screen.getByText(/Regenerate \(Premium\)/)).toBeInTheDocument();
+      });
+
+      fireEvent.click(
+        screen.getByText(/Regenerate \(Premium\)/).closest("button")!,
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Want unlimited regenerations?"),
+        ).toBeInTheDocument();
+        expect(screen.getByText("Upgrade to Premium →")).toBeInTheDocument();
+      });
+
+      // Check the link
+      const premiumLink = screen.getByText("Upgrade to Premium →");
+      expect(premiumLink.closest("a")).toHaveAttribute("href", "/premium");
+    });
+  });
+
+  describe("variant confirmation", () => {
+    it("should confirm variant selection and create roadmap", async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      vi.mocked(roadmapService.getUserRoadmap).mockResolvedValue(null);
+
+      renderWithAuth(mockUser);
+
+      await waitFor(() => {
+        expect(screen.getByText("Get Started")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Get Started"));
+
+      // Complete wizard
+      fireEvent.click(screen.getByText("Continue")); // step 2
+      await waitFor(() => {
+        expect(screen.getByText("Step 2 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Continue")); // step 3
+      await waitFor(() => {
+        expect(screen.getByText("Step 3 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Backend Development"));
+      fireEvent.click(screen.getByText("Continue")); // step 4
+      await waitFor(() => {
+        expect(screen.getByText("Step 4 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Find a Job"));
+      fireEvent.click(screen.getByText("Continue")); // step 5
+      await waitFor(() => {
+        expect(screen.getByText("Step 5 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Generate Roadmaps"));
+      await vi.advanceTimersByTimeAsync(3500);
+
+      await waitFor(
+        () => {
+          expect(screen.getByTestId("variant-variant-1")).toBeInTheDocument();
+        },
+        { timeout: 5000 },
+      );
+
+      // Select and confirm variant
+      fireEvent.click(screen.getByTestId("variant-variant-1"));
+      fireEvent.click(screen.getByText(/Start Backend Focus Path/));
+
+      // Should call selectVariant
+      await waitFor(() => {
+        expect(roadmapService.selectVariant).toHaveBeenCalled();
+      });
+
+      // Should show roadmap result
+      await waitFor(
+        () => {
+          expect(screen.getByText("Your Personal Roadmap")).toBeInTheDocument();
+        },
+        { timeout: 5000 },
+      );
+
+      vi.useRealTimers();
+    });
+
+    it("should show Adjust Preferences button in variants view", async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      vi.mocked(roadmapService.getUserRoadmap).mockResolvedValue(null);
+
+      renderWithAuth(mockUser);
+
+      await waitFor(() => {
+        expect(screen.getByText("Get Started")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Get Started"));
+
+      // Complete wizard quickly
+      fireEvent.click(screen.getByText("Continue")); // step 2
+      await waitFor(() => {
+        expect(screen.getByText("Step 2 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Continue")); // step 3
+      await waitFor(() => {
+        expect(screen.getByText("Step 3 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Backend Development"));
+      fireEvent.click(screen.getByText("Continue")); // step 4
+      await waitFor(() => {
+        expect(screen.getByText("Step 4 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Find a Job"));
+      fireEvent.click(screen.getByText("Continue")); // step 5
+      await waitFor(() => {
+        expect(screen.getByText("Step 5 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Generate Roadmaps"));
+      await vi.advanceTimersByTimeAsync(3500);
+
+      await waitFor(
+        () => {
+          expect(screen.getByText("Choose Your Path")).toBeInTheDocument();
+        },
+        { timeout: 5000 },
+      );
+
+      // Adjust Preferences button should be visible
+      expect(screen.getByText("← Adjust Preferences")).toBeInTheDocument();
+
+      vi.useRealTimers();
+    });
+
+    it("should go back to wizard when clicking Adjust Preferences", async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      vi.mocked(roadmapService.getUserRoadmap).mockResolvedValue(null);
+
+      renderWithAuth(mockUser);
+
+      await waitFor(() => {
+        expect(screen.getByText("Get Started")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Get Started"));
+
+      // Complete wizard
+      fireEvent.click(screen.getByText("Continue")); // step 2
+      await waitFor(() => {
+        expect(screen.getByText("Step 2 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Continue")); // step 3
+      await waitFor(() => {
+        expect(screen.getByText("Step 3 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Backend Development"));
+      fireEvent.click(screen.getByText("Continue")); // step 4
+      await waitFor(() => {
+        expect(screen.getByText("Step 4 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Find a Job"));
+      fireEvent.click(screen.getByText("Continue")); // step 5
+      await waitFor(() => {
+        expect(screen.getByText("Step 5 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Generate Roadmaps"));
+      await vi.advanceTimersByTimeAsync(3500);
+
+      await waitFor(
+        () => {
+          expect(screen.getByText("← Adjust Preferences")).toBeInTheDocument();
+        },
+        { timeout: 5000 },
+      );
+
+      // Click Adjust Preferences
+      fireEvent.click(screen.getByText("← Adjust Preferences"));
+
+      // Should go back to wizard step 1
+      await waitFor(() => {
+        expect(screen.getByText("Step 1 of 5")).toBeInTheDocument();
+      });
+
+      vi.useRealTimers();
+    });
+  });
+
+  describe("wizard step 4 - goal selection", () => {
+    it("should enable continue after selecting a goal", async () => {
+      vi.mocked(roadmapService.getUserRoadmap).mockResolvedValue(null);
+
+      renderWithAuth(mockUser);
+
+      await waitFor(() => {
+        expect(screen.getByText("Get Started")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Get Started"));
+
+      // Navigate to step 4
+      fireEvent.click(screen.getByText("Continue")); // step 2
+      await waitFor(() => {
+        expect(screen.getByText("Step 2 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Continue")); // step 3
+      await waitFor(() => {
+        expect(screen.getByText("Step 3 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Backend Development"));
+      fireEvent.click(screen.getByText("Continue")); // step 4
+      await waitFor(() => {
+        expect(screen.getByText("Step 4 of 5")).toBeInTheDocument();
+      });
+
+      // Continue should be disabled initially
+      let continueButton = screen.getByText("Continue").closest("button");
+      expect(continueButton).toHaveClass("cursor-not-allowed");
+
+      // Select a goal
+      fireEvent.click(screen.getByText("Reach Senior Level"));
+
+      // Continue should now be enabled
+      continueButton = screen.getByText("Continue").closest("button");
+      expect(continueButton).not.toHaveClass("cursor-not-allowed");
+    });
+
+    it("should show all goal options", async () => {
+      vi.mocked(roadmapService.getUserRoadmap).mockResolvedValue(null);
+
+      renderWithAuth(mockUser);
+
+      await waitFor(() => {
+        expect(screen.getByText("Get Started")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Get Started"));
+
+      // Navigate to step 4
+      fireEvent.click(screen.getByText("Continue")); // step 2
+      await waitFor(() => {
+        expect(screen.getByText("Step 2 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Continue")); // step 3
+      await waitFor(() => {
+        expect(screen.getByText("Step 3 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Backend Development"));
+      fireEvent.click(screen.getByText("Continue")); // step 4
+      await waitFor(() => {
+        expect(screen.getByText("Step 4 of 5")).toBeInTheDocument();
+      });
+
+      // Check all goal options are displayed
+      expect(screen.getByText("Find a Job")).toBeInTheDocument();
+      expect(screen.getByText("Reach Senior Level")).toBeInTheDocument();
+      expect(screen.getByText("Build a Startup")).toBeInTheDocument();
+      expect(screen.getByText("Master a Skill")).toBeInTheDocument();
+    });
+  });
+
+  describe("wizard step 5 - time commitment", () => {
+    it("should show time commitment options", async () => {
+      vi.mocked(roadmapService.getUserRoadmap).mockResolvedValue(null);
+
+      renderWithAuth(mockUser);
+
+      await waitFor(() => {
+        expect(screen.getByText("Get Started")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Get Started"));
+
+      // Navigate to step 5
+      fireEvent.click(screen.getByText("Continue")); // step 2
+      await waitFor(() => {
+        expect(screen.getByText("Step 2 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Continue")); // step 3
+      await waitFor(() => {
+        expect(screen.getByText("Step 3 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Backend Development"));
+      fireEvent.click(screen.getByText("Continue")); // step 4
+      await waitFor(() => {
+        expect(screen.getByText("Step 4 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Find a Job"));
+      fireEvent.click(screen.getByText("Continue")); // step 5
+      await waitFor(() => {
+        expect(screen.getByText("Step 5 of 5")).toBeInTheDocument();
+      });
+
+      // Check hours options
+      expect(screen.getByText("5 hrs/week")).toBeInTheDocument();
+      expect(screen.getByText("10 hrs/week")).toBeInTheDocument();
+      expect(screen.getByText("15 hrs/week")).toBeInTheDocument();
+      expect(screen.getByText("20+ hrs/week")).toBeInTheDocument();
+
+      // Check months options
+      expect(screen.getByText("3 months")).toBeInTheDocument();
+      expect(screen.getByText("6 months")).toBeInTheDocument();
+      expect(screen.getByText("9 months")).toBeInTheDocument();
+      expect(screen.getByText("12 months")).toBeInTheDocument();
+    });
+
+    it("should allow changing time commitment options", async () => {
+      vi.mocked(roadmapService.getUserRoadmap).mockResolvedValue(null);
+
+      renderWithAuth(mockUser);
+
+      await waitFor(() => {
+        expect(screen.getByText("Get Started")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Get Started"));
+
+      // Navigate to step 5
+      fireEvent.click(screen.getByText("Continue")); // step 2
+      await waitFor(() => {
+        expect(screen.getByText("Step 2 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Continue")); // step 3
+      await waitFor(() => {
+        expect(screen.getByText("Step 3 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Backend Development"));
+      fireEvent.click(screen.getByText("Continue")); // step 4
+      await waitFor(() => {
+        expect(screen.getByText("Step 4 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Find a Job"));
+      fireEvent.click(screen.getByText("Continue")); // step 5
+      await waitFor(() => {
+        expect(screen.getByText("Step 5 of 5")).toBeInTheDocument();
+      });
+
+      // Select different hours
+      const hoursButton = screen.getByText("20+ hrs/week").closest("button");
+      fireEvent.click(hoursButton!);
+      expect(hoursButton).toHaveClass("border-brand-500");
+
+      // Select different months
+      const monthsButton = screen.getByText("12 months").closest("button");
+      fireEvent.click(monthsButton!);
+      expect(monthsButton).toHaveClass("border-brand-500");
+    });
+  });
+
+  describe("experience level selection", () => {
+    it("should allow selecting experience level", async () => {
+      vi.mocked(roadmapService.getUserRoadmap).mockResolvedValue(null);
+
+      renderWithAuth(mockUser);
+
+      await waitFor(() => {
+        expect(screen.getByText("Get Started")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Get Started"));
+
+      // Go to step 2
+      fireEvent.click(screen.getByText("Continue"));
+      await waitFor(() => {
+        expect(screen.getByText("Step 2 of 5")).toBeInTheDocument();
+      });
+
+      // Check experience options are displayed
+      expect(screen.getByText("No experience")).toBeInTheDocument();
+      expect(screen.getByText("< 1 year")).toBeInTheDocument();
+      expect(screen.getByText("1-2 years")).toBeInTheDocument();
+      expect(screen.getByText("3-5 years")).toBeInTheDocument();
+      expect(screen.getByText("5+ years")).toBeInTheDocument();
+
+      // Select experience level
+      const seniorButton = screen.getByText("5+ years").closest("button");
+      fireEvent.click(seniorButton!);
+      expect(seniorButton).toHaveClass("border-brand-500");
+    });
+  });
+
+  describe("generation error handling", () => {
+    it("should show error message when generation fails", async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      vi.mocked(roadmapService.getUserRoadmap).mockResolvedValue(null);
+      vi.mocked(roadmapService.generateVariants).mockRejectedValue(
+        new Error("Generation failed"),
+      );
+
+      renderWithAuth(mockUser);
+
+      await waitFor(() => {
+        expect(screen.getByText("Get Started")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Get Started"));
+
+      // Complete wizard
+      fireEvent.click(screen.getByText("Continue")); // step 2
+      await waitFor(() => {
+        expect(screen.getByText("Step 2 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Continue")); // step 3
+      await waitFor(() => {
+        expect(screen.getByText("Step 3 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Backend Development"));
+      fireEvent.click(screen.getByText("Continue")); // step 4
+      await waitFor(() => {
+        expect(screen.getByText("Step 4 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Find a Job"));
+      fireEvent.click(screen.getByText("Continue")); // step 5
+      await waitFor(() => {
+        expect(screen.getByText("Step 5 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Generate Roadmaps"));
+      await vi.advanceTimersByTimeAsync(3500);
+
+      // Should show error and go back to wizard
+      await waitFor(
+        () => {
+          expect(
+            screen.getByText(
+              "Failed to generate roadmap variants. Please try again.",
+            ),
+          ).toBeInTheDocument();
+        },
+        { timeout: 5000 },
+      );
+
+      vi.useRealTimers();
+    });
+
+    it("should show premium required error on 403", async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      vi.mocked(roadmapService.getUserRoadmap).mockResolvedValue(null);
+
+      const error403 = new Error("Forbidden");
+      (error403 as any).status = 403;
+      vi.mocked(roadmapService.generateVariants).mockRejectedValue(error403);
+
+      renderWithAuth(mockUser);
+
+      await waitFor(() => {
+        expect(screen.getByText("Get Started")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Get Started"));
+
+      // Complete wizard
+      fireEvent.click(screen.getByText("Continue")); // step 2
+      await waitFor(() => {
+        expect(screen.getByText("Step 2 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Continue")); // step 3
+      await waitFor(() => {
+        expect(screen.getByText("Step 3 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Backend Development"));
+      fireEvent.click(screen.getByText("Continue")); // step 4
+      await waitFor(() => {
+        expect(screen.getByText("Step 4 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Find a Job"));
+      fireEvent.click(screen.getByText("Continue")); // step 5
+      await waitFor(() => {
+        expect(screen.getByText("Step 5 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Generate Roadmaps"));
+      await vi.advanceTimersByTimeAsync(3500);
+
+      // Should show premium error
+      await waitFor(
+        () => {
+          expect(
+            screen.getByText(/Regeneration requires Premium/),
+          ).toBeInTheDocument();
+        },
+        { timeout: 5000 },
+      );
+
+      vi.useRealTimers();
+    });
+
+    it("should handle variant selection error", async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      vi.mocked(roadmapService.getUserRoadmap).mockResolvedValue(null);
+      vi.mocked(roadmapService.selectVariant).mockRejectedValue(
+        new Error("Selection failed"),
+      );
+
+      renderWithAuth(mockUser);
+
+      await waitFor(() => {
+        expect(screen.getByText("Get Started")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Get Started"));
+
+      // Complete wizard
+      fireEvent.click(screen.getByText("Continue")); // step 2
+      await waitFor(() => {
+        expect(screen.getByText("Step 2 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Continue")); // step 3
+      await waitFor(() => {
+        expect(screen.getByText("Step 3 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Backend Development"));
+      fireEvent.click(screen.getByText("Continue")); // step 4
+      await waitFor(() => {
+        expect(screen.getByText("Step 4 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Find a Job"));
+      fireEvent.click(screen.getByText("Continue")); // step 5
+      await waitFor(() => {
+        expect(screen.getByText("Step 5 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Generate Roadmaps"));
+      await vi.advanceTimersByTimeAsync(3500);
+
+      await waitFor(
+        () => {
+          expect(screen.getByTestId("variant-variant-1")).toBeInTheDocument();
+        },
+        { timeout: 5000 },
+      );
+
+      // Select and confirm variant
+      fireEvent.click(screen.getByTestId("variant-variant-1"));
+      fireEvent.click(screen.getByText(/Start Backend Focus Path/));
+
+      // Should show error
+      await waitFor(
+        () => {
+          expect(
+            screen.getByText("Failed to create roadmap. Please try again."),
+          ).toBeInTheDocument();
+        },
+        { timeout: 5000 },
+      );
+
+      vi.useRealTimers();
+    });
+  });
+
+  describe("interests validation", () => {
+    it("should show error when trying to continue without interests", async () => {
+      vi.mocked(roadmapService.getUserRoadmap).mockResolvedValue(null);
+
+      renderWithAuth(mockUser);
+
+      await waitFor(() => {
+        expect(screen.getByText("Get Started")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Get Started"));
+
+      // Navigate to step 3
+      fireEvent.click(screen.getByText("Continue")); // step 2
+      await waitFor(() => {
+        expect(screen.getByText("Step 2 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Continue")); // step 3
+      await waitFor(() => {
+        expect(screen.getByText("Step 3 of 5")).toBeInTheDocument();
+      });
+
+      // Try to click Continue without selecting interests (should not work due to disabled button)
+      const continueButton = screen.getByText("Continue").closest("button");
+      expect(continueButton).toBeDisabled();
+    });
+
+    it("should clear interest error when selecting an interest", async () => {
+      vi.mocked(roadmapService.getUserRoadmap).mockResolvedValue(null);
+
+      renderWithAuth(mockUser);
+
+      await waitFor(() => {
+        expect(screen.getByText("Get Started")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Get Started"));
+
+      // Navigate to step 3
+      fireEvent.click(screen.getByText("Continue")); // step 2
+      await waitFor(() => {
+        expect(screen.getByText("Step 2 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Continue")); // step 3
+      await waitFor(() => {
+        expect(screen.getByText("Step 3 of 5")).toBeInTheDocument();
+      });
+
+      // Should show hint message initially
+      expect(
+        screen.getByText("Select at least one area of interest"),
+      ).toBeInTheDocument();
+
+      // Select an interest
+      fireEvent.click(screen.getByText("Go Programming"));
+
+      // Hint should still be visible (not error state)
+      expect(
+        screen.getByText("Select at least one area of interest"),
+      ).toBeInTheDocument();
+
+      // Button should be enabled
+      const continueButton = screen.getByText("Continue").closest("button");
+      expect(continueButton).not.toBeDisabled();
+    });
+
+    it("should allow deselecting an interest", async () => {
+      vi.mocked(roadmapService.getUserRoadmap).mockResolvedValue(null);
+
+      renderWithAuth(mockUser);
+
+      await waitFor(() => {
+        expect(screen.getByText("Get Started")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Get Started"));
+
+      // Navigate to step 3
+      fireEvent.click(screen.getByText("Continue")); // step 2
+      await waitFor(() => {
+        expect(screen.getByText("Step 2 of 5")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Continue")); // step 3
+      await waitFor(() => {
+        expect(screen.getByText("Step 3 of 5")).toBeInTheDocument();
+      });
+
+      // Select an interest
+      fireEvent.click(screen.getByText("Backend Development"));
+
+      // Button should be enabled
+      let continueButton = screen.getByText("Continue").closest("button");
+      expect(continueButton).not.toBeDisabled();
+
+      // Deselect the interest
+      fireEvent.click(screen.getByText("Backend Development"));
+
+      // Button should be disabled again
+      continueButton = screen.getByText("Continue").closest("button");
+      expect(continueButton).toBeDisabled();
+    });
+  });
+
+  describe("language selection", () => {
+    it("should allow selecting multiple languages", async () => {
+      vi.mocked(roadmapService.getUserRoadmap).mockResolvedValue(null);
+
+      renderWithAuth(mockUser);
+
+      await waitFor(() => {
+        expect(screen.getByText("Get Started")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Get Started"));
+
+      await waitFor(() => {
+        expect(screen.getByText("Step 1 of 5")).toBeInTheDocument();
+      });
+
+      // Select multiple languages
+      fireEvent.click(screen.getByText("Python"));
+      fireEvent.click(screen.getByText("Go"));
+      fireEvent.click(screen.getByText("TypeScript"));
+
+      // All three should be selected
+      expect(screen.getByText("Python").closest("button")).toHaveClass(
+        "border-brand-500",
+      );
+      expect(screen.getByText("Go").closest("button")).toHaveClass(
+        "border-brand-500",
+      );
+      expect(screen.getByText("TypeScript").closest("button")).toHaveClass(
+        "border-brand-500",
+      );
+    });
+
+    it("should allow deselecting a language", async () => {
+      vi.mocked(roadmapService.getUserRoadmap).mockResolvedValue(null);
+
+      renderWithAuth(mockUser);
+
+      await waitFor(() => {
+        expect(screen.getByText("Get Started")).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByText("Get Started"));
+
+      await waitFor(() => {
+        expect(screen.getByText("Step 1 of 5")).toBeInTheDocument();
+      });
+
+      // Select then deselect Python
+      fireEvent.click(screen.getByText("Python"));
+      expect(screen.getByText("Python").closest("button")).toHaveClass(
+        "border-brand-500",
+      );
+
+      fireEvent.click(screen.getByText("Python"));
+      expect(screen.getByText("Python").closest("button")).not.toHaveClass(
+        "border-brand-500",
+      );
+    });
   });
 });
