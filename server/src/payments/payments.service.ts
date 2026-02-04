@@ -1,7 +1,13 @@
-import { Injectable, BadRequestException, NotFoundException, Logger } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { PaymeProvider } from './providers/payme.provider';
-import { ClickProvider } from './providers/click.provider';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  Logger,
+  ConflictException,
+} from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { PaymeProvider } from "./providers/payme.provider";
+import { ClickProvider } from "./providers/click.provider";
 import {
   CreateCheckoutDto,
   CheckoutResponse,
@@ -9,27 +15,38 @@ import {
   OrderType,
   PurchaseType,
   PaymentHistoryItem,
-} from './dto/payment.dto';
+  CoursePricingDto,
+  UserCourseAccessDto,
+} from "./dto/payment.dto";
 
 /**
  * Pricing configuration (in tiyn - 1 UZS = 100 tiyn)
  */
-export const PRICING = {
+export const PRICING: Record<
+  string,
+  { price: number; name: string; nameRu: string }
+> = {
   // Course subscriptions - prices set in SubscriptionPlan table
   // Global premium - price set in SubscriptionPlan table
 
   // One-time purchases
   roadmap_generation: {
     price: 15000 * 100, // 15,000 UZS in tiyn
-    name: 'Roadmap Generation',
-    nameRu: 'Генерация Roadmap',
+    name: "Roadmap Generation",
+    nameRu: "Генерация Roadmap",
   },
   ai_credits: {
     price: 10000 * 100, // 10,000 UZS per 50 credits
-    name: 'AI Credits (50)',
-    nameRu: 'AI кредиты (50)',
+    name: "AI Credits (50)",
+    nameRu: "AI кредиты (50)",
   },
+  // course_access pricing is dynamic - based on course subscription plan price * 3
 };
+
+/**
+ * Course access price multiplier (lifetime = 3x monthly subscription price)
+ */
+export const COURSE_ACCESS_MULTIPLIER = 3;
 
 @Injectable()
 export class PaymentsService {
@@ -47,13 +64,13 @@ export class PaymentsService {
   getAvailableProviders(): { id: string; name: string; configured: boolean }[] {
     return [
       {
-        id: 'payme',
-        name: 'Payme',
+        id: "payme",
+        name: "Payme",
         configured: this.paymeProvider.isConfigured(),
       },
       {
-        id: 'click',
-        name: 'Click',
+        id: "click",
+        name: "Click",
         configured: this.clickProvider.isConfigured(),
       },
     ];
@@ -73,7 +90,10 @@ export class PaymentsService {
   /**
    * Create checkout session and return payment URL
    */
-  async createCheckout(userId: string, dto: CreateCheckoutDto): Promise<CheckoutResponse> {
+  async createCheckout(
+    userId: string,
+    dto: CreateCheckoutDto,
+  ): Promise<CheckoutResponse> {
     let orderId: string;
     let amount: number;
     let description: string;
@@ -81,7 +101,7 @@ export class PaymentsService {
     if (dto.orderType === OrderType.SUBSCRIPTION) {
       // Subscription purchase
       if (!dto.planId) {
-        throw new BadRequestException('planId is required for subscription');
+        throw new BadRequestException("planId is required for subscription");
       }
 
       const plan = await this.prisma.subscriptionPlan.findUnique({
@@ -90,7 +110,7 @@ export class PaymentsService {
       });
 
       if (!plan) {
-        throw new NotFoundException('Subscription plan not found');
+        throw new NotFoundException("Subscription plan not found");
       }
 
       // Create or get existing subscription
@@ -101,12 +121,12 @@ export class PaymentsService {
         create: {
           userId,
           planId: dto.planId,
-          status: 'pending',
+          status: "pending",
           startDate: new Date(),
           endDate: this.calculateEndDate(),
         },
         update: {
-          status: 'pending',
+          status: "pending",
         },
       });
 
@@ -116,7 +136,7 @@ export class PaymentsService {
           subscriptionId: subscription.id,
           amount: plan.priceMonthly,
           currency: plan.currency,
-          status: 'pending',
+          status: "pending",
         },
       });
 
@@ -128,31 +148,69 @@ export class PaymentsService {
     } else {
       // One-time purchase
       if (!dto.purchaseType) {
-        throw new BadRequestException('purchaseType is required for purchase');
+        throw new BadRequestException("purchaseType is required for purchase");
       }
 
-      const pricing = PRICING[dto.purchaseType];
-      if (!pricing) {
-        throw new BadRequestException('Invalid purchase type');
+      // Handle course_access purchase separately (dynamic pricing)
+      if (dto.purchaseType === PurchaseType.COURSE_ACCESS) {
+        if (!dto.courseId) {
+          throw new BadRequestException(
+            "courseId is required for course_access purchase",
+          );
+        }
+
+        // Get course and its subscription plan for pricing
+        const coursePricing = await this.getCoursePricing(dto.courseId, userId);
+        if (coursePricing.hasAccess) {
+          throw new ConflictException("User already has access to this course");
+        }
+
+        amount = coursePricing.price;
+
+        // Create purchase record with courseId in metadata
+        const purchase = await this.prisma.purchase.create({
+          data: {
+            userId,
+            type: dto.purchaseType,
+            quantity: 1,
+            amount,
+            currency: "UZS",
+            status: "pending",
+            metadata: {
+              courseId: dto.courseId,
+              courseSlug: coursePricing.courseSlug,
+              courseName: coursePricing.courseName,
+            },
+          },
+        });
+
+        orderId = purchase.id;
+        description = `${coursePricing.courseName} - Lifetime Access`;
+      } else {
+        // Standard one-time purchases (roadmap, ai_credits)
+        const pricing = PRICING[dto.purchaseType];
+        if (!pricing) {
+          throw new BadRequestException("Invalid purchase type");
+        }
+
+        const quantity = dto.quantity || 1;
+        amount = pricing.price * quantity;
+
+        // Create purchase record
+        const purchase = await this.prisma.purchase.create({
+          data: {
+            userId,
+            type: dto.purchaseType,
+            quantity,
+            amount,
+            currency: "UZS",
+            status: "pending",
+          },
+        });
+
+        orderId = purchase.id;
+        description = `${pricing.name} x${quantity}`;
       }
-
-      const quantity = dto.quantity || 1;
-      amount = pricing.price * quantity;
-
-      // Create purchase record
-      const purchase = await this.prisma.purchase.create({
-        data: {
-          userId,
-          type: dto.purchaseType,
-          quantity,
-          amount,
-          currency: 'UZS',
-          status: 'pending',
-        },
-      });
-
-      orderId = purchase.id;
-      description = `${pricing.name} x${quantity}`;
     }
 
     // Generate payment URL based on provider
@@ -160,26 +218,36 @@ export class PaymentsService {
 
     if (dto.provider === PaymentProvider.PAYME) {
       if (!this.paymeProvider.isConfigured()) {
-        throw new BadRequestException('Payme is not configured');
+        throw new BadRequestException("Payme is not configured");
       }
-      paymentUrl = this.paymeProvider.generatePaymentLink(orderId, amount, dto.returnUrl);
+      paymentUrl = this.paymeProvider.generatePaymentLink(
+        orderId,
+        amount,
+        dto.returnUrl,
+      );
     } else if (dto.provider === PaymentProvider.CLICK) {
       if (!this.clickProvider.isConfigured()) {
-        throw new BadRequestException('Click is not configured');
+        throw new BadRequestException("Click is not configured");
       }
       // Click uses UZS, not tiyn
-      paymentUrl = this.clickProvider.generatePaymentLink(orderId, amount / 100, dto.returnUrl);
+      paymentUrl = this.clickProvider.generatePaymentLink(
+        orderId,
+        amount / 100,
+        dto.returnUrl,
+      );
     } else {
-      throw new BadRequestException('Invalid payment provider');
+      throw new BadRequestException("Invalid payment provider");
     }
 
-    this.logger.log(`Checkout created: ${orderId}, amount: ${amount}, provider: ${dto.provider}`);
+    this.logger.log(
+      `Checkout created: ${orderId}, amount: ${amount}, provider: ${dto.provider}`,
+    );
 
     return {
       orderId,
       paymentUrl,
       amount,
-      currency: 'UZS',
+      currency: "UZS",
       provider: dto.provider,
     };
   }
@@ -194,7 +262,7 @@ export class PaymentsService {
         subscription: {
           userId,
         },
-        status: { in: ['completed', 'failed', 'refunded'] },
+        status: { in: ["completed", "failed", "refunded"] },
       },
       include: {
         subscription: {
@@ -205,7 +273,7 @@ export class PaymentsService {
           },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take: 50,
     });
 
@@ -213,17 +281,17 @@ export class PaymentsService {
     const purchases = await this.prisma.purchase.findMany({
       where: {
         userId,
-        status: { in: ['completed', 'failed', 'refunded'] },
+        status: { in: ["completed", "failed", "refunded"] },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take: 50,
     });
 
     // Combine and format
     const history: PaymentHistoryItem[] = [
-      ...subscriptionPayments.map(p => ({
+      ...subscriptionPayments.map((p) => ({
         id: p.id,
-        type: 'subscription' as const,
+        type: "subscription" as const,
         description: p.subscription.plan.course
           ? `${p.subscription.plan.course.title} - Monthly`
           : `${p.subscription.plan.name} - Monthly`,
@@ -233,9 +301,9 @@ export class PaymentsService {
         provider: p.provider || undefined,
         createdAt: p.createdAt,
       })),
-      ...purchases.map(p => ({
+      ...purchases.map((p) => ({
         id: p.id,
-        type: 'purchase' as const,
+        type: "purchase" as const,
         description: PRICING[p.type]?.name || p.type,
         amount: p.amount,
         currency: p.currency,
@@ -246,7 +314,9 @@ export class PaymentsService {
     ];
 
     // Sort by date descending
-    return history.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    return history.sort(
+      (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+    );
   }
 
   /**
@@ -254,7 +324,7 @@ export class PaymentsService {
    */
   async getPaymentStatus(orderId: string): Promise<{
     status: string;
-    orderType: 'subscription' | 'purchase' | null;
+    orderType: "subscription" | "purchase" | null;
     amount?: number;
   }> {
     // Check if it's a subscription payment
@@ -265,7 +335,7 @@ export class PaymentsService {
     if (payment) {
       return {
         status: payment.status,
-        orderType: 'subscription',
+        orderType: "subscription",
         amount: payment.amount,
       };
     }
@@ -278,12 +348,12 @@ export class PaymentsService {
     if (purchase) {
       return {
         status: purchase.status,
-        orderType: 'purchase',
+        orderType: "purchase",
         amount: purchase.amount,
       };
     }
 
-    throw new NotFoundException('Order not found');
+    throw new NotFoundException("Order not found");
   }
 
   /**
@@ -299,7 +369,7 @@ export class PaymentsService {
       return {
         error: {
           code: -32504,
-          message: 'Unauthorized',
+          message: "Unauthorized",
         },
       };
     }
@@ -339,7 +409,7 @@ export class PaymentsService {
     });
 
     if (!user) {
-      throw new NotFoundException('User not found');
+      throw new NotFoundException("User not found");
     }
 
     // First generation is free, then need to purchase
@@ -380,6 +450,189 @@ export class PaymentsService {
    */
   private formatPrice(priceInTiyn: number): string {
     const uzs = priceInTiyn / 100;
-    return new Intl.NumberFormat('uz-UZ').format(uzs) + ' UZS';
+    return new Intl.NumberFormat("uz-UZ").format(uzs) + " UZS";
+  }
+
+  /**
+   * Get pricing for a specific course (one-time purchase)
+   * Price = monthly subscription price * COURSE_ACCESS_MULTIPLIER
+   */
+  async getCoursePricing(
+    courseId: string,
+    userId?: string,
+  ): Promise<CoursePricingDto> {
+    // Get course with its subscription plan
+    const course = await this.prisma.course.findUnique({
+      where: { id: courseId },
+      include: {
+        subscriptionPlans: {
+          where: { type: "course", isActive: true },
+          take: 1,
+        },
+      },
+    });
+
+    if (!course) {
+      throw new NotFoundException("Course not found");
+    }
+
+    // Get subscription plan price for the course
+    const plan = course.subscriptionPlans[0];
+    if (!plan) {
+      throw new BadRequestException(
+        "Course does not have an active subscription plan",
+      );
+    }
+
+    // Calculate one-time purchase price (3x monthly subscription)
+    const price = plan.priceMonthly * COURSE_ACCESS_MULTIPLIER;
+
+    // Check if user already has access
+    let hasAccess = false;
+    if (userId) {
+      hasAccess = await this.userHasCourseAccess(userId, courseId);
+    }
+
+    return {
+      courseId: course.id,
+      courseSlug: course.slug,
+      courseName: course.title,
+      price,
+      currency: "UZS",
+      priceFormatted: this.formatPrice(price),
+      hasAccess,
+    };
+  }
+
+  /**
+   * Get pricing for all courses (for catalog display)
+   */
+  async getAllCoursesPricing(userId?: string): Promise<CoursePricingDto[]> {
+    const courses = await this.prisma.course.findMany({
+      include: {
+        subscriptionPlans: {
+          where: { type: "course", isActive: true },
+          take: 1,
+        },
+      },
+      orderBy: { order: "asc" },
+    });
+
+    const pricingList: CoursePricingDto[] = [];
+
+    for (const course of courses) {
+      const plan = course.subscriptionPlans[0];
+      if (!plan) continue; // Skip courses without subscription plans
+
+      const price = plan.priceMonthly * COURSE_ACCESS_MULTIPLIER;
+
+      let hasAccess = false;
+      if (userId) {
+        hasAccess = await this.userHasCourseAccess(userId, course.id);
+      }
+
+      pricingList.push({
+        courseId: course.id,
+        courseSlug: course.slug,
+        courseName: course.title,
+        price,
+        currency: "UZS",
+        priceFormatted: this.formatPrice(price),
+        hasAccess,
+      });
+    }
+
+    return pricingList;
+  }
+
+  /**
+   * Get user's purchased courses (CourseAccess records)
+   */
+  async getUserCourseAccesses(userId: string): Promise<UserCourseAccessDto[]> {
+    const accesses = await this.prisma.courseAccess.findMany({
+      where: {
+        userId,
+        OR: [{ expiresAt: null }, { expiresAt: { gte: new Date() } }],
+      },
+      include: {
+        course: true,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return accesses.map((access) => ({
+      courseId: access.courseId,
+      courseSlug: access.course.slug,
+      courseName: access.course.title,
+      purchasedAt: access.createdAt,
+      expiresAt: access.expiresAt,
+    }));
+  }
+
+  /**
+   * Check if user has access to a course (via subscription OR one-time purchase)
+   */
+  async userHasCourseAccess(
+    userId: string,
+    courseId: string,
+  ): Promise<boolean> {
+    // Check one-time purchase (CourseAccess)
+    const courseAccess = await this.prisma.courseAccess.findUnique({
+      where: {
+        userId_courseId: { userId, courseId },
+      },
+    });
+
+    if (courseAccess) {
+      // Check if not expired (null = lifetime)
+      if (!courseAccess.expiresAt || courseAccess.expiresAt >= new Date()) {
+        return true;
+      }
+    }
+
+    // Check subscription (handled by AccessControlService, but duplicated here for convenience)
+    const subscription = await this.prisma.subscription.findFirst({
+      where: {
+        userId,
+        status: "active",
+        endDate: { gte: new Date() },
+        OR: [
+          { plan: { type: "global" } },
+          { plan: { type: "course", courseId } },
+        ],
+      },
+    });
+
+    return !!subscription;
+  }
+
+  /**
+   * Grant course access after successful purchase
+   * Called by payment providers after completing course_access purchase
+   */
+  async grantCourseAccess(
+    userId: string,
+    courseId: string,
+    purchaseId: string,
+  ): Promise<void> {
+    await this.prisma.courseAccess.upsert({
+      where: {
+        userId_courseId: { userId, courseId },
+      },
+      create: {
+        userId,
+        courseId,
+        purchaseId,
+        expiresAt: null, // Lifetime access
+      },
+      update: {
+        purchaseId,
+        expiresAt: null, // Extend to lifetime if re-purchased
+      },
+    });
+
+    this.logger.log(
+      `Granted course access: userId=${userId}, courseId=${courseId}`,
+    );
   }
 }

@@ -1,16 +1,16 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '../../prisma/prisma.service';
+import { Injectable, Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { PrismaService } from "../../prisma/prisma.service";
 
 /**
  * Payme Transaction States
  * @see https://developer.help.paycom.uz/protokol-merchant-api/
  */
 export enum PaymeTransactionState {
-  PENDING = 1,      // Transaction created, awaiting payment
-  COMPLETED = 2,    // Transaction successfully completed
+  PENDING = 1, // Transaction created, awaiting payment
+  COMPLETED = 2, // Transaction successfully completed
   CANCELLED_BEFORE = -1, // Cancelled before completion
-  CANCELLED_AFTER = -2,  // Cancelled after completion (refund)
+  CANCELLED_AFTER = -2, // Cancelled after completion (refund)
 }
 
 /**
@@ -43,12 +43,13 @@ export class PaymeProvider {
     private configService: ConfigService,
     private prisma: PrismaService,
   ) {
-    this.merchantId = this.configService.get<string>('PAYME_MERCHANT_ID') || '';
-    this.secretKey = this.configService.get<string>('PAYME_SECRET_KEY') || '';
-    this.testMode = this.configService.get<string>('PAYME_TEST_MODE') === 'true';
+    this.merchantId = this.configService.get<string>("PAYME_MERCHANT_ID") || "";
+    this.secretKey = this.configService.get<string>("PAYME_SECRET_KEY") || "";
+    this.testMode =
+      this.configService.get<string>("PAYME_TEST_MODE") === "true";
 
     if (!this.merchantId) {
-      this.logger.warn('PAYME_MERCHANT_ID not configured');
+      this.logger.warn("PAYME_MERCHANT_ID not configured");
     }
   }
 
@@ -64,8 +65,8 @@ export class PaymeProvider {
    */
   private getCheckoutUrl(): string {
     return this.testMode
-      ? 'https://test.paycom.uz'
-      : 'https://checkout.paycom.uz';
+      ? "https://test.paycom.uz"
+      : "https://checkout.paycom.uz";
   }
 
   /**
@@ -75,11 +76,15 @@ export class PaymeProvider {
    * @param amount - Amount in tiyn (1 UZS = 100 tiyn)
    * @param returnUrl - URL to redirect after payment
    */
-  generatePaymentLink(orderId: string, amount: number, returnUrl?: string): string {
+  generatePaymentLink(
+    orderId: string,
+    amount: number,
+    returnUrl?: string,
+  ): string {
     // Payme uses base64 encoded parameters
     // Format: m=merchant_id;ac.order_id=123;a=50000
     const params = `m=${this.merchantId};ac.order_id=${orderId};a=${amount}`;
-    const encoded = Buffer.from(params).toString('base64');
+    const encoded = Buffer.from(params).toString("base64");
 
     let url = `${this.getCheckoutUrl()}/${encoded}`;
 
@@ -94,16 +99,18 @@ export class PaymeProvider {
    * Verify Basic Auth header from Payme webhooks
    */
   verifyAuth(authHeader: string): boolean {
-    if (!authHeader || !authHeader.startsWith('Basic ')) {
+    if (!authHeader || !authHeader.startsWith("Basic ")) {
       return false;
     }
 
     const base64Credentials = authHeader.slice(6);
-    const credentials = Buffer.from(base64Credentials, 'base64').toString('utf-8');
-    const [login, password] = credentials.split(':');
+    const credentials = Buffer.from(base64Credentials, "base64").toString(
+      "utf-8",
+    );
+    const [login, password] = credentials.split(":");
 
     // Payme sends: Paycom:{secret_key}
-    return login === 'Paycom' && password === this.secretKey;
+    return login === "Paycom" && password === this.secretKey;
   }
 
   /**
@@ -118,24 +125,27 @@ export class PaymeProvider {
 
     try {
       switch (method) {
-        case 'CheckPerformTransaction':
+        case "CheckPerformTransaction":
           return await this.checkPerformTransaction(params);
-        case 'CreateTransaction':
+        case "CreateTransaction":
           return await this.createTransaction(params);
-        case 'PerformTransaction':
+        case "PerformTransaction":
           return await this.performTransaction(params);
-        case 'CancelTransaction':
+        case "CancelTransaction":
           return await this.cancelTransaction(params);
-        case 'CheckTransaction':
+        case "CheckTransaction":
           return await this.checkTransaction(params);
-        case 'GetStatement':
+        case "GetStatement":
           return await this.getStatement(params);
         default:
-          return this.error(PaymeErrorCode.METHOD_NOT_FOUND, 'Method not found');
+          return this.error(
+            PaymeErrorCode.METHOD_NOT_FOUND,
+            "Method not found",
+          );
       }
     } catch (error) {
       this.logger.error(`Payme webhook error: ${method}`, error);
-      return this.error(PaymeErrorCode.INTERNAL_ERROR, 'Internal server error');
+      return this.error(PaymeErrorCode.INTERNAL_ERROR, "Internal server error");
     }
   }
 
@@ -151,22 +161,25 @@ export class PaymeProvider {
     const amount = params.amount as number;
 
     if (!orderId) {
-      return this.error(PaymeErrorCode.INVALID_ACCOUNT, 'Order ID is required');
+      return this.error(PaymeErrorCode.INVALID_ACCOUNT, "Order ID is required");
     }
 
     // Try to find the order (subscription payment or purchase)
     const order = await this.findOrder(orderId);
 
     if (!order) {
-      return this.error(PaymeErrorCode.INVALID_ACCOUNT, 'Order not found');
+      return this.error(PaymeErrorCode.INVALID_ACCOUNT, "Order not found");
     }
 
-    if (order.status !== 'pending') {
-      return this.error(PaymeErrorCode.OPERATION_NOT_ALLOWED, 'Order already processed');
+    if (order.status !== "pending") {
+      return this.error(
+        PaymeErrorCode.OPERATION_NOT_ALLOWED,
+        "Order already processed",
+      );
     }
 
     if (order.amount !== amount) {
-      return this.error(PaymeErrorCode.INVALID_AMOUNT, 'Invalid amount');
+      return this.error(PaymeErrorCode.INVALID_AMOUNT, "Invalid amount");
     }
 
     return { result: { allow: true } };
@@ -187,7 +200,7 @@ export class PaymeProvider {
 
     // Check if transaction already exists
     const existing = await this.prisma.paymentTransaction.findFirst({
-      where: { providerTxId: id, provider: 'payme' },
+      where: { providerTxId: id, provider: "payme" },
     });
 
     if (existing) {
@@ -203,8 +216,8 @@ export class PaymeProvider {
 
     // Verify order
     const order = await this.findOrder(orderId);
-    if (!order || order.status !== 'pending' || order.amount !== amount) {
-      return this.error(PaymeErrorCode.INVALID_ACCOUNT, 'Invalid order');
+    if (!order || order.status !== "pending" || order.amount !== amount) {
+      return this.error(PaymeErrorCode.INVALID_ACCOUNT, "Invalid order");
     }
 
     // Create transaction record
@@ -212,11 +225,11 @@ export class PaymeProvider {
       data: {
         orderId,
         orderType: order.type,
-        provider: 'payme',
+        provider: "payme",
         providerTxId: id,
         amount,
         state: PaymeTransactionState.PENDING,
-        action: 'create',
+        action: "create",
         request: params as object,
       },
     });
@@ -240,11 +253,14 @@ export class PaymeProvider {
     const id = params.id as string;
 
     const transaction = await this.prisma.paymentTransaction.findFirst({
-      where: { providerTxId: id, provider: 'payme' },
+      where: { providerTxId: id, provider: "payme" },
     });
 
     if (!transaction) {
-      return this.error(PaymeErrorCode.TRANSACTION_NOT_FOUND, 'Transaction not found');
+      return this.error(
+        PaymeErrorCode.TRANSACTION_NOT_FOUND,
+        "Transaction not found",
+      );
     }
 
     if (transaction.state === PaymeTransactionState.COMPLETED) {
@@ -259,7 +275,10 @@ export class PaymeProvider {
     }
 
     if (transaction.state !== PaymeTransactionState.PENDING) {
-      return this.error(PaymeErrorCode.OPERATION_NOT_ALLOWED, 'Invalid transaction state');
+      return this.error(
+        PaymeErrorCode.OPERATION_NOT_ALLOWED,
+        "Invalid transaction state",
+      );
     }
 
     const performTime = Date.now();
@@ -269,7 +288,7 @@ export class PaymeProvider {
       where: { id: transaction.id },
       data: {
         state: PaymeTransactionState.COMPLETED,
-        action: 'perform',
+        action: "perform",
       },
     });
 
@@ -281,11 +300,11 @@ export class PaymeProvider {
       data: {
         orderId: transaction.orderId,
         orderType: transaction.orderType,
-        provider: 'payme',
+        provider: "payme",
         providerTxId: id,
         amount: transaction.amount,
         state: PaymeTransactionState.COMPLETED,
-        action: 'perform',
+        action: "perform",
         request: params as object,
       },
     });
@@ -309,17 +328,21 @@ export class PaymeProvider {
     const reason = params.reason as number;
 
     const transaction = await this.prisma.paymentTransaction.findFirst({
-      where: { providerTxId: id, provider: 'payme' },
-      orderBy: { createdAt: 'desc' },
+      where: { providerTxId: id, provider: "payme" },
+      orderBy: { createdAt: "desc" },
     });
 
     if (!transaction) {
-      return this.error(PaymeErrorCode.TRANSACTION_NOT_FOUND, 'Transaction not found');
+      return this.error(
+        PaymeErrorCode.TRANSACTION_NOT_FOUND,
+        "Transaction not found",
+      );
     }
 
-    const cancelState = transaction.state === PaymeTransactionState.COMPLETED
-      ? PaymeTransactionState.CANCELLED_AFTER
-      : PaymeTransactionState.CANCELLED_BEFORE;
+    const cancelState =
+      transaction.state === PaymeTransactionState.COMPLETED
+        ? PaymeTransactionState.CANCELLED_AFTER
+        : PaymeTransactionState.CANCELLED_BEFORE;
 
     const cancelTime = Date.now();
 
@@ -328,7 +351,7 @@ export class PaymeProvider {
       where: { id: transaction.id },
       data: {
         state: cancelState,
-        action: 'cancel',
+        action: "cancel",
       },
     });
 
@@ -353,21 +376,26 @@ export class PaymeProvider {
     const id = params.id as string;
 
     const transaction = await this.prisma.paymentTransaction.findFirst({
-      where: { providerTxId: id, provider: 'payme' },
-      orderBy: { createdAt: 'desc' },
+      where: { providerTxId: id, provider: "payme" },
+      orderBy: { createdAt: "desc" },
     });
 
     if (!transaction) {
-      return this.error(PaymeErrorCode.TRANSACTION_NOT_FOUND, 'Transaction not found');
+      return this.error(
+        PaymeErrorCode.TRANSACTION_NOT_FOUND,
+        "Transaction not found",
+      );
     }
 
     return {
       result: {
         create_time: transaction.createdAt.getTime(),
-        perform_time: transaction.state === PaymeTransactionState.COMPLETED
-          ? transaction.createdAt.getTime()
-          : 0,
-        cancel_time: transaction.state < 0 ? transaction.createdAt.getTime() : 0,
+        perform_time:
+          transaction.state === PaymeTransactionState.COMPLETED
+            ? transaction.createdAt.getTime()
+            : 0,
+        cancel_time:
+          transaction.state < 0 ? transaction.createdAt.getTime() : 0,
         transaction: transaction.orderId,
         state: transaction.state,
         reason: null,
@@ -386,24 +414,27 @@ export class PaymeProvider {
 
     const transactions = await this.prisma.paymentTransaction.findMany({
       where: {
-        provider: 'payme',
+        provider: "payme",
         createdAt: {
           gte: new Date(from),
           lte: new Date(to),
         },
       },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: "asc" },
     });
 
     return {
       result: {
-        transactions: transactions.map(tx => ({
+        transactions: transactions.map((tx) => ({
           id: tx.providerTxId,
           time: tx.createdAt.getTime(),
           amount: tx.amount,
           account: { order_id: tx.orderId },
           create_time: tx.createdAt.getTime(),
-          perform_time: tx.state === PaymeTransactionState.COMPLETED ? tx.createdAt.getTime() : 0,
+          perform_time:
+            tx.state === PaymeTransactionState.COMPLETED
+              ? tx.createdAt.getTime()
+              : 0,
           cancel_time: tx.state < 0 ? tx.createdAt.getTime() : 0,
           transaction: tx.orderId,
           state: tx.state,
@@ -418,7 +449,7 @@ export class PaymeProvider {
    */
   private async findOrder(orderId: string): Promise<{
     id: string;
-    type: 'subscription' | 'purchase';
+    type: "subscription" | "purchase";
     amount: number;
     status: string;
   } | null> {
@@ -430,7 +461,7 @@ export class PaymeProvider {
     if (payment) {
       return {
         id: payment.id,
-        type: 'subscription',
+        type: "subscription",
         amount: payment.amount,
         status: payment.status,
       };
@@ -444,7 +475,7 @@ export class PaymeProvider {
     if (purchase) {
       return {
         id: purchase.id,
-        type: 'purchase',
+        type: "purchase",
         amount: purchase.amount,
         status: purchase.status,
       };
@@ -461,12 +492,12 @@ export class PaymeProvider {
     orderType: string,
     providerTxId: string,
   ): Promise<void> {
-    if (orderType === 'subscription') {
+    if (orderType === "subscription") {
       await this.prisma.payment.update({
         where: { id: orderId },
         data: {
-          status: 'completed',
-          provider: 'payme',
+          status: "completed",
+          provider: "payme",
           providerTxId,
         },
       });
@@ -480,7 +511,7 @@ export class PaymeProvider {
       if (payment?.subscription) {
         await this.prisma.subscription.update({
           where: { id: payment.subscriptionId },
-          data: { status: 'active' },
+          data: { status: "active" },
         });
 
         // Update user isPremium status
@@ -489,18 +520,18 @@ export class PaymeProvider {
           data: { isPremium: true },
         });
       }
-    } else if (orderType === 'purchase') {
+    } else if (orderType === "purchase") {
       const purchase = await this.prisma.purchase.update({
         where: { id: orderId },
         data: {
-          status: 'completed',
-          provider: 'payme',
+          status: "completed",
+          provider: "payme",
           providerTxId,
         },
       });
 
-      // Grant purchased items
-      if (purchase.type === 'roadmap_generation') {
+      // Grant purchased items based on type
+      if (purchase.type === "roadmap_generation") {
         await this.prisma.user.update({
           where: { id: purchase.userId },
           data: {
@@ -509,6 +540,32 @@ export class PaymeProvider {
             },
           },
         });
+      } else if (purchase.type === "course_access") {
+        // Grant lifetime course access
+        const metadata = purchase.metadata as { courseId?: string } | null;
+        if (metadata?.courseId) {
+          await this.prisma.courseAccess.upsert({
+            where: {
+              userId_courseId: {
+                userId: purchase.userId,
+                courseId: metadata.courseId,
+              },
+            },
+            create: {
+              userId: purchase.userId,
+              courseId: metadata.courseId,
+              purchaseId: purchase.id,
+              expiresAt: null, // Lifetime access
+            },
+            update: {
+              purchaseId: purchase.id,
+              expiresAt: null, // Extend to lifetime
+            },
+          });
+          this.logger.log(
+            `Granted course access: userId=${purchase.userId}, courseId=${metadata.courseId}`,
+          );
+        }
       }
     }
   }
@@ -517,15 +574,15 @@ export class PaymeProvider {
    * Helper: Cancel order
    */
   private async cancelOrder(orderId: string, orderType: string): Promise<void> {
-    if (orderType === 'subscription') {
+    if (orderType === "subscription") {
       await this.prisma.payment.update({
         where: { id: orderId },
-        data: { status: 'failed' },
+        data: { status: "failed" },
       });
-    } else if (orderType === 'purchase') {
+    } else if (orderType === "purchase") {
       await this.prisma.purchase.update({
         where: { id: orderId },
-        data: { status: 'failed' },
+        data: { status: "failed" },
       });
     }
   }

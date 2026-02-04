@@ -9,27 +9,27 @@ import {
   Headers,
   HttpCode,
   HttpStatus,
-} from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+} from "@nestjs/common";
+import { JwtAuthGuard } from "../auth/guards/jwt-auth.guard";
 import {
   IpWhitelistGuard,
   IpWhitelist,
-} from '../common/guards/ip-whitelist.guard';
-import { PaymentsService } from './payments.service';
+} from "../common/guards/ip-whitelist.guard";
+import { PaymentsService } from "./payments.service";
 import {
   CreateCheckoutDto,
   PaymeWebhookDto,
   ClickWebhookDto,
-} from './dto/payment.dto';
+} from "./dto/payment.dto";
 
-@Controller('payments')
+@Controller("payments")
 export class PaymentsController {
   constructor(private paymentsService: PaymentsService) {}
 
   /**
    * Get available payment providers
    */
-  @Get('providers')
+  @Get("providers")
   getProviders() {
     return this.paymentsService.getAvailableProviders();
   }
@@ -37,15 +37,43 @@ export class PaymentsController {
   /**
    * Get pricing for one-time purchases
    */
-  @Get('pricing')
+  @Get("pricing")
   getPricing() {
     return this.paymentsService.getPurchasePricing();
   }
 
   /**
+   * Get pricing for all courses (one-time purchase prices)
+   * Price = 3x monthly subscription price
+   */
+  @Get("courses/pricing")
+  @UseGuards(JwtAuthGuard)
+  getCoursesPricing(@Request() req) {
+    return this.paymentsService.getAllCoursesPricing(req.user.userId);
+  }
+
+  /**
+   * Get pricing for a specific course
+   */
+  @Get("courses/pricing/:courseId")
+  @UseGuards(JwtAuthGuard)
+  getCoursePricing(@Request() req, @Param("courseId") courseId: string) {
+    return this.paymentsService.getCoursePricing(courseId, req.user.userId);
+  }
+
+  /**
+   * Get user's purchased courses (one-time purchases with lifetime access)
+   */
+  @Get("courses/purchased")
+  @UseGuards(JwtAuthGuard)
+  getPurchasedCourses(@Request() req) {
+    return this.paymentsService.getUserCourseAccesses(req.user.userId);
+  }
+
+  /**
    * Get user's roadmap credits
    */
-  @Get('roadmap-credits')
+  @Get("roadmap-credits")
   @UseGuards(JwtAuthGuard)
   getRoadmapCredits(@Request() req) {
     return this.paymentsService.getRoadmapCredits(req.user.userId);
@@ -54,7 +82,7 @@ export class PaymentsController {
   /**
    * Get user's payment history
    */
-  @Get('history')
+  @Get("history")
   @UseGuards(JwtAuthGuard)
   getHistory(@Request() req) {
     return this.paymentsService.getPaymentHistory(req.user.userId);
@@ -63,9 +91,9 @@ export class PaymentsController {
   /**
    * Check payment status
    */
-  @Get('status/:orderId')
+  @Get("status/:orderId")
   @UseGuards(JwtAuthGuard)
-  getStatus(@Param('orderId') orderId: string) {
+  getStatus(@Param("orderId") orderId: string) {
     return this.paymentsService.getPaymentStatus(orderId);
   }
 
@@ -73,7 +101,7 @@ export class PaymentsController {
    * Create checkout session
    * Returns payment URL to redirect user
    */
-  @Post('checkout')
+  @Post("checkout")
   @UseGuards(JwtAuthGuard)
   createCheckout(@Request() req, @Body() dto: CreateCheckoutDto) {
     return this.paymentsService.createCheckout(req.user.userId, dto);
@@ -87,23 +115,23 @@ export class PaymentsController {
    * 1. IP Whitelist - Only Payme's servers can call this endpoint
    * 2. Basic Auth - Verified in PaymentsService
    */
-  @Post('webhook/payme')
+  @Post("webhook/payme")
   @UseGuards(IpWhitelistGuard)
-  @IpWhitelist('payme')
+  @IpWhitelist("payme")
   @HttpCode(HttpStatus.OK)
   async handlePaymeWebhook(
     @Body() body: PaymeWebhookDto,
-    @Headers('authorization') authHeader: string,
+    @Headers("authorization") authHeader: string,
   ) {
     const response = await this.paymentsService.handlePaymeWebhook(
       body.method,
       body.params || {},
-      authHeader || '',
+      authHeader || "",
     );
 
     // JSON-RPC 2.0 response format
     return {
-      jsonrpc: '2.0',
+      jsonrpc: "2.0",
       id: body.id,
       ...response,
     };
@@ -117,9 +145,9 @@ export class PaymentsController {
    * 1. IP Whitelist - Only Click's servers can call this endpoint
    * 2. HMAC Signature - Verified in PaymentsService
    */
-  @Post('webhook/click')
+  @Post("webhook/click")
   @UseGuards(IpWhitelistGuard)
-  @IpWhitelist('click')
+  @IpWhitelist("click")
   @HttpCode(HttpStatus.OK)
   async handleClickWebhook(@Body() body: ClickWebhookDto) {
     return this.paymentsService.handleClickWebhook({

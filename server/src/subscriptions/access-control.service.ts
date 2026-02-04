@@ -1,6 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { TaskAccessDto, CourseAccessDto } from './dto/subscription.dto';
+import { Injectable, Logger } from "@nestjs/common";
+import { PrismaService } from "../prisma/prisma.service";
+import { TaskAccessDto, CourseAccessDto } from "./dto/subscription.dto";
 
 // Queue priority constants
 const PRIORITY_HIGH = 1; // Premium/subscribed users
@@ -36,16 +36,16 @@ export class AccessControlService {
     const subscription = await this.prisma.subscription.findFirst({
       where: {
         userId,
-        status: 'active',
+        status: "active",
         endDate: { gte: gracePeriodCutoff }, // Include grace period
-        plan: { type: 'global' },
+        plan: { type: "global" },
       },
     });
     return !!subscription;
   }
 
   /**
-   * Check if user has access to a specific course (via course subscription or global)
+   * Check if user has access to a specific course (via course subscription, global, or one-time purchase)
    * Includes grace period - recently expired subscriptions still work
    */
   async hasCourseAccess(userId: string, courseId: string): Promise<boolean> {
@@ -54,16 +54,30 @@ export class AccessControlService {
       return true;
     }
 
+    // Check one-time purchase (CourseAccess)
+    const courseAccess = await this.prisma.courseAccess.findUnique({
+      where: {
+        userId_courseId: { userId, courseId },
+      },
+    });
+
+    if (courseAccess) {
+      // Check if not expired (null = lifetime access)
+      if (!courseAccess.expiresAt || courseAccess.expiresAt >= new Date()) {
+        return true;
+      }
+    }
+
     const gracePeriodCutoff = this.getGracePeriodCutoff();
 
     // Check course-specific subscription
     const subscription = await this.prisma.subscription.findFirst({
       where: {
         userId,
-        status: 'active',
+        status: "active",
         endDate: { gte: gracePeriodCutoff }, // Include grace period
         plan: {
-          type: 'course',
+          type: "course",
           courseId,
         },
       },
@@ -112,7 +126,7 @@ export class AccessControlService {
     // Free users: only first task in topic
     const firstTaskInTopic = await this.prisma.task.findFirst({
       where: { topicId: task.topicId },
-      orderBy: { order: 'asc' },
+      orderBy: { order: "asc" },
     });
 
     return task.id === firstTaskInTopic?.id;
@@ -193,7 +207,10 @@ export class AccessControlService {
   /**
    * Get access info for a course
    */
-  async getCourseAccess(userId: string, courseId: string): Promise<CourseAccessDto> {
+  async getCourseAccess(
+    userId: string,
+    courseId: string,
+  ): Promise<CourseAccessDto> {
     const hasAccess = await this.hasCourseAccess(userId, courseId);
 
     return {
@@ -213,7 +230,7 @@ export class AccessControlService {
     return this.prisma.subscription.findMany({
       where: {
         userId,
-        status: 'active',
+        status: "active",
         endDate: { gte: gracePeriodCutoff }, // Include grace period
       },
       include: {
@@ -223,9 +240,9 @@ export class AccessControlService {
   }
 
   /**
-   * Verify subscription at execution time (TOCTOU mitigation)
-   * Called immediately before executing code to ensure subscription is still valid
-   * This prevents race conditions where subscription expires between check and use
+   * Verify access at execution time (TOCTOU mitigation)
+   * Called immediately before executing code to ensure access is still valid
+   * This prevents race conditions where subscription/access expires between check and use
    */
   async verifyAccessAtExecutionTime(
     userId: string,
@@ -234,15 +251,32 @@ export class AccessControlService {
     const now = new Date();
     const gracePeriodCutoff = this.getGracePeriodCutoff();
 
+    // Check one-time purchase (CourseAccess) first
+    const courseAccess = await this.prisma.courseAccess.findUnique({
+      where: {
+        userId_courseId: { userId, courseId },
+      },
+    });
+
+    if (courseAccess) {
+      // Check if not expired (null = lifetime access)
+      if (!courseAccess.expiresAt || courseAccess.expiresAt >= now) {
+        return {
+          hasAccess: true,
+          priority: PRIORITY_HIGH,
+        };
+      }
+    }
+
     // Re-check subscription status with fresh database query
     const subscription = await this.prisma.subscription.findFirst({
       where: {
         userId,
-        status: 'active',
+        status: "active",
         endDate: { gte: gracePeriodCutoff },
         OR: [
-          { plan: { type: 'global' } },
-          { plan: { type: 'course', courseId } },
+          { plan: { type: "global" } },
+          { plan: { type: "course", courseId } },
         ],
       },
     });
@@ -252,7 +286,7 @@ export class AccessControlService {
     // Log if access status might have changed
     if (!hasAccess) {
       this.logger.debug(
-        `Access verification: User ${userId} does not have active subscription for course ${courseId}`,
+        `Access verification: User ${userId} does not have active access for course ${courseId}`,
       );
     }
 

@@ -177,12 +177,16 @@ describe("Judge0Service", () => {
   // Language-specific configurations
   // ============================================
   describe("language-specific configurations", () => {
-    it("Go should have longer time limit for compilation", () => {
-      expect(LANGUAGES.go.timeLimit).toBeGreaterThanOrEqual(30);
+    it("Go should have time limit within Judge0 constraints", () => {
+      // Judge0 max CPU time is 15s
+      expect(LANGUAGES.go.timeLimit).toBeLessThanOrEqual(15);
+      expect(LANGUAGES.go.timeLimit).toBeGreaterThanOrEqual(10);
     });
 
-    it("Java should have longer time limit for JVM startup", () => {
-      expect(LANGUAGES.java.timeLimit).toBeGreaterThanOrEqual(30);
+    it("Java should have time limit within Judge0 constraints", () => {
+      // Judge0 max CPU time is 15s
+      expect(LANGUAGES.java.timeLimit).toBeLessThanOrEqual(15);
+      expect(LANGUAGES.java.timeLimit).toBeGreaterThanOrEqual(10);
     });
 
     it("Python should have sufficient memory for libraries", () => {

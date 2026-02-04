@@ -59,6 +59,7 @@ model User {
   sessions         Session[]
   taskCompletions  TaskCompletion[]
   runResults       RunResult[]
+  courseAccesses   CourseAccess[]
 
   // Performance indexes for leaderboard and gamification queries
   @@index([level, xp])        // Leaderboard sorting
@@ -81,6 +82,7 @@ model Course {
 
   modules           Module[]
   subscriptionPlans SubscriptionPlan[]
+  courseAccesses    CourseAccess[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -319,18 +321,18 @@ model Payment {
   @@index([status])
 }
 
-// One-time purchases (roadmap generations, AI credits, etc.)
+// One-time purchases (roadmap generations, AI credits, course access, etc.)
 model Purchase {
   id           String   @id @default(uuid())
   userId       String
-  type         String   // 'roadmap_generation' | 'ai_credits'
+  type         String   // 'roadmap_generation' | 'ai_credits' | 'course_access'
   quantity     Int      @default(1)
   amount       Int      // Amount in tiyn
   currency     String   @default("UZS")
   status       String   // 'pending' | 'completed' | 'failed' | 'refunded'
   provider     String?  // 'payme' | 'click' | null
   providerTxId String?  // External transaction ID from provider
-  metadata     Json?    // Provider-specific data (order details, etc.)
+  metadata     Json?    // Provider-specific data (order details, courseId for course_access, etc.)
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -339,6 +341,23 @@ model Purchase {
   @@index([userId])
   @@index([status])
   @@index([type])
+}
+
+// One-time course access (lifetime access via purchase, not subscription)
+model CourseAccess {
+  id         String    @id @default(uuid())
+  userId     String
+  courseId   String
+  purchaseId String?   // Reference to the Purchase that granted this access
+  expiresAt  DateTime? // null = lifetime access (never expires)
+  createdAt  DateTime  @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId]) // One access per user per course
+  @@index([userId])
+  @@index([courseId])
 }
 
 // Payment transaction log (for all payment attempts - debugging & audit)

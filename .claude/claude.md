@@ -203,6 +203,7 @@ Use for retrieving up-to-date documentation:
 | File | Purpose |
 |------|---------|
 | `docs/PLATFORM_FEATURES.md` | **Complete platform documentation** - all features, APIs, flows |
+| `docs/deployment/COOLIFY_CONFIG.md` | **🚀 Production deployment** - SSH, URLs, deploy commands |
 | `docs/integrations/GEMINI_SETUP.md` | Google Gemini API setup guide |
 | `docs/deployment/PLATFORM_COMPARISON.md` | Deployment platforms comparison (Railway vs Hetzner etc.) |
 | `ROADMAP.md` | Complete course catalog and development status |

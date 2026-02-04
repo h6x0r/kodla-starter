@@ -1,14 +1,14 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '../../prisma/prisma.service';
-import * as crypto from 'crypto';
+import { Injectable, Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { PrismaService } from "../../prisma/prisma.service";
+import * as crypto from "crypto";
 
 /**
  * Click Action Types
  */
 export enum ClickAction {
-  PREPARE = 0,   // Validate order before payment
-  COMPLETE = 1,  // Complete payment after card debit
+  PREPARE = 0, // Validate order before payment
+  COMPLETE = 1, // Complete payment after card debit
 }
 
 /**
@@ -46,14 +46,16 @@ export class ClickProvider {
     private configService: ConfigService,
     private prisma: PrismaService,
   ) {
-    this.serviceId = this.configService.get<string>('CLICK_SERVICE_ID') || '';
-    this.merchantId = this.configService.get<string>('CLICK_MERCHANT_ID') || '';
-    this.secretKey = this.configService.get<string>('CLICK_SECRET_KEY') || '';
-    this.merchantUserId = this.configService.get<string>('CLICK_MERCHANT_USER_ID') || '';
-    this.testMode = this.configService.get<string>('CLICK_TEST_MODE') === 'true';
+    this.serviceId = this.configService.get<string>("CLICK_SERVICE_ID") || "";
+    this.merchantId = this.configService.get<string>("CLICK_MERCHANT_ID") || "";
+    this.secretKey = this.configService.get<string>("CLICK_SECRET_KEY") || "";
+    this.merchantUserId =
+      this.configService.get<string>("CLICK_MERCHANT_USER_ID") || "";
+    this.testMode =
+      this.configService.get<string>("CLICK_TEST_MODE") === "true";
 
     if (!this.serviceId || !this.merchantId) {
-      this.logger.warn('CLICK_SERVICE_ID or CLICK_MERCHANT_ID not configured');
+      this.logger.warn("CLICK_SERVICE_ID or CLICK_MERCHANT_ID not configured");
     }
   }
 
@@ -71,19 +73,23 @@ export class ClickProvider {
    * @param amount - Amount in UZS (not tiyn!)
    * @param returnUrl - URL to redirect after payment
    */
-  generatePaymentLink(orderId: string, amount: number, returnUrl?: string): string {
-    const baseUrl = 'https://my.click.uz/services/pay';
+  generatePaymentLink(
+    orderId: string,
+    amount: number,
+    returnUrl?: string,
+  ): string {
+    const baseUrl = "https://my.click.uz/services/pay";
 
     const params = new URLSearchParams({
       service_id: this.serviceId,
       merchant_id: this.merchantId,
       amount: amount.toString(),
       transaction_param: orderId,
-      merchant_user_id: this.merchantUserId || '1',
+      merchant_user_id: this.merchantUserId || "1",
     });
 
     if (returnUrl) {
-      params.append('return_url', returnUrl);
+      params.append("return_url", returnUrl);
     }
 
     return `${baseUrl}?${params.toString()}`;
@@ -116,13 +122,21 @@ export class ClickProvider {
 
     // Verify signature
     if (!this.verifySignature(params)) {
-      return this.errorResponse(params, ClickErrorCode.SIGN_CHECK_FAILED, 'Invalid signature');
+      return this.errorResponse(
+        params,
+        ClickErrorCode.SIGN_CHECK_FAILED,
+        "Invalid signature",
+      );
     }
 
     // Check if error from Click
     if (params.error && params.error !== 0) {
       await this.handleClickError(params);
-      return this.errorResponse(params, params.error, params.error_note || 'Click error');
+      return this.errorResponse(
+        params,
+        params.error,
+        params.error_note || "Click error",
+      );
     }
 
     try {
@@ -132,11 +146,19 @@ export class ClickProvider {
         case ClickAction.COMPLETE:
           return await this.complete(params);
         default:
-          return this.errorResponse(params, ClickErrorCode.ACTION_NOT_FOUND, 'Unknown action');
+          return this.errorResponse(
+            params,
+            ClickErrorCode.ACTION_NOT_FOUND,
+            "Unknown action",
+          );
       }
     } catch (error) {
-      this.logger.error('Click webhook error', error);
-      return this.errorResponse(params, ClickErrorCode.FAILED_TO_UPDATE, 'Internal error');
+      this.logger.error("Click webhook error", error);
+      return this.errorResponse(
+        params,
+        ClickErrorCode.FAILED_TO_UPDATE,
+        "Internal error",
+      );
     }
   }
 
@@ -169,17 +191,17 @@ export class ClickProvider {
         merchant_trans_id: orderId,
         merchant_prepare_id: 0,
         error: ClickErrorCode.USER_NOT_FOUND,
-        error_note: 'Order not found',
+        error_note: "Order not found",
       };
     }
 
-    if (order.status === 'completed') {
+    if (order.status === "completed") {
       return {
         click_trans_id: params.click_trans_id,
         merchant_trans_id: orderId,
         merchant_prepare_id: 0,
         error: ClickErrorCode.ALREADY_PAID,
-        error_note: 'Order already paid',
+        error_note: "Order already paid",
       };
     }
 
@@ -198,11 +220,11 @@ export class ClickProvider {
       data: {
         orderId,
         orderType: order.type,
-        provider: 'click',
+        provider: "click",
         providerTxId: params.click_trans_id.toString(),
         amount: order.amount,
         state: 0, // Prepare state
-        action: 'prepare',
+        action: "prepare",
         request: params as unknown as object,
       },
     });
@@ -210,9 +232,10 @@ export class ClickProvider {
     return {
       click_trans_id: params.click_trans_id,
       merchant_trans_id: orderId,
-      merchant_prepare_id: parseInt(transaction.id.slice(0, 8), 16) || Date.now(), // Use part of UUID as prepare_id
+      merchant_prepare_id:
+        parseInt(transaction.id.slice(0, 8), 16) || Date.now(), // Use part of UUID as prepare_id
       error: ClickErrorCode.SUCCESS,
-      error_note: 'Success',
+      error_note: "Success",
     };
   }
 
@@ -241,10 +264,10 @@ export class ClickProvider {
     const transaction = await this.prisma.paymentTransaction.findFirst({
       where: {
         orderId,
-        provider: 'click',
-        action: 'prepare',
+        provider: "click",
+        action: "prepare",
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     if (!transaction) {
@@ -253,7 +276,7 @@ export class ClickProvider {
         merchant_trans_id: orderId,
         merchant_confirm_id: 0,
         error: ClickErrorCode.TRANSACTION_NOT_FOUND,
-        error_note: 'Transaction not found',
+        error_note: "Transaction not found",
       };
     }
 
@@ -265,13 +288,13 @@ export class ClickProvider {
         data: {
           orderId,
           orderType: transaction.orderType,
-          provider: 'click',
+          provider: "click",
           providerTxId: params.click_trans_id.toString(),
           amount: transaction.amount,
           state: -1, // Cancelled
-          action: 'cancel',
+          action: "cancel",
           errorCode: params.error,
-          errorMessage: 'Cancelled by Click',
+          errorMessage: "Cancelled by Click",
           request: params as unknown as object,
         },
       });
@@ -281,23 +304,27 @@ export class ClickProvider {
         merchant_trans_id: orderId,
         merchant_confirm_id: 0,
         error: ClickErrorCode.TRANSACTION_CANCELLED,
-        error_note: 'Transaction cancelled',
+        error_note: "Transaction cancelled",
       };
     }
 
     // Complete the order
-    await this.completeOrder(orderId, transaction.orderType, params.click_trans_id.toString());
+    await this.completeOrder(
+      orderId,
+      transaction.orderType,
+      params.click_trans_id.toString(),
+    );
 
     // Log completion
     await this.prisma.paymentTransaction.create({
       data: {
         orderId,
         orderType: transaction.orderType,
-        provider: 'click',
+        provider: "click",
         providerTxId: params.click_trans_id.toString(),
         amount: transaction.amount,
         state: 1, // Completed
-        action: 'complete',
+        action: "complete",
         request: params as unknown as object,
       },
     });
@@ -307,7 +334,7 @@ export class ClickProvider {
       merchant_trans_id: orderId,
       merchant_confirm_id: Date.now(),
       error: ClickErrorCode.SUCCESS,
-      error_note: 'Success',
+      error_note: "Success",
     };
   }
 
@@ -338,21 +365,24 @@ export class ClickProvider {
         params.amount,
         params.action,
         params.sign_time,
-      ].join('');
+      ].join("");
     } else {
       signString = [
         params.click_trans_id,
         params.service_id,
         this.secretKey,
         params.merchant_trans_id,
-        params.merchant_prepare_id || '',
+        params.merchant_prepare_id || "",
         params.amount,
         params.action,
         params.sign_time,
-      ].join('');
+      ].join("");
     }
 
-    const expectedSign = crypto.createHash('md5').update(signString).digest('hex');
+    const expectedSign = crypto
+      .createHash("md5")
+      .update(signString)
+      .digest("hex");
 
     return expectedSign === params.sign_string;
   }
@@ -370,11 +400,11 @@ export class ClickProvider {
     await this.prisma.paymentTransaction.create({
       data: {
         orderId,
-        orderType: 'unknown',
-        provider: 'click',
+        orderType: "unknown",
+        provider: "click",
         amount: 0,
         state: -1,
-        action: 'error',
+        action: "error",
         errorCode: params.error,
         errorMessage: params.error_note,
         request: params as unknown as object,
@@ -387,7 +417,7 @@ export class ClickProvider {
    */
   private async findOrder(orderId: string): Promise<{
     id: string;
-    type: 'subscription' | 'purchase';
+    type: "subscription" | "purchase";
     amount: number;
     status: string;
   } | null> {
@@ -399,7 +429,7 @@ export class ClickProvider {
     if (payment) {
       return {
         id: payment.id,
-        type: 'subscription',
+        type: "subscription",
         amount: payment.amount,
         status: payment.status,
       };
@@ -413,7 +443,7 @@ export class ClickProvider {
     if (purchase) {
       return {
         id: purchase.id,
-        type: 'purchase',
+        type: "purchase",
         amount: purchase.amount,
         status: purchase.status,
       };
@@ -430,12 +460,12 @@ export class ClickProvider {
     orderType: string,
     providerTxId: string,
   ): Promise<void> {
-    if (orderType === 'subscription') {
+    if (orderType === "subscription") {
       await this.prisma.payment.update({
         where: { id: orderId },
         data: {
-          status: 'completed',
-          provider: 'click',
+          status: "completed",
+          provider: "click",
           providerTxId,
         },
       });
@@ -449,7 +479,7 @@ export class ClickProvider {
       if (payment?.subscription) {
         await this.prisma.subscription.update({
           where: { id: payment.subscriptionId },
-          data: { status: 'active' },
+          data: { status: "active" },
         });
 
         // Update user isPremium status
@@ -458,18 +488,18 @@ export class ClickProvider {
           data: { isPremium: true },
         });
       }
-    } else if (orderType === 'purchase') {
+    } else if (orderType === "purchase") {
       const purchase = await this.prisma.purchase.update({
         where: { id: orderId },
         data: {
-          status: 'completed',
-          provider: 'click',
+          status: "completed",
+          provider: "click",
           providerTxId,
         },
       });
 
-      // Grant purchased items
-      if (purchase.type === 'roadmap_generation') {
+      // Grant purchased items based on type
+      if (purchase.type === "roadmap_generation") {
         await this.prisma.user.update({
           where: { id: purchase.userId },
           data: {
@@ -478,6 +508,32 @@ export class ClickProvider {
             },
           },
         });
+      } else if (purchase.type === "course_access") {
+        // Grant lifetime course access
+        const metadata = purchase.metadata as { courseId?: string } | null;
+        if (metadata?.courseId) {
+          await this.prisma.courseAccess.upsert({
+            where: {
+              userId_courseId: {
+                userId: purchase.userId,
+                courseId: metadata.courseId,
+              },
+            },
+            create: {
+              userId: purchase.userId,
+              courseId: metadata.courseId,
+              purchaseId: purchase.id,
+              expiresAt: null, // Lifetime access
+            },
+            update: {
+              purchaseId: purchase.id,
+              expiresAt: null, // Extend to lifetime
+            },
+          });
+          this.logger.log(
+            `Granted course access: userId=${purchase.userId}, courseId=${metadata.courseId}`,
+          );
+        }
       }
     }
   }
@@ -486,15 +542,15 @@ export class ClickProvider {
    * Helper: Cancel order
    */
   private async cancelOrder(orderId: string, orderType: string): Promise<void> {
-    if (orderType === 'subscription') {
+    if (orderType === "subscription") {
       await this.prisma.payment.update({
         where: { id: orderId },
-        data: { status: 'failed' },
+        data: { status: "failed" },
       });
-    } else if (orderType === 'purchase') {
+    } else if (orderType === "purchase") {
       await this.prisma.purchase.update({
         where: { id: orderId },
-        data: { status: 'failed' },
+        data: { status: "failed" },
       });
     }
   }
